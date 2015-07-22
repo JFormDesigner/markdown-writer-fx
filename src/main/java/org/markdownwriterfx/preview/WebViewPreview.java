@@ -27,53 +27,40 @@
 
 package org.markdownwriterfx.preview;
 
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.geometry.Side;
+import java.util.Collections;
 import javafx.scene.Node;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
-import javafx.scene.control.TabPane.TabClosingPolicy;
+import javafx.scene.web.WebView;
+import org.pegdown.LinkRenderer;
+import org.pegdown.ToHtmlSerializer;
+import org.pegdown.VerbatimSerializer;
 import org.pegdown.ast.RootNode;
+import org.pegdown.plugins.PegDownPlugins;
 
 /**
- * Markdown preview pane.
- *
- * Uses pegdown AST.
+ * WebView preview.
+ * Serializes the AST tree to HTML and shows it in a WebView.
  *
  * @author Karl Tauber
  */
-public class MarkdownPreviewPane
+class WebViewPreview
 {
-	private final WebViewPreview webViewPreview = new WebViewPreview();
-	private final ASTPreview astPreview = new ASTPreview();
-	private TabPane tabPane;
+	private final WebView webView = new WebView();
 
-	public MarkdownPreviewPane() {
-		markdownAST.addListener((observable, oldValue, newValue) -> {
-			webViewPreview.update(newValue);
-			astPreview.update(newValue);
-		});
+	Node getNode() {
+		return webView;
 	}
 
-	public Node getNode() {
-		if(tabPane == null) {
-			tabPane = new TabPane();
-			tabPane.setSide(Side.BOTTOM);
-			tabPane.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
+	void update(RootNode astRoot) {
+		String html = new ToHtmlSerializer(new LinkRenderer(),
+				Collections.<String, VerbatimSerializer>emptyMap(),
+				PegDownPlugins.NONE.getHtmlSerializerPlugins())
+			.toHtml(astRoot);
 
-			Tab webViewTab = new Tab("Preview", webViewPreview.getNode());
-			tabPane.getTabs().add(webViewTab);
-
-			Tab astTab = new Tab("AST", astPreview.getNode());
-			tabPane.getTabs().add(astTab);
-		}
-		return tabPane;
+		webView.getEngine().loadContent(
+			"<!DOCTYPE html><html><head><link rel=\"stylesheet\" href=\""
+			+ getClass().getResource("markdownpad-github.css")
+			+ "\"></head><body>"
+			+ html
+			+ "</body></html>");
 	}
-
-	// markdownAST property
-	private final ObjectProperty<RootNode> markdownAST = new SimpleObjectProperty<RootNode>();
-	public RootNode getMarkdownAST() { return markdownAST.get(); }
-	public void setMarkdownAST(RootNode astRoot) { markdownAST.set(astRoot); }
-	public ObjectProperty<RootNode> markdownASTProperty() { return markdownAST; }
 }
