@@ -27,7 +27,10 @@
 
 package org.markdownwriterfx.editor;
 
-import javafx.scene.layout.BorderPane;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.value.ObservableValue;
+import javafx.scene.Node;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.pegdown.Extensions;
 import org.pegdown.PegDownProcessor;
@@ -41,9 +44,9 @@ import org.pegdown.ast.RootNode;
  * @author Karl Tauber
  */
 public class MarkdownEditorPane
-	extends BorderPane
 {
 	private final StyleClassedTextArea textArea;
+	private final ReadOnlyObjectWrapper<RootNode> markdownAST = new ReadOnlyObjectWrapper<>();
 	private PegDownProcessor pegDownProcessor;
 
 	public MarkdownEditorPane() {
@@ -53,19 +56,24 @@ public class MarkdownEditorPane
 		textArea.getStylesheets().add("org/markdownwriterfx/editor/MarkdownEditor.css");
 
 		textArea.textProperty().addListener((observable, oldText, newText) -> {
-			applyHighlighting(parseMarkdown(newText));
+			RootNode astRoot = parseMarkdown(newText);
+			applyHighlighting(astRoot);
+			markdownAST.set(astRoot);
 		});
-
-		setCenter(textArea);
 	}
 
-	public String getMarkdown() {
-		return textArea.getText();
+	public Node getNode() {
+		return textArea;
 	}
 
-	public void setMarkdown(String markdown) {
-		textArea.replaceText(markdown);
-	}
+	// markdown property
+	public String getMarkdown() { return textArea.getText(); }
+	public void setMarkdown(String markdown) { textArea.replaceText(markdown); }
+	public ObservableValue<String> markdownProperty() { return textArea.textProperty(); }
+
+	// markdownAST property
+	public RootNode getMarkdownAST() { return markdownAST.get(); }
+	public ReadOnlyObjectProperty<RootNode> markdownASTProperty() { return markdownAST.getReadOnlyProperty(); }
 
 	private RootNode parseMarkdown(String text) {
 		if(pegDownProcessor == null)

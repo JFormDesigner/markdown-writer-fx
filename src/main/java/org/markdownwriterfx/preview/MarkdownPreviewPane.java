@@ -25,43 +25,37 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.markdownwriterfx;
+package org.markdownwriterfx.preview;
 
-import javafx.application.Application;
-import javafx.scene.Scene;
-import javafx.scene.control.SplitPane;
-import javafx.stage.Stage;
-import org.markdownwriterfx.editor.MarkdownEditorPane;
-import org.markdownwriterfx.preview.MarkdownPreviewPane;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.scene.Node;
+import org.pegdown.ast.RootNode;
 
 /**
- * Markdown Writer FX application.
+ * Markdown preview pane.
+ *
+ * Uses pegdown AST.
  *
  * @author Karl Tauber
  */
-public class MarkdownWriterFXApp
-	extends Application
+public class MarkdownPreviewPane
 {
-	private MarkdownEditorPane markdownEditorPane;
-	private MarkdownPreviewPane markdownPreviewPane;
+	private final ASTPreview astPreview = new ASTPreview();
 
-	public static void main(String[] args) {
-		launch(args);
+	public MarkdownPreviewPane() {
+		markdownAST.addListener((observable, oldValue, newValue) -> {
+			astPreview.update(newValue);
+		});
 	}
 
-	@Override
-	public void start(Stage primaryStage) throws Exception {
-		markdownEditorPane = new MarkdownEditorPane();
-		markdownEditorPane.setMarkdown("# h1\n\n## h2\n\nsome **bold** text\n\n* ul 1\n* ul 2\n* ul 3");
-
-		markdownPreviewPane = new MarkdownPreviewPane();
-		markdownPreviewPane.markdownASTProperty().bind(markdownEditorPane.markdownASTProperty());
-
-		SplitPane content = new SplitPane(markdownEditorPane.getNode(), markdownPreviewPane.getNode());
-		content.setPrefSize(800, 800);
-
-		primaryStage.setTitle("Markdown Writer FX");
-		primaryStage.setScene(new Scene(content));
-		primaryStage.show();
+	public Node getNode() {
+		return astPreview.getNode();
 	}
+
+	// markdownAST property
+	private final ObjectProperty<RootNode> markdownAST = new SimpleObjectProperty<RootNode>();
+	public RootNode getMarkdownAST() { return markdownAST.get(); }
+	public void setMarkdownAST(RootNode astRoot) { markdownAST.set(astRoot); }
+	public ObjectProperty<RootNode> markdownASTProperty() { return markdownAST; }
 }

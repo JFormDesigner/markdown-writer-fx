@@ -25,43 +25,33 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.markdownwriterfx;
+package org.markdownwriterfx.preview;
 
-import javafx.application.Application;
-import javafx.scene.Scene;
-import javafx.scene.control.SplitPane;
-import javafx.stage.Stage;
-import org.markdownwriterfx.editor.MarkdownEditorPane;
-import org.markdownwriterfx.preview.MarkdownPreviewPane;
+import javafx.scene.Node;
+import javafx.scene.control.TextArea;
+import org.parboiled.support.ToStringFormatter;
+import org.parboiled.trees.GraphUtils;
+import org.pegdown.ast.RootNode;
 
 /**
- * Markdown Writer FX application.
+ * Pegdown AST preview.
+ * Prints the AST tree to a text area.
  *
  * @author Karl Tauber
  */
-public class MarkdownWriterFXApp
-	extends Application
+class ASTPreview
 {
-	private MarkdownEditorPane markdownEditorPane;
-	private MarkdownPreviewPane markdownPreviewPane;
+	private final TextArea textArea = new TextArea();
 
-	public static void main(String[] args) {
-		launch(args);
+	ASTPreview() {
+		textArea.setEditable(false);
 	}
 
-	@Override
-	public void start(Stage primaryStage) throws Exception {
-		markdownEditorPane = new MarkdownEditorPane();
-		markdownEditorPane.setMarkdown("# h1\n\n## h2\n\nsome **bold** text\n\n* ul 1\n* ul 2\n* ul 3");
+	Node getNode() {
+		return textArea;
+	}
 
-		markdownPreviewPane = new MarkdownPreviewPane();
-		markdownPreviewPane.markdownASTProperty().bind(markdownEditorPane.markdownASTProperty());
-
-		SplitPane content = new SplitPane(markdownEditorPane.getNode(), markdownPreviewPane.getNode());
-		content.setPrefSize(800, 800);
-
-		primaryStage.setTitle("Markdown Writer FX");
-		primaryStage.setScene(new Scene(content));
-		primaryStage.show();
+	void update(RootNode astRoot) {
+		textArea.setText(GraphUtils.printTree(astRoot, new ToStringFormatter<>()));
 	}
 }
