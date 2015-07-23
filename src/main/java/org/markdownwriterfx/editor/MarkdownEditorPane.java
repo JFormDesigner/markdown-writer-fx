@@ -27,6 +27,7 @@
 
 package org.markdownwriterfx.editor;
 
+import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.value.ObservableValue;
@@ -71,9 +72,13 @@ public class MarkdownEditorPane
 		return textArea.getUndoManager();
 	}
 
+	public void requestFocus() {
+		Platform.runLater(() -> textArea.requestFocus());
+	}
+
 	// 'markdown' property
 	public String getMarkdown() { return textArea.getText(); }
-	public void setMarkdown(String markdown) { textArea.replaceText(markdown); }
+	public void setMarkdown(String markdown) { textArea.replaceText(markdown); textArea.selectRange(0, 0); }
 	public ObservableValue<String> markdownProperty() { return textArea.textProperty(); }
 
 	// 'markdownAST' property

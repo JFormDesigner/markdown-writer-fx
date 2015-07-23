@@ -96,8 +96,10 @@ class FileEditor
 	}
 
 	private void activated() {
-		if(tab.getContent() != null)
+		if (tab.getContent() != null) {
+			markdownEditorPane.requestFocus();
 			return;
+		}
 
 		// load file and create UI when the tab becomes visible the first time
 
@@ -114,6 +116,8 @@ class FileEditor
 
 		SplitPane splitPane = new SplitPane(markdownEditorPane.getNode(), markdownPreviewPane.getNode());
 		tab.setContent(splitPane);
+
+		markdownEditorPane.requestFocus();
 	}
 
 	void load() {

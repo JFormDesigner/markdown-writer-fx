@@ -154,6 +154,7 @@ class MainWindow
 		if(accelerator != null)
 			tooltip = tooltip + " (" + KeyCombination.valueOf(accelerator).getDisplayText() + ')';
 		button.setTooltip(new Tooltip(tooltip));
+		button.setFocusTraversable(false);
 		button.setOnAction(action);
 		return button;
 	}

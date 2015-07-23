@@ -62,6 +62,7 @@ class FileEditorTabPane
 		this.mainWindow = mainWindow;
 
 		tabPane = new TabPane();
+		tabPane.setFocusTraversable(false);
 		tabPane.setTabClosingPolicy(TabClosingPolicy.ALL_TABS);
 		tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
 			if (newTab != null) {
