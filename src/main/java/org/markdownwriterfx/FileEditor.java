@@ -30,7 +30,10 @@ package org.markdownwriterfx;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -53,11 +56,12 @@ class FileEditor
 
 	FileEditor(Path path) {
 		this.path.set(path);
-		this.path.addListener((observable, oldPath, newPath) -> updateTab());
 
 		// avoid that this is GCed
 		tab.setUserData(this);
 
+		this.path.addListener((observable, oldPath, newPath) -> updateTab());
+		this.modified.addListener((observable, oldPath, newPath) -> updateTab());
 		updateTab();
 
 		tab.setOnSelectionChanged(e -> {
@@ -70,15 +74,23 @@ class FileEditor
 		return tab;
 	}
 
-	// path property
+	// 'path' property
 	private final ObjectProperty<Path> path = new SimpleObjectProperty<>();
 	Path getPath() { return path.get(); }
 	void setPath(Path path) { this.path.set(path); }
 	ObjectProperty<Path> pathProperty() { return path; }
 
+	// 'modified' property
+	private final ReadOnlyBooleanWrapper modified = new ReadOnlyBooleanWrapper();
+	boolean isModified() { return modified.get(); }
+	ReadOnlyBooleanProperty modifiedProperty() { return modified; }
+
 	private void updateTab() {
 		Path path = this.path.get();
-		tab.setText((path != null) ? path.getFileName().toString() : "Untitled");
+		String text = (path != null) ? path.getFileName().toString() : "Untitled";
+		if (isModified())
+			text = "*".concat(text);
+		tab.setText(text);
 		tab.setTooltip((path != null) ? new Tooltip(path.toString()) : null);
 	}
 
@@ -96,6 +108,9 @@ class FileEditor
 		// bind preview to editor
 		markdownPreviewPane.markdownASTProperty().bind(markdownEditorPane.markdownASTProperty());
 
+		// bind the editor undo manager to the 'modified' property
+		modified.bind(Bindings.not(markdownEditorPane.getUndoManager().atMarkedPositionProperty()));
+
 		SplitPane splitPane = new SplitPane(markdownEditorPane.getNode(), markdownPreviewPane.getNode());
 		tab.setContent(splitPane);
 	}
@@ -108,6 +123,7 @@ class FileEditor
 		try {
 			String markdown = new String(Files.readAllBytes(path));
 			markdownEditorPane.setMarkdown(markdown);
+			markdownEditorPane.getUndoManager().mark();
 		} catch (IOException ex) {
 			Alert alert = new Alert(AlertType.ERROR);
 			alert.setTitle("Load");
@@ -122,6 +138,7 @@ class FileEditor
 		String markdown = markdownEditorPane.getMarkdown();
 		try {
 			Files.write(path.get(), markdown.getBytes());
+			markdownEditorPane.getUndoManager().mark();
 			return true;
 		} catch (IOException ex) {
 			Alert alert = new Alert(AlertType.ERROR);

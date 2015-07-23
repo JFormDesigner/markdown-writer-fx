@@ -32,6 +32,7 @@ import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
 import org.fxmisc.richtext.StyleClassedTextArea;
+import org.fxmisc.undo.UndoManager;
 import org.pegdown.Extensions;
 import org.pegdown.PegDownProcessor;
 import org.pegdown.ast.RootNode;
@@ -66,12 +67,16 @@ public class MarkdownEditorPane
 		return textArea;
 	}
 
-	// markdown property
+	public UndoManager getUndoManager() {
+		return textArea.getUndoManager();
+	}
+
+	// 'markdown' property
 	public String getMarkdown() { return textArea.getText(); }
 	public void setMarkdown(String markdown) { textArea.replaceText(markdown); }
 	public ObservableValue<String> markdownProperty() { return textArea.textProperty(); }
 
-	// markdownAST property
+	// 'markdownAST' property
 	public RootNode getMarkdownAST() { return markdownAST.get(); }
 	public ReadOnlyObjectProperty<RootNode> markdownASTProperty() { return markdownAST.getReadOnlyProperty(); }
 

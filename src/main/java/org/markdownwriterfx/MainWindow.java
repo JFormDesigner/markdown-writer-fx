@@ -30,6 +30,11 @@ package org.markdownwriterfx;
 import java.io.File;
 import java.util.List;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
@@ -66,12 +71,25 @@ class MainWindow
 	private final BorderPane borderPane = new BorderPane();
 	private final TabPane tabPane = new TabPane();
 
+	private final ObjectProperty<FileEditor> activeFileEditor = new SimpleObjectProperty<>();
+	private final BooleanProperty activeModified = new SimpleBooleanProperty();
+
 	public MainWindow() {
 		borderPane.setPrefSize(800, 800);
 		borderPane.setTop(new VBox(createMenuBar(), createToolBar()));
 		borderPane.setCenter(tabPane);
 
 		tabPane.setTabClosingPolicy(TabClosingPolicy.ALL_TABS);
+		tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
+			if (newTab != null) {
+				activeFileEditor.set((FileEditor) newTab.getUserData());
+				activeModified.bind(activeFileEditor.get().modifiedProperty());
+			} else {
+				activeFileEditor.set(null);
+				activeModified.unbind();
+				activeModified.set(false);
+			}
+		});
 
 		fileNew();
 	}
@@ -89,6 +107,9 @@ class MainWindow
 		MenuItem fileSaveMenuItem = createMenuItem("Save", "Shortcut+S", FLOPPY_ALT, e -> fileSave());
 		MenuItem fileCloseMenuItem = createMenuItem("Close", "Shortcut+W", null, e -> fileClose());
 		MenuItem fileExitMenuItem = createMenuItem("Exit", null, null, e -> fileExit());
+
+		fileSaveMenuItem.disableProperty().bind(Bindings.not(activeModified));
+		fileCloseMenuItem.disableProperty().bind(activeFileEditor.isNull());
 
 		Menu fileMenu = new Menu("File", null,
 				fileNewMenuItem,
@@ -111,6 +132,8 @@ class MainWindow
 		Button fileNewButton = createToolBarButton(FILE_ALT, "New", "Shortcut+N", e -> fileNew());
 		Button fileOpenButton = createToolBarButton(FOLDER_OPEN_ALT, "Open", "Shortcut+O", e -> fileOpen());
 		Button fileSaveButton = createToolBarButton(FLOPPY_ALT, "Save", "Shortcut+S", e -> fileSave());
+
+		fileSaveButton.disableProperty().bind(Bindings.not(activeModified));
 
 		return new ToolBar(
 				fileNewButton,
