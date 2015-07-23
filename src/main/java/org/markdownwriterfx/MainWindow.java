@@ -27,16 +27,11 @@
 
 package org.markdownwriterfx;
 
-import java.io.File;
-import java.util.List;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -46,16 +41,11 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
 import javafx.scene.control.ToolBar;
 import javafx.scene.control.Tooltip;
-import javafx.scene.control.TabPane.TabClosingPolicy;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
-import javafx.stage.FileChooser;
-import javafx.stage.FileChooser.ExtensionFilter;
 import de.jensd.fx.glyphs.GlyphIcons;
 import de.jensd.fx.glyphs.GlyphsDude;
 import static de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon.*;
@@ -67,37 +57,32 @@ import static de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon.*;
  */
 class MainWindow
 {
-	private Scene scene;
-	private final BorderPane borderPane = new BorderPane();
-	private final TabPane tabPane = new TabPane();
-
-	private final ObjectProperty<FileEditor> activeFileEditor = new SimpleObjectProperty<>();
-	private final BooleanProperty activeModified = new SimpleBooleanProperty();
+	private final Scene scene;
+	private final FileEditorTabPane fileEditorTabPane;
 
 	public MainWindow() {
+		fileEditorTabPane = new FileEditorTabPane(this);
+
+		BorderPane borderPane = new BorderPane();
 		borderPane.setPrefSize(800, 800);
 		borderPane.setTop(new VBox(createMenuBar(), createToolBar()));
-		borderPane.setCenter(tabPane);
+		borderPane.setCenter(fileEditorTabPane.getNode());
 
-		tabPane.setTabClosingPolicy(TabClosingPolicy.ALL_TABS);
-		tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
-			if (newTab != null) {
-				activeFileEditor.set((FileEditor) newTab.getUserData());
-				activeModified.bind(activeFileEditor.get().modifiedProperty());
-			} else {
-				activeFileEditor.set(null);
-				activeModified.unbind();
-				activeModified.set(false);
-			}
-		});
+		scene = new Scene(borderPane);
 
 		fileNew();
 	}
 
 	Scene getScene() {
-		if(scene == null)
-			scene = new Scene(borderPane);
 		return scene;
+	}
+
+	private ReadOnlyObjectProperty<FileEditor> activeFileEditor() {
+		return fileEditorTabPane.activeFileEditorProperty();
+	}
+
+	private ReadOnlyBooleanProperty activeFileEditorModified() {
+		return fileEditorTabPane.activeFileEditorModifiedProperty();
 	}
 
 	private MenuBar createMenuBar() {
@@ -108,8 +93,8 @@ class MainWindow
 		MenuItem fileCloseMenuItem = createMenuItem("Close", "Shortcut+W", null, e -> fileClose());
 		MenuItem fileExitMenuItem = createMenuItem("Exit", null, null, e -> fileExit());
 
-		fileSaveMenuItem.disableProperty().bind(Bindings.not(activeModified));
-		fileCloseMenuItem.disableProperty().bind(activeFileEditor.isNull());
+		fileSaveMenuItem.disableProperty().bind(Bindings.not(activeFileEditorModified()));
+		fileCloseMenuItem.disableProperty().bind(activeFileEditor().isNull());
 
 		Menu fileMenu = new Menu("File", null,
 				fileNewMenuItem,
@@ -133,7 +118,7 @@ class MainWindow
 		Button fileOpenButton = createToolBarButton(FOLDER_OPEN_ALT, "Open", "Shortcut+O", e -> fileOpen());
 		Button fileSaveButton = createToolBarButton(FLOPPY_ALT, "Save", "Shortcut+S", e -> fileSave());
 
-		fileSaveButton.disableProperty().bind(Bindings.not(activeModified));
+		fileSaveButton.disableProperty().bind(Bindings.not(activeFileEditorModified()));
 
 		return new ToolBar(
 				fileNewButton,
@@ -165,73 +150,29 @@ class MainWindow
 		return button;
 	}
 
+	//---- File menu ----------------------------------------------------------
+
 	private void fileNew() {
-		Tab tab = new FileEditor(null).getTab();
-		tabPane.getTabs().add(tab);
-		tabPane.getSelectionModel().select(tab);
+		fileEditorTabPane.newEditor();
 	}
 
 	private void fileOpen() {
-		FileChooser fileChooser = createFileChooser("Open Markdown File");
-		List<File> selectedFiles = fileChooser.showOpenMultipleDialog(getScene().getWindow());
-		if(selectedFiles == null)
-			return;
-
-		for (File file : selectedFiles) {
-			Tab tab = new FileEditor(file.toPath()).getTab();
-			tabPane.getTabs().add(tab);
-
-			// select first file
-			if(file == selectedFiles.get(0))
-				tabPane.getSelectionModel().select(tab);
-		}
+		fileEditorTabPane.openEditor();
 	}
 
 	private void fileSave() {
-		FileEditor activeFileEditor = (FileEditor) tabPane.getSelectionModel().getSelectedItem().getUserData();
-		if (activeFileEditor == null)
-			return;
-
-		if (activeFileEditor.getPath() == null) {
-			FileChooser fileChooser = createFileChooser("Save Markdown File");
-			File file = fileChooser.showSaveDialog(getScene().getWindow());
-			if (file == null)
-				return;
-
-			activeFileEditor.setPath(file.toPath());
-		}
-
-		activeFileEditor.save();
+		fileEditorTabPane.saveEditor(activeFileEditor().get());
 	}
 
 	private void fileClose() {
-		Tab tab = tabPane.getSelectionModel().getSelectedItem();
-		if(tab == null)
-			return;
-
-		Event event = new Event(tab,tab,Tab.TAB_CLOSE_REQUEST_EVENT);
-		Event.fireEvent(tab, event);
-		if(event.isConsumed())
-			return;
-
-		tabPane.getTabs().remove(tab);
-		if(tab.getOnClosed() != null)
-			Event.fireEvent(tab, new Event(Tab.CLOSED_EVENT));
+		fileEditorTabPane.closeEditor(activeFileEditor().get());
 	}
 
 	private void fileExit() {
 		Platform.exit();
 	}
 
-	private FileChooser createFileChooser(String title) {
-		FileChooser fileChooser = new FileChooser();
-		fileChooser.setTitle(title);
-		fileChooser.getExtensionFilters().addAll(
-				new ExtensionFilter("Markdown Files", "*.md", "*.markdown", "*.txt"),
-				new ExtensionFilter("All Files", "*.*"));
-		fileChooser.setInitialDirectory(new File("."));
-		return fileChooser;
-	}
+	//---- Help menu ----------------------------------------------------------
 
 	private void helpAbout() {
 		Alert alert = new Alert(AlertType.INFORMATION);
