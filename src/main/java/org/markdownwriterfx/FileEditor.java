@@ -27,7 +27,13 @@
 
 package org.markdownwriterfx;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.Tooltip;
@@ -46,11 +52,13 @@ class FileEditor
 	private MarkdownPreviewPane markdownPreviewPane;
 
 	FileEditor(Path path) {
+		this.path.set(path);
+		this.path.addListener((observable, oldPath, newPath) -> updateTab());
+
 		// avoid that this is GCed
 		tab.setUserData(this);
 
-		tab.setText((path != null) ? path.getFileName().toString() : "New Document");
-		tab.setTooltip((path != null) ? new Tooltip(path.toString()) : null);
+		updateTab();
 
 		tab.setOnSelectionChanged(e -> {
 			if(tab.isSelected())
@@ -62,6 +70,18 @@ class FileEditor
 		return tab;
 	}
 
+	// path property
+	private final ObjectProperty<Path> path = new SimpleObjectProperty<>();
+	Path getPath() { return path.get(); }
+	void setPath(Path path) { this.path.set(path); }
+	ObjectProperty<Path> pathProperty() { return path; }
+
+	private void updateTab() {
+		Path path = this.path.get();
+		tab.setText((path != null) ? path.getFileName().toString() : "Untitled");
+		tab.setTooltip((path != null) ? new Tooltip(path.toString()) : null);
+	}
+
 	private void activated() {
 		if(tab.getContent() != null)
 			return;
@@ -71,13 +91,46 @@ class FileEditor
 		markdownEditorPane = new MarkdownEditorPane();
 		markdownPreviewPane = new MarkdownPreviewPane();
 
-		//TODO
-		markdownEditorPane.setMarkdown("# h1\n\n## h2\n\nsome **bold** text\n\n* ul 1\n* ul 2\n* ul 3");
+		load();
 
 		// bind preview to editor
 		markdownPreviewPane.markdownASTProperty().bind(markdownEditorPane.markdownASTProperty());
 
 		SplitPane splitPane = new SplitPane(markdownEditorPane.getNode(), markdownPreviewPane.getNode());
 		tab.setContent(splitPane);
+	}
+
+	void load() {
+		Path path = this.path.get();
+		if (path == null)
+			return;
+
+		try {
+			String markdown = new String(Files.readAllBytes(path));
+			markdownEditorPane.setMarkdown(markdown);
+		} catch (IOException ex) {
+			Alert alert = new Alert(AlertType.ERROR);
+			alert.setTitle("Load");
+			alert.setHeaderText(null);
+			alert.setContentText(String.format(
+				"Failed to load '%s'.\n\nReason: %s", path, ex.getMessage()));
+			alert.showAndWait();
+		}
+	}
+
+	boolean save() {
+		String markdown = markdownEditorPane.getMarkdown();
+		try {
+			Files.write(path.get(), markdown.getBytes());
+			return true;
+		} catch (IOException ex) {
+			Alert alert = new Alert(AlertType.ERROR);
+			alert.setTitle("Save");
+			alert.setHeaderText(null);
+			alert.setContentText(String.format(
+				"Failed to save '%s'.\n\nReason: %s", path.get(), ex.getMessage()));
+			alert.showAndWait();
+			return false;
+		}
 	}
 }

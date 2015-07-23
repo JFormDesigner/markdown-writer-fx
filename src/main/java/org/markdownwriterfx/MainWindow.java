@@ -149,12 +149,7 @@ class MainWindow
 	}
 
 	private void fileOpen() {
-		FileChooser fileChooser = new FileChooser();
-		fileChooser.setTitle("Open Markdown File");
-		fileChooser.getExtensionFilters().addAll(
-				new ExtensionFilter("Markdown Files", "*.md", "*.txt"),
-				new ExtensionFilter("All Files", "*.*"));
-
+		FileChooser fileChooser = createFileChooser("Open Markdown File");
 		List<File> selectedFiles = fileChooser.showOpenMultipleDialog(getScene().getWindow());
 		if(selectedFiles == null)
 			return;
@@ -170,7 +165,20 @@ class MainWindow
 	}
 
 	private void fileSave() {
-		//TODO
+		FileEditor activeFileEditor = (FileEditor) tabPane.getSelectionModel().getSelectedItem().getUserData();
+		if (activeFileEditor == null)
+			return;
+
+		if (activeFileEditor.getPath() == null) {
+			FileChooser fileChooser = createFileChooser("Save Markdown File");
+			File file = fileChooser.showSaveDialog(getScene().getWindow());
+			if (file == null)
+				return;
+
+			activeFileEditor.setPath(file.toPath());
+		}
+
+		activeFileEditor.save();
 	}
 
 	private void fileClose() {
@@ -190,6 +198,16 @@ class MainWindow
 
 	private void fileExit() {
 		Platform.exit();
+	}
+
+	private FileChooser createFileChooser(String title) {
+		FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle(title);
+		fileChooser.getExtensionFilters().addAll(
+				new ExtensionFilter("Markdown Files", "*.md", "*.markdown", "*.txt"),
+				new ExtensionFilter("All Files", "*.*"));
+		fileChooser.setInitialDirectory(new File("."));
+		return fileChooser;
 	}
 
 	private void helpAbout() {
