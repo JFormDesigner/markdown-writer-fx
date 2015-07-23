@@ -11,6 +11,7 @@
 	<classpathentry kind="lib" path="lib/undofx-1.1.jar" sourcepath="lib/undofx-1.1-sources.jar"/>
 	<classpathentry kind="lib" path="lib/flowless-0.4.4.jar" sourcepath="lib/flowless-0.4.4-sources.jar"/>
 	<classpathentry kind="lib" path="lib/wellbehavedfx-0.1.1.jar" sourcepath="lib/wellbehavedfx-0.1.1-sources.jar"/>
+	<classpathentry kind="lib" path="lib/fontawesomefx-8.4.jar" sourcepath="lib/fontawesomefx-8.4-sources.jar"/>
 	<classpathentry kind="lib" path="lib/pegdown-1.5.0.jar" sourcepath="lib/pegdown-1.5.0-sources.jar"/>
 	<classpathentry kind="lib" path="lib/parboiled-java-1.1.7.jar" sourcepath="lib/parboiled-java-1.1.7-sources.jar"/>
 	<classpathentry kind="lib" path="lib/parboiled-core-1.1.7.jar" sourcepath="lib/parboiled-core-1.1.7-sources.jar"/>

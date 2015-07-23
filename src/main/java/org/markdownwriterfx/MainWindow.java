@@ -27,8 +27,33 @@
 
 package org.markdownwriterfx;
 
+import java.io.File;
+import java.util.List;
+import javafx.application.Platform;
+import javafx.event.ActionEvent;
+import javafx.event.Event;
+import javafx.event.EventHandler;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Button;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.ToolBar;
+import javafx.scene.control.Tooltip;
+import javafx.scene.control.TabPane.TabClosingPolicy;
+import javafx.scene.input.KeyCombination;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
+import de.jensd.fx.glyphs.GlyphIcons;
+import de.jensd.fx.glyphs.GlyphsDude;
+import static de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon.*;
 
 /**
  * Main window containing a tab pane in the center for file editors.
@@ -38,21 +63,141 @@ import javafx.scene.control.TabPane;
 class MainWindow
 {
 	private Scene scene;
+	private final BorderPane borderPane = new BorderPane();
 	private final TabPane tabPane = new TabPane();
 
 	public MainWindow() {
-		tabPane.setPrefSize(800, 800);
+		borderPane.setPrefSize(800, 800);
+		borderPane.setTop(new VBox(createMenuBar(), createToolBar()));
+		borderPane.setCenter(tabPane);
 
-		FileEditor fileEditor = new FileEditor(null);
-		tabPane.getTabs().add(fileEditor.getTab());
+		tabPane.setTabClosingPolicy(TabClosingPolicy.ALL_TABS);
 
-		FileEditor fileEditor2 = new FileEditor(null);
-		tabPane.getTabs().add(fileEditor2.getTab());
+		fileNew();
 	}
 
 	Scene getScene() {
 		if(scene == null)
-			scene = new Scene(tabPane);
+			scene = new Scene(borderPane);
 		return scene;
+	}
+
+	private MenuBar createMenuBar() {
+		// File menu
+		MenuItem fileNewMenuItem = createMenuItem("New", "Shortcut+N", FILE_ALT, e -> fileNew());
+		MenuItem fileOpenMenuItem = createMenuItem("Open...", "Shortcut+O", FOLDER_OPEN_ALT, e -> fileOpen());
+		MenuItem fileSaveMenuItem = createMenuItem("Save", "Shortcut+S", FLOPPY_ALT, e -> fileSave());
+		MenuItem fileCloseMenuItem = createMenuItem("Close", "Shortcut+W", null, e -> fileClose());
+		MenuItem fileExitMenuItem = createMenuItem("Exit", null, null, e -> fileExit());
+
+		Menu fileMenu = new Menu("File", null,
+				fileNewMenuItem,
+				fileOpenMenuItem,
+				fileSaveMenuItem,
+				fileCloseMenuItem,
+				new SeparatorMenuItem(),
+				fileExitMenuItem);
+
+		// Help menu
+		MenuItem helpAboutMenuItem = createMenuItem("About Markdown Writer FX", null, null, e -> helpAbout());
+
+		Menu helpMenu = new Menu("Help", null,
+				helpAboutMenuItem);
+
+		return new MenuBar(fileMenu, helpMenu);
+	}
+
+	private ToolBar createToolBar() {
+		Button fileNewButton = createToolBarButton(FILE_ALT, "New", "Shortcut+N", e -> fileNew());
+		Button fileOpenButton = createToolBarButton(FOLDER_OPEN_ALT, "Open", "Shortcut+O", e -> fileOpen());
+		Button fileSaveButton = createToolBarButton(FLOPPY_ALT, "Save", "Shortcut+S", e -> fileSave());
+
+		return new ToolBar(
+				fileNewButton,
+				fileOpenButton,
+				fileSaveButton);
+	}
+
+	private MenuItem createMenuItem(String text, String accelerator,
+		GlyphIcons icon, EventHandler<ActionEvent> action)
+	{
+		MenuItem menuItem = new MenuItem(text);
+		if(accelerator != null)
+			menuItem.setAccelerator(KeyCombination.valueOf(accelerator));
+		if(icon != null)
+			menuItem.setGraphic(GlyphsDude.createIcon(icon));
+		menuItem.setOnAction(action);
+		return menuItem;
+	}
+
+	private Button createToolBarButton(GlyphIcons icon, String tooltip,
+		String accelerator, EventHandler<ActionEvent> action)
+	{
+		Button button = new Button();
+		button.setGraphic(GlyphsDude.createIcon(icon, "1.2em"));
+		if(accelerator != null)
+			tooltip = tooltip + " (" + KeyCombination.valueOf(accelerator).getDisplayText() + ')';
+		button.setTooltip(new Tooltip(tooltip));
+		button.setOnAction(action);
+		return button;
+	}
+
+	private void fileNew() {
+		Tab tab = new FileEditor(null).getTab();
+		tabPane.getTabs().add(tab);
+		tabPane.getSelectionModel().select(tab);
+	}
+
+	private void fileOpen() {
+		FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle("Open Markdown File");
+		fileChooser.getExtensionFilters().addAll(
+				new ExtensionFilter("Markdown Files", "*.md", "*.txt"),
+				new ExtensionFilter("All Files", "*.*"));
+
+		List<File> selectedFiles = fileChooser.showOpenMultipleDialog(getScene().getWindow());
+		if(selectedFiles == null)
+			return;
+
+		for (File file : selectedFiles) {
+			Tab tab = new FileEditor(file.toPath()).getTab();
+			tabPane.getTabs().add(tab);
+
+			// select first file
+			if(file == selectedFiles.get(0))
+				tabPane.getSelectionModel().select(tab);
+		}
+	}
+
+	private void fileSave() {
+		//TODO
+	}
+
+	private void fileClose() {
+		Tab tab = tabPane.getSelectionModel().getSelectedItem();
+		if(tab == null)
+			return;
+
+		Event event = new Event(tab,tab,Tab.TAB_CLOSE_REQUEST_EVENT);
+		Event.fireEvent(tab, event);
+		if(event.isConsumed())
+			return;
+
+		tabPane.getTabs().remove(tab);
+		if(tab.getOnClosed() != null)
+			Event.fireEvent(tab, new Event(Tab.CLOSED_EVENT));
+	}
+
+	private void fileExit() {
+		Platform.exit();
+	}
+
+	private void helpAbout() {
+		Alert alert = new Alert(AlertType.INFORMATION);
+		alert.setTitle("About");
+		alert.setHeaderText("Markdown Writer FX");
+		alert.setContentText("Copyright (c) 2015 Karl Tauber <karl at jformdesigner dot com>\nAll rights reserved.");
+
+		alert.showAndWait();
 	}
 }
