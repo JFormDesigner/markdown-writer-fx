@@ -84,7 +84,7 @@ class FileEditorTabPane
 	}
 
 	private FileEditor createFileEditor(Path path) {
-		FileEditor fileEditor = new FileEditor(path);
+		FileEditor fileEditor = new FileEditor(mainWindow, path);
 		return fileEditor;
 	}
 

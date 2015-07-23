@@ -50,11 +50,13 @@ import org.markdownwriterfx.preview.MarkdownPreviewPane;
  */
 class FileEditor
 {
+	private final MainWindow mainWindow;
 	private final Tab tab = new Tab();
 	private MarkdownEditorPane markdownEditorPane;
 	private MarkdownPreviewPane markdownPreviewPane;
 
-	FileEditor(Path path) {
+	FileEditor(MainWindow mainWindow, Path path) {
+		this.mainWindow = mainWindow;
 		this.path.set(path);
 
 		// avoid that this is GCed
@@ -125,11 +127,8 @@ class FileEditor
 			markdownEditorPane.setMarkdown(markdown);
 			markdownEditorPane.getUndoManager().mark();
 		} catch (IOException ex) {
-			Alert alert = new Alert(AlertType.ERROR);
-			alert.setTitle("Load");
-			alert.setHeaderText(null);
-			alert.setContentText(String.format(
-				"Failed to load '%s'.\n\nReason: %s", path, ex.getMessage()));
+			Alert alert = mainWindow.createAlert(AlertType.ERROR, "Load",
+				"Failed to load '%s'.\n\nReason: %s", path, ex.getMessage());
 			alert.showAndWait();
 		}
 	}
@@ -141,11 +140,8 @@ class FileEditor
 			markdownEditorPane.getUndoManager().mark();
 			return true;
 		} catch (IOException ex) {
-			Alert alert = new Alert(AlertType.ERROR);
-			alert.setTitle("Save");
-			alert.setHeaderText(null);
-			alert.setContentText(String.format(
-				"Failed to save '%s'.\n\nReason: %s", path.get(), ex.getMessage()));
+			Alert alert = mainWindow.createAlert(AlertType.ERROR, "Save",
+				"Failed to save '%s'.\n\nReason: %s", path.get(), ex.getMessage());
 			alert.showAndWait();
 			return false;
 		}

@@ -150,6 +150,17 @@ class MainWindow
 		return button;
 	}
 
+	Alert createAlert(AlertType alertType, String title,
+		String contentTextFormat, Object... contentTextArgs)
+	{
+		Alert alert = new Alert(alertType);
+		alert.setTitle(title);
+		alert.setHeaderText(null);
+		alert.setContentText(String.format(contentTextFormat, contentTextArgs));
+		alert.initOwner(getScene().getWindow());
+		return alert;
+	}
+
 	//---- File menu ----------------------------------------------------------
 
 	private void fileNew() {
@@ -179,6 +190,7 @@ class MainWindow
 		alert.setTitle("About");
 		alert.setHeaderText("Markdown Writer FX");
 		alert.setContentText("Copyright (c) 2015 Karl Tauber <karl at jformdesigner dot com>\nAll rights reserved.");
+		alert.initOwner(getScene().getWindow());
 
 		alert.showAndWait();
 	}
