@@ -27,29 +27,32 @@
 
 package org.markdownwriterfx;
 
-import javafx.application.Application;
-import javafx.stage.Stage;
+import javafx.scene.Scene;
+import javafx.scene.control.TabPane;
 
 /**
- * Markdown Writer FX application.
+ * Main window containing a tab pane in the center for file editors.
  *
  * @author Karl Tauber
  */
-public class MarkdownWriterFXApp
-	extends Application
+class MainWindow
 {
-	private MainWindow mainWindow;
+	private Scene scene;
+	private final TabPane tabPane = new TabPane();
 
-	public static void main(String[] args) {
-		launch(args);
+	public MainWindow() {
+		tabPane.setPrefSize(800, 800);
+
+		FileEditor fileEditor = new FileEditor(null);
+		tabPane.getTabs().add(fileEditor.getTab());
+
+		FileEditor fileEditor2 = new FileEditor(null);
+		tabPane.getTabs().add(fileEditor2.getTab());
 	}
 
-	@Override
-	public void start(Stage primaryStage) throws Exception {
-		mainWindow = new MainWindow();
-
-		primaryStage.setTitle("Markdown Writer FX");
-		primaryStage.setScene(mainWindow.getScene());
-		primaryStage.show();
+	Scene getScene() {
+		if(scene == null)
+			scene = new Scene(tabPane);
+		return scene;
 	}
 }

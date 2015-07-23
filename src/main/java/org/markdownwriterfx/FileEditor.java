@@ -27,29 +27,57 @@
 
 package org.markdownwriterfx;
 
-import javafx.application.Application;
-import javafx.stage.Stage;
+import java.nio.file.Path;
+import javafx.scene.control.SplitPane;
+import javafx.scene.control.Tab;
+import javafx.scene.control.Tooltip;
+import org.markdownwriterfx.editor.MarkdownEditorPane;
+import org.markdownwriterfx.preview.MarkdownPreviewPane;
 
 /**
- * Markdown Writer FX application.
+ * Editor for a single file.
  *
  * @author Karl Tauber
  */
-public class MarkdownWriterFXApp
-	extends Application
+class FileEditor
 {
-	private MainWindow mainWindow;
+	private final Tab tab = new Tab();
+	private MarkdownEditorPane markdownEditorPane;
+	private MarkdownPreviewPane markdownPreviewPane;
 
-	public static void main(String[] args) {
-		launch(args);
+	FileEditor(Path path) {
+		// avoid that this is GCed
+		tab.setUserData(this);
+
+		tab.setText((path != null) ? path.getFileName().toString() : "New Document");
+		tab.setTooltip((path != null) ? new Tooltip(path.toString()) : null);
+
+		tab.setOnSelectionChanged(e -> {
+			if(tab.isSelected())
+				activated();
+		});
 	}
 
-	@Override
-	public void start(Stage primaryStage) throws Exception {
-		mainWindow = new MainWindow();
+	Tab getTab() {
+		return tab;
+	}
 
-		primaryStage.setTitle("Markdown Writer FX");
-		primaryStage.setScene(mainWindow.getScene());
-		primaryStage.show();
+	private void activated() {
+		if(tab.getContent() != null)
+			return;
+
+		// load file and create UI when the tab becomes visible the first time
+
+		markdownEditorPane = new MarkdownEditorPane();
+		markdownPreviewPane = new MarkdownPreviewPane();
+
+		//TODO
+		markdownEditorPane.setMarkdown("# h1\n\n## h2\n\nsome **bold** text\n\n* ul 1\n* ul 2\n* ul 3");
+
+		// bind preview to editor
+		markdownPreviewPane.markdownASTProperty().bind(markdownEditorPane.markdownASTProperty());
+
+		SplitPane splitPane = new SplitPane(markdownEditorPane.getNode(), markdownPreviewPane.getNode());
+		tab.setContent(splitPane);
 	}
 }
