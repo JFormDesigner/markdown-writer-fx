@@ -40,6 +40,7 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.Tooltip;
+import javafx.scene.text.Text;
 import org.markdownwriterfx.editor.MarkdownEditorPane;
 import org.markdownwriterfx.preview.MarkdownPreviewPane;
 
@@ -89,11 +90,9 @@ class FileEditor
 
 	private void updateTab() {
 		Path path = this.path.get();
-		String text = (path != null) ? path.getFileName().toString() : "Untitled";
-		if (isModified())
-			text = "*".concat(text);
-		tab.setText(text);
+		tab.setText((path != null) ? path.getFileName().toString() : "Untitled");
 		tab.setTooltip((path != null) ? new Tooltip(path.toString()) : null);
+		tab.setGraphic(isModified() ? new Text("*") : null);
 	}
 
 	private void activated() {

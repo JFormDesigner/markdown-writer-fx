@@ -34,8 +34,12 @@ import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.scene.Node;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabClosingPolicy;
@@ -85,6 +89,10 @@ class FileEditorTabPane
 
 	private FileEditor createFileEditor(Path path) {
 		FileEditor fileEditor = new FileEditor(mainWindow, path);
+		fileEditor.getTab().setOnCloseRequest(e -> {
+			if (!canCloseEditor(fileEditor))
+				e.consume();
+		});
 		return fileEditor;
 	}
 
@@ -116,36 +124,86 @@ class FileEditorTabPane
 		return fileEditors;
 	}
 
-	void saveEditor(FileEditor fileEditor) {
+	boolean saveEditor(FileEditor fileEditor) {
 		if (fileEditor == null)
-			return;
+			return false;
 
 		if (fileEditor.getPath() == null) {
 			FileChooser fileChooser = createFileChooser("Save Markdown File");
 			File file = fileChooser.showSaveDialog(mainWindow.getScene().getWindow());
 			if (file == null)
-				return;
+				return false;
 
 			fileEditor.setPath(file.toPath());
 		}
 
-		fileEditor.save();
+		return fileEditor.save();
 	}
 
-	void closeEditor(FileEditor fileEditor) {
+	boolean canCloseEditor(FileEditor fileEditor) {
+		if (!fileEditor.isModified())
+			return true;
+
+		Alert alert = mainWindow.createAlert(AlertType.CONFIRMATION, "Close",
+			"'%s' has been modified. Save changes?", fileEditor.getTab().getText());
+		alert.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO, ButtonType.CANCEL);
+
+		ButtonType result = alert.showAndWait().get();
+		if (result != ButtonType.YES)
+			return (result == ButtonType.NO);
+
+		return saveEditor(fileEditor);
+	}
+
+	boolean closeEditor(FileEditor fileEditor) {
 		if (fileEditor == null)
-			return;
+			return true;
 
 		Tab tab = fileEditor.getTab();
 
 		Event event = new Event(tab,tab,Tab.TAB_CLOSE_REQUEST_EVENT);
 		Event.fireEvent(tab, event);
 		if (event.isConsumed())
-			return;
+			return false;
 
 		tabPane.getTabs().remove(tab);
 		if (tab.getOnClosed() != null)
 			Event.fireEvent(tab, new Event(Tab.CLOSED_EVENT));
+
+		return true;
+	}
+
+	boolean closeAllEditors() {
+		FileEditor[] allEditors = getAllEditors();
+		FileEditor activeEditor = activeFileEditor.get();
+
+		// try to close active tab first because in case user decides to cancel,
+		// then the other tabs stay open
+		if (activeEditor != null && !closeEditor(activeEditor))
+			return false;
+
+		// select first tab
+		if (!tabPane.getTabs().isEmpty())
+			tabPane.getSelectionModel().select(0);
+
+		// try to close all tabs
+		for (FileEditor fileEditor : allEditors) {
+			if (fileEditor == activeEditor)
+				continue;
+
+			if (!closeEditor(fileEditor))
+				return false;
+		}
+
+		return tabPane.getTabs().isEmpty();
+	}
+
+	private FileEditor[] getAllEditors() {
+		ObservableList<Tab> tabs = tabPane.getTabs();
+		FileEditor[] allEditors = new FileEditor[tabs.size()];
+		for (int i = 0; i < tabs.size(); i++)
+			allEditors[i] = (FileEditor) tabs.get(i).getUserData();
+		return allEditors;
 	}
 
 	private FileChooser createFileChooser(String title) {

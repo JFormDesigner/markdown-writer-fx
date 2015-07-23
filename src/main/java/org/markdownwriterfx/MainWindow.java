@@ -27,11 +27,11 @@
 
 package org.markdownwriterfx;
 
-import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -46,6 +46,8 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Window;
+import javafx.stage.WindowEvent;
 import de.jensd.fx.glyphs.GlyphIcons;
 import de.jensd.fx.glyphs.GlyphsDude;
 import static de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon.*;
@@ -69,6 +71,12 @@ class MainWindow
 		borderPane.setCenter(fileEditorTabPane.getNode());
 
 		scene = new Scene(borderPane);
+		scene.windowProperty().addListener((observable, oldWindow, newWindow) -> {
+			newWindow.setOnCloseRequest(e -> {
+				if (!fileEditorTabPane.closeAllEditors())
+					e.consume();
+			});
+		});
 
 		fileNew();
 	}
@@ -180,7 +188,8 @@ class MainWindow
 	}
 
 	private void fileExit() {
-		Platform.exit();
+		Window window = scene.getWindow();
+		Event.fireEvent(window, new WindowEvent(window, WindowEvent.WINDOW_CLOSE_REQUEST));
 	}
 
 	//---- Help menu ----------------------------------------------------------
