@@ -157,16 +157,30 @@ class FileEditorTabPane
 	}
 
 	FileEditor[] openEditors(List<File> files, int activeIndex) {
+		// close single unmodified "Untitled" tab
+		if (tabPane.getTabs().size() == 1) {
+			FileEditor fileEditor = (FileEditor) tabPane.getTabs().get(0).getUserData();
+			if (fileEditor.getPath() == null && !fileEditor.isModified())
+				closeEditor(fileEditor);
+		}
+
 		FileEditor[] fileEditors = new FileEditor[files.size()];
 		for (int i = 0; i < files.size(); i++) {
-			fileEditors[i] = createFileEditor(files.get(i).toPath());
+			Path path = files.get(i).toPath();
 
-			Tab tab = fileEditors[i].getTab();
-			tabPane.getTabs().add(tab);
+			// check whether file is already opened
+			FileEditor fileEditor = findEditor(path);
+			if (fileEditor == null) {
+				fileEditor = createFileEditor(path);
+
+				tabPane.getTabs().add(fileEditor.getTab());
+			}
 
 			// select first file
 			if (i == activeIndex)
-				tabPane.getSelectionModel().select(tab);
+				tabPane.getSelectionModel().select(fileEditor.getTab());
+
+			fileEditors[i] = fileEditor;
 		}
 		return fileEditors;
 	}
@@ -267,6 +281,15 @@ class FileEditorTabPane
 		for (int i = 0; i < tabs.size(); i++)
 			allEditors[i] = (FileEditor) tabs.get(i).getUserData();
 		return allEditors;
+	}
+
+	private FileEditor findEditor(Path path) {
+		for (Tab tab : tabPane.getTabs()) {
+			FileEditor fileEditor = (FileEditor) tab.getUserData();
+			if (path.equals(fileEditor.getPath()))
+				return fileEditor;
+		}
+		return null;
 	}
 
 	private FileChooser createFileChooser(String title) {
