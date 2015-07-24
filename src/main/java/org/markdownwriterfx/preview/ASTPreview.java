@@ -28,7 +28,9 @@
 package org.markdownwriterfx.preview;
 
 import javafx.scene.Node;
+import javafx.scene.control.ScrollBar;
 import javafx.scene.control.TextArea;
+import org.markdownwriterfx.util.Utils;
 import org.parboiled.support.ToStringFormatter;
 import org.parboiled.trees.GraphUtils;
 import org.pegdown.ast.RootNode;
@@ -42,6 +44,7 @@ import org.pegdown.ast.RootNode;
 class ASTPreview
 {
 	private final TextArea textArea = new TextArea();
+	private ScrollBar vScrollBar;
 
 	ASTPreview() {
 		textArea.setEditable(false);
@@ -53,5 +56,15 @@ class ASTPreview
 
 	void update(RootNode astRoot) {
 		textArea.setText(GraphUtils.printTree(astRoot, new ToStringFormatter<>()));
+	}
+
+	void scrollY(double value) {
+		if (vScrollBar == null)
+			vScrollBar = Utils.findVScrollBar(textArea);
+		if (vScrollBar == null)
+			return;
+
+		double maxValue = vScrollBar.maxProperty().get();
+		vScrollBar.setValue(maxValue * value);
 	}
 }

@@ -28,12 +28,16 @@
 package org.markdownwriterfx.editor;
 
 import javafx.application.Platform;
+import javafx.beans.property.ReadOnlyDoubleProperty;
+import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
+import javafx.scene.control.ScrollBar;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.undo.UndoManager;
+import org.markdownwriterfx.util.Utils;
 import org.pegdown.Extensions;
 import org.pegdown.PegDownProcessor;
 import org.pegdown.ast.RootNode;
@@ -48,7 +52,6 @@ import org.pegdown.ast.RootNode;
 public class MarkdownEditorPane
 {
 	private final StyleClassedTextArea textArea;
-	private final ReadOnlyObjectWrapper<RootNode> markdownAST = new ReadOnlyObjectWrapper<>();
 	private PegDownProcessor pegDownProcessor;
 
 	public MarkdownEditorPane() {
@@ -61,6 +64,18 @@ public class MarkdownEditorPane
 			RootNode astRoot = parseMarkdown(newText);
 			applyHighlighting(astRoot);
 			markdownAST.set(astRoot);
+		});
+
+		// search for vertical scrollbar and add change listener to update 'scrollY' property
+		Platform.runLater(() -> {
+			ScrollBar vScrollBar = Utils.findVScrollBar(textArea);
+			if (vScrollBar != null) {
+				vScrollBar.valueProperty().addListener((observable, oldValue, newValue) -> {
+					double value = newValue.doubleValue();
+					double maxValue = vScrollBar.maxProperty().get();
+					scrollY.set((maxValue != 0) ? Math.min(Math.max(value / maxValue, 0), 1) : 0);
+				});
+			}
 		});
 	}
 
@@ -82,8 +97,14 @@ public class MarkdownEditorPane
 	public ObservableValue<String> markdownProperty() { return textArea.textProperty(); }
 
 	// 'markdownAST' property
+	private final ReadOnlyObjectWrapper<RootNode> markdownAST = new ReadOnlyObjectWrapper<>();
 	public RootNode getMarkdownAST() { return markdownAST.get(); }
 	public ReadOnlyObjectProperty<RootNode> markdownASTProperty() { return markdownAST.getReadOnlyProperty(); }
+
+	// 'scrollY' property
+	private final ReadOnlyDoubleWrapper scrollY = new ReadOnlyDoubleWrapper();
+	public double getScrollY() { return scrollY.get(); }
+	public ReadOnlyDoubleProperty scrollYProperty() { return scrollY.getReadOnlyProperty(); }
 
 	private RootNode parseMarkdown(String text) {
 		if(pegDownProcessor == null)

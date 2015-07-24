@@ -27,7 +27,10 @@
 
 package org.markdownwriterfx.preview;
 
+import javafx.application.Platform;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Side;
 import javafx.scene.Node;
@@ -54,6 +57,13 @@ public class MarkdownPreviewPane
 			webViewPreview.update(newValue);
 			astPreview.update(newValue);
 		});
+
+		scrollY.addListener((observable, oldValue, newValue) -> {
+			Platform.runLater(() -> {
+				webViewPreview.scrollY(newValue.doubleValue());
+				astPreview.scrollY(newValue.doubleValue());
+			});
+		});
 	}
 
 	public Node getNode() {
@@ -71,9 +81,15 @@ public class MarkdownPreviewPane
 		return tabPane;
 	}
 
-	// markdownAST property
+	// 'markdownAST' property
 	private final ObjectProperty<RootNode> markdownAST = new SimpleObjectProperty<RootNode>();
 	public RootNode getMarkdownAST() { return markdownAST.get(); }
 	public void setMarkdownAST(RootNode astRoot) { markdownAST.set(astRoot); }
 	public ObjectProperty<RootNode> markdownASTProperty() { return markdownAST; }
+
+	// 'scrollY' property
+	private final DoubleProperty scrollY = new SimpleDoubleProperty();
+	public double getScrollY() { return scrollY.get(); }
+	public void setScrollY(double value) { scrollY.set(value); }
+	public DoubleProperty scrollYProperty() { return scrollY; }
 }

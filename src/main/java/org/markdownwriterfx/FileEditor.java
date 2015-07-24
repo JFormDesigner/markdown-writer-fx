@@ -110,6 +110,7 @@ class FileEditor
 
 		// bind preview to editor
 		markdownPreviewPane.markdownASTProperty().bind(markdownEditorPane.markdownASTProperty());
+		markdownPreviewPane.scrollYProperty().bind(markdownEditorPane.scrollYProperty());
 
 		// bind the editor undo manager to the 'modified' property
 		modified.bind(Bindings.not(markdownEditorPane.getUndoManager().atMarkedPositionProperty()));

@@ -25,47 +25,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.markdownwriterfx.preview;
+package org.markdownwriterfx.util;
 
-import java.util.Collections;
+import java.util.Set;
+import javafx.geometry.Orientation;
 import javafx.scene.Node;
-import javafx.scene.web.WebView;
-import org.pegdown.LinkRenderer;
-import org.pegdown.ToHtmlSerializer;
-import org.pegdown.VerbatimSerializer;
-import org.pegdown.ast.RootNode;
-import org.pegdown.plugins.PegDownPlugins;
+import javafx.scene.control.ScrollBar;
 
 /**
- * WebView preview.
- * Serializes the AST tree to HTML and shows it in a WebView.
- *
  * @author Karl Tauber
  */
-class WebViewPreview
+public class Utils
 {
-	private final WebView webView = new WebView();
-
-	Node getNode() {
-		return webView;
-	}
-
-	void update(RootNode astRoot) {
-		String html = new ToHtmlSerializer(new LinkRenderer(),
-				Collections.<String, VerbatimSerializer>emptyMap(),
-				PegDownPlugins.NONE.getHtmlSerializerPlugins())
-			.toHtml(astRoot);
-
-		webView.getEngine().loadContent(
-			"<!DOCTYPE html><html><head><link rel=\"stylesheet\" href=\""
-			+ getClass().getResource("markdownpad-github.css")
-			+ "\"></head><body>"
-			+ html
-			+ "</body></html>");
-	}
-
-	void scrollY(double value) {
-		webView.getEngine().executeScript(
-			"window.scrollTo(0, (document.body.scrollHeight - window.innerHeight) * "+value+");");
+	public static ScrollBar findVScrollBar(Node node) {
+		Set<Node> scrollBars = node.lookupAll(".scroll-bar");
+		for (Node scrollBar : scrollBars) {
+			if (scrollBar instanceof ScrollBar &&
+				((ScrollBar)scrollBar).getOrientation() == Orientation.VERTICAL)
+			  return (ScrollBar) scrollBar;
+		}
+		return null;
 	}
 }
