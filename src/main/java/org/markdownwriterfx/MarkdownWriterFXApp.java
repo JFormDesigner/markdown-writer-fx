@@ -27,8 +27,10 @@
 
 package org.markdownwriterfx;
 
+import java.util.prefs.Preferences;
 import javafx.application.Application;
 import javafx.stage.Stage;
+import org.markdownwriterfx.util.StageState;
 
 /**
  * Markdown Writer FX application.
@@ -39,6 +41,8 @@ public class MarkdownWriterFXApp
 	extends Application
 {
 	private MainWindow mainWindow;
+	@SuppressWarnings("unused")
+	private StageState stageState;
 
 	public static void main(String[] args) {
 		launch(args);
@@ -48,8 +52,18 @@ public class MarkdownWriterFXApp
 	public void start(Stage primaryStage) throws Exception {
 		mainWindow = new MainWindow();
 
+		stageState = new StageState(primaryStage, getState());
+
 		primaryStage.setTitle("Markdown Writer FX");
 		primaryStage.setScene(mainWindow.getScene());
 		primaryStage.show();
+	}
+
+	static private Preferences getPrefsRoot() {
+		return Preferences.userRoot().node("markdownwriterfx");
+	}
+
+	static Preferences getState() {
+		return getPrefsRoot().node("state");
 	}
 }
