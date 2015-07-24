@@ -153,6 +153,7 @@ class FileEditorTabPane
 		if (selectedFiles == null)
 			return null;
 
+		saveLastDirectory(selectedFiles.get(0));
 		return openEditors(selectedFiles, 0);
 	}
 
@@ -197,6 +198,7 @@ class FileEditorTabPane
 			if (file == null)
 				return false;
 
+			saveLastDirectory(file);
 			fileEditor.setPath(file.toPath());
 		}
 
@@ -298,8 +300,17 @@ class FileEditorTabPane
 		fileChooser.getExtensionFilters().addAll(
 				new ExtensionFilter("Markdown Files", "*.md", "*.markdown", "*.txt"),
 				new ExtensionFilter("All Files", "*.*"));
-		fileChooser.setInitialDirectory(new File("."));
+
+		String lastDirectory = MarkdownWriterFXApp.getState().get("lastDirectory", null);
+		File file = new File((lastDirectory != null) ? lastDirectory : ".");
+		if (!file.isDirectory())
+			file = new File(".");
+		fileChooser.setInitialDirectory(file);
 		return fileChooser;
+	}
+
+	private void saveLastDirectory(File file) {
+		MarkdownWriterFXApp.getState().put("lastDirectory", file.getParent());
 	}
 
 	private void restoreState() {
