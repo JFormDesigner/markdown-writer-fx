@@ -36,6 +36,8 @@ import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.value.ChangeListener;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.scene.Node;
@@ -60,6 +62,7 @@ class FileEditorTabPane
 	private final TabPane tabPane;
 	private final ReadOnlyObjectWrapper<FileEditor> activeFileEditor = new ReadOnlyObjectWrapper<>();
 	private final ReadOnlyBooleanWrapper activeFileEditorModified = new ReadOnlyBooleanWrapper();
+	private final ReadOnlyBooleanWrapper anyFileEditorModified = new ReadOnlyBooleanWrapper();
 
 	FileEditorTabPane(MainWindow mainWindow) {
 		this.mainWindow = mainWindow;
@@ -67,6 +70,8 @@ class FileEditorTabPane
 		tabPane = new TabPane();
 		tabPane.setFocusTraversable(false);
 		tabPane.setTabClosingPolicy(TabClosingPolicy.ALL_TABS);
+
+		// update activeFileEditor and activeFileEditorModified properties
 		tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
 			if (newTab != null) {
 				activeFileEditor.set((FileEditor) newTab.getUserData());
@@ -76,6 +81,33 @@ class FileEditorTabPane
 				activeFileEditorModified.unbind();
 				activeFileEditorModified.set(false);
 			}
+		});
+
+		// update anyFileEditorModified property
+		ChangeListener<Boolean> modifiedListener = (observable, oldValue, newValue) -> {
+			boolean modified = false;
+			for (Tab tab : tabPane.getTabs()) {
+				if (((FileEditor)tab.getUserData()).isModified()) {
+					modified = true;
+					break;
+				}
+			}
+			anyFileEditorModified.set(modified);
+		};
+		tabPane.getTabs().addListener((ListChangeListener<Tab>) c -> {
+			while (c.next()) {
+				if (c.wasAdded()) {
+					for (Tab tab : c.getAddedSubList())
+						((FileEditor)tab.getUserData()).modifiedProperty().addListener(modifiedListener);
+				} else if (c.wasRemoved()) {
+					for (Tab tab : c.getRemoved())
+						((FileEditor)tab.getUserData()).modifiedProperty().removeListener(modifiedListener);
+				}
+			}
+
+			// changes in the tabs may also change anyFileEditorModified property
+			// (e.g. closed modified file)
+			modifiedListener.changed(null, null, null);
 		});
 
 		// re-open files
@@ -92,6 +124,10 @@ class FileEditorTabPane
 
 	ReadOnlyBooleanProperty activeFileEditorModifiedProperty() {
 		return activeFileEditorModified.getReadOnlyProperty();
+	}
+
+	ReadOnlyBooleanProperty anyFileEditorModifiedProperty() {
+		return anyFileEditorModified.getReadOnlyProperty();
 	}
 
 	private FileEditor createFileEditor(Path path) {
@@ -136,10 +172,12 @@ class FileEditorTabPane
 	}
 
 	boolean saveEditor(FileEditor fileEditor) {
-		if (fileEditor == null)
-			return false;
+		if (fileEditor == null || !fileEditor.isModified())
+			return true;
 
 		if (fileEditor.getPath() == null) {
+			tabPane.getSelectionModel().select(fileEditor.getTab());
+
 			FileChooser fileChooser = createFileChooser("Save Markdown File");
 			File file = fileChooser.showSaveDialog(mainWindow.getScene().getWindow());
 			if (file == null)
@@ -149,6 +187,18 @@ class FileEditorTabPane
 		}
 
 		return fileEditor.save();
+	}
+
+	boolean saveAllEditors() {
+		FileEditor[] allEditors = getAllEditors();
+
+		boolean success = true;
+		for (FileEditor fileEditor : allEditors) {
+			if (!saveEditor(fileEditor))
+				success = false;
+		}
+
+		return success;
 	}
 
 	boolean canCloseEditor(FileEditor fileEditor) {

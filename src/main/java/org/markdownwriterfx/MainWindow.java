@@ -28,8 +28,6 @@
 package org.markdownwriterfx;
 
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.ReadOnlyBooleanProperty;
-import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
@@ -83,32 +81,30 @@ class MainWindow
 		return scene;
 	}
 
-	private ReadOnlyObjectProperty<FileEditor> activeFileEditor() {
-		return fileEditorTabPane.activeFileEditorProperty();
-	}
-
-	private ReadOnlyBooleanProperty activeFileEditorModified() {
-		return fileEditorTabPane.activeFileEditorModifiedProperty();
-	}
-
 	private MenuBar createMenuBar() {
 		// File menu
 		MenuItem fileNewMenuItem = createMenuItem("New", "Shortcut+N", FILE_ALT, e -> fileNew());
 		MenuItem fileOpenMenuItem = createMenuItem("Open...", "Shortcut+O", FOLDER_OPEN_ALT, e -> fileOpen());
 		MenuItem fileCloseMenuItem = createMenuItem("Close", "Shortcut+W", null, e -> fileClose());
+		MenuItem fileCloseAllMenuItem = createMenuItem("Close All", null, null, e -> fileCloseAll());
 		MenuItem fileSaveMenuItem = createMenuItem("Save", "Shortcut+S", FLOPPY_ALT, e -> fileSave());
+		MenuItem fileSaveAllMenuItem = createMenuItem("Save All", "Shortcut+Shift+S", null, e -> fileSaveAll());
 		MenuItem fileExitMenuItem = createMenuItem("Exit", null, null, e -> fileExit());
 
-		fileCloseMenuItem.disableProperty().bind(activeFileEditor().isNull());
-		fileSaveMenuItem.disableProperty().bind(Bindings.not(activeFileEditorModified()));
+		fileCloseMenuItem.disableProperty().bind(fileEditorTabPane.activeFileEditorProperty().isNull());
+		fileCloseAllMenuItem.disableProperty().bind(fileEditorTabPane.activeFileEditorProperty().isNull());
+		fileSaveMenuItem.disableProperty().bind(Bindings.not(fileEditorTabPane.activeFileEditorModifiedProperty()));
+		fileSaveAllMenuItem.disableProperty().bind(Bindings.not(fileEditorTabPane.anyFileEditorModifiedProperty()));
 
 		Menu fileMenu = new Menu("File", null,
 				fileNewMenuItem,
 				fileOpenMenuItem,
 				new SeparatorMenuItem(),
 				fileCloseMenuItem,
+				fileCloseAllMenuItem,
 				new SeparatorMenuItem(),
 				fileSaveMenuItem,
+				fileSaveAllMenuItem,
 				new SeparatorMenuItem(),
 				fileExitMenuItem);
 
@@ -126,7 +122,7 @@ class MainWindow
 		Button fileOpenButton = createToolBarButton(FOLDER_OPEN_ALT, "Open", "Shortcut+O", e -> fileOpen());
 		Button fileSaveButton = createToolBarButton(FLOPPY_ALT, "Save", "Shortcut+S", e -> fileSave());
 
-		fileSaveButton.disableProperty().bind(Bindings.not(activeFileEditorModified()));
+		fileSaveButton.disableProperty().bind(Bindings.not(fileEditorTabPane.activeFileEditorModifiedProperty()));
 
 		return new ToolBar(
 				fileNewButton,
@@ -181,11 +177,19 @@ class MainWindow
 	}
 
 	private void fileClose() {
-		fileEditorTabPane.closeEditor(activeFileEditor().get());
+		fileEditorTabPane.closeEditor(fileEditorTabPane.activeFileEditorProperty().get());
+	}
+
+	private void fileCloseAll() {
+		fileEditorTabPane.closeAllEditors();
 	}
 
 	private void fileSave() {
-		fileEditorTabPane.saveEditor(activeFileEditor().get());
+		fileEditorTabPane.saveEditor(fileEditorTabPane.activeFileEditorProperty().get());
+	}
+
+	private void fileSaveAll() {
+		fileEditorTabPane.saveAllEditors();
 	}
 
 	private void fileExit() {
