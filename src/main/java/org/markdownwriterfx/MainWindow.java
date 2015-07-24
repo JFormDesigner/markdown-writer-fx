@@ -95,18 +95,20 @@ class MainWindow
 		// File menu
 		MenuItem fileNewMenuItem = createMenuItem("New", "Shortcut+N", FILE_ALT, e -> fileNew());
 		MenuItem fileOpenMenuItem = createMenuItem("Open...", "Shortcut+O", FOLDER_OPEN_ALT, e -> fileOpen());
-		MenuItem fileSaveMenuItem = createMenuItem("Save", "Shortcut+S", FLOPPY_ALT, e -> fileSave());
 		MenuItem fileCloseMenuItem = createMenuItem("Close", "Shortcut+W", null, e -> fileClose());
+		MenuItem fileSaveMenuItem = createMenuItem("Save", "Shortcut+S", FLOPPY_ALT, e -> fileSave());
 		MenuItem fileExitMenuItem = createMenuItem("Exit", null, null, e -> fileExit());
 
-		fileSaveMenuItem.disableProperty().bind(Bindings.not(activeFileEditorModified()));
 		fileCloseMenuItem.disableProperty().bind(activeFileEditor().isNull());
+		fileSaveMenuItem.disableProperty().bind(Bindings.not(activeFileEditorModified()));
 
 		Menu fileMenu = new Menu("File", null,
 				fileNewMenuItem,
 				fileOpenMenuItem,
-				fileSaveMenuItem,
+				new SeparatorMenuItem(),
 				fileCloseMenuItem,
+				new SeparatorMenuItem(),
+				fileSaveMenuItem,
 				new SeparatorMenuItem(),
 				fileExitMenuItem);
 
@@ -178,12 +180,12 @@ class MainWindow
 		fileEditorTabPane.openEditor();
 	}
 
-	private void fileSave() {
-		fileEditorTabPane.saveEditor(activeFileEditor().get());
-	}
-
 	private void fileClose() {
 		fileEditorTabPane.closeEditor(activeFileEditor().get());
+	}
+
+	private void fileSave() {
+		fileEditorTabPane.saveEditor(activeFileEditor().get());
 	}
 
 	private void fileExit() {
