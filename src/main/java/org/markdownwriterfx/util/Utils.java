@@ -27,7 +27,9 @@
 
 package org.markdownwriterfx.util;
 
+import java.util.ArrayList;
 import java.util.Set;
+import java.util.prefs.Preferences;
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollBar;
@@ -37,6 +39,25 @@ import javafx.scene.control.ScrollBar;
  */
 public class Utils
 {
+	public static String[] getPrefsStrings(Preferences prefs, String key) {
+		ArrayList<String> arr = new ArrayList<String>();
+		for (int i = 0; i < 10000; i++) {
+			String s = prefs.get(key + (i + 1), null);
+			if (s == null)
+				break;
+			arr.add(s);
+		}
+		return arr.toArray(new String[arr.size()]);
+	}
+
+	public static void putPrefsStrings(Preferences prefs, String key, String[] strings) {
+		for (int i = 0; i < strings.length; i++)
+			prefs.put(key + (i + 1), strings[i]);
+
+		for (int i = strings.length; prefs.get(key + (i + 1), null) != null; i++)
+			prefs.remove(key + (i + 1));
+	}
+
 	public static ScrollBar findVScrollBar(Node node) {
 		Set<Node> scrollBars = node.lookupAll(".scroll-bar");
 		for (Node scrollBar : scrollBars) {

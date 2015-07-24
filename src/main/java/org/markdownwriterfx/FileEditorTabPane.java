@@ -29,7 +29,9 @@ package org.markdownwriterfx;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.prefs.Preferences;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -45,6 +47,7 @@ import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabClosingPolicy;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
+import org.markdownwriterfx.util.Utils;
 
 /**
  * Tab pane for file editors.
@@ -74,6 +77,9 @@ class FileEditorTabPane
 				activeFileEditorModified.set(false);
 			}
 		});
+
+		// re-open files
+		restoreState();
 	}
 
 	Node getNode() {
@@ -111,15 +117,19 @@ class FileEditorTabPane
 		if (selectedFiles == null)
 			return null;
 
-		FileEditor[] fileEditors = new FileEditor[selectedFiles.size()];
-		for (int i = 0; i < selectedFiles.size(); i++) {
-			fileEditors[i] = createFileEditor(selectedFiles.get(i).toPath());
+		return openEditors(selectedFiles, 0);
+	}
+
+	FileEditor[] openEditors(List<File> files, int activeIndex) {
+		FileEditor[] fileEditors = new FileEditor[files.size()];
+		for (int i = 0; i < files.size(); i++) {
+			fileEditors[i] = createFileEditor(files.get(i).toPath());
 
 			Tab tab = fileEditors[i].getTab();
 			tabPane.getTabs().add(tab);
 
 			// select first file
-			if (i == 0)
+			if (i == activeIndex)
 				tabPane.getSelectionModel().select(tab);
 		}
 		return fileEditors;
@@ -196,6 +206,8 @@ class FileEditorTabPane
 				return false;
 		}
 
+		saveState(allEditors, activeEditor);
+
 		return tabPane.getTabs().isEmpty();
 	}
 
@@ -215,5 +227,45 @@ class FileEditorTabPane
 				new ExtensionFilter("All Files", "*.*"));
 		fileChooser.setInitialDirectory(new File("."));
 		return fileChooser;
+	}
+
+	private void restoreState() {
+		Preferences state = MarkdownWriterFXApp.getState();
+		String[] fileNames = Utils.getPrefsStrings(state, "file");
+		String activeFileName = state.get("activeFile", null);
+
+		int activeIndex = 0;
+		ArrayList<File> files = new ArrayList<>(fileNames.length);
+		for (String fileName : fileNames) {
+			File file = new File(fileName);
+			if (file.exists()) {
+				files.add(file);
+
+				if (fileName.equals(activeFileName))
+					activeIndex = files.size() - 1;
+			}
+		}
+
+		if (files.isEmpty()) {
+			newEditor();
+			return;
+		}
+
+		openEditors(files, activeIndex);
+	}
+
+	private void saveState(FileEditor[] allEditors, FileEditor activeEditor) {
+		ArrayList<String> fileNames = new ArrayList<>(allEditors.length);
+		for (FileEditor fileEditor : allEditors) {
+			if (fileEditor.getPath() != null)
+				fileNames.add(fileEditor.getPath().toString());
+		}
+
+		Preferences state = MarkdownWriterFXApp.getState();
+		Utils.putPrefsStrings(state, "file", fileNames.toArray(new String[fileNames.size()]));
+		if (activeEditor != null && activeEditor.getPath() != null)
+			state.put("activeFile", activeEditor.getPath().toString());
+		else
+			state.remove("activeFile");
 	}
 }

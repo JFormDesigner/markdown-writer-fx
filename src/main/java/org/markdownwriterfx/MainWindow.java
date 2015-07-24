@@ -62,7 +62,7 @@ class MainWindow
 	private final Scene scene;
 	private final FileEditorTabPane fileEditorTabPane;
 
-	public MainWindow() {
+	MainWindow() {
 		fileEditorTabPane = new FileEditorTabPane(this);
 
 		BorderPane borderPane = new BorderPane();
@@ -77,8 +77,6 @@ class MainWindow
 					e.consume();
 			});
 		});
-
-		fileNew();
 	}
 
 	Scene getScene() {
