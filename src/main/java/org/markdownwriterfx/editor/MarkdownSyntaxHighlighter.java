@@ -27,6 +27,7 @@
 
 package org.markdownwriterfx.editor;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import javafx.application.Platform;
@@ -45,11 +46,27 @@ import org.pegdown.ast.*;
 class MarkdownSyntaxHighlighter
 	implements Visitor
 {
-	private int textLength;
-	private StyleSpansBuilder<Collection<String>> spansBuilder;
-	private int nextIndex;
+	private enum StyleClass {
+		strong,
+		em,
+
+		// headers
+		h1,
+		h2,
+		h3,
+		h4,
+		h5,
+		h6,
+	};
+
+	/**
+	 * style bits (1 << StyleClass.ordinal()) for each character
+	 * simplifies implementation of overlapping styles
+	 */
+	private int[] styleClassBits;
 
 	static void highlight(StyleClassedTextArea textArea, RootNode astRoot) {
+		assert StyleClass.values().length <= 32;
 		assert Platform.isFxApplicationThread();
 
 		textArea.setStyleSpans(0, new MarkdownSyntaxHighlighter()
@@ -60,13 +77,43 @@ class MarkdownSyntaxHighlighter
 	}
 
 	private StyleSpans<Collection<String>> computeHighlighting(RootNode astRoot, int textLength) {
-		this.textLength = textLength;
+		styleClassBits = new int[textLength];
 
-		spansBuilder = new StyleSpansBuilder<>();
-		nextIndex = 0;
+		// visit all nodes
 		astRoot.accept(this);
-		spansBuilder.add(Collections.emptyList(), textLength - nextIndex);
+
+		// build style spans
+		StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
+		if (styleClassBits.length > 0) {
+			int spanStart = 0;
+			int previousBits = styleClassBits[0];
+
+			for (int i = 1; i < styleClassBits.length; i++) {
+				int bits = styleClassBits[i];
+				if (bits == previousBits)
+					continue;
+
+				spansBuilder.add(toStyleClasses(previousBits), i - spanStart);
+
+				spanStart = i;
+				previousBits = bits;
+			}
+			spansBuilder.add(toStyleClasses(previousBits), styleClassBits.length - spanStart);
+		} else
+			spansBuilder.add(Collections.emptyList(), 0);
 		return spansBuilder.create();
+	}
+
+	private Collection<String> toStyleClasses(int bits) {
+		if (bits == 0)
+			return Collections.emptyList();
+
+		Collection<String> styleClasses = new ArrayList<>(1);
+		for (StyleClass styleClass : StyleClass.values()) {
+			if ((bits & (1 << styleClass.ordinal())) != 0)
+				styleClasses.add(styleClass.name());
+		}
+		return styleClasses;
 	}
 
 	@Override
@@ -137,7 +184,18 @@ class MarkdownSyntaxHighlighter
 
 	@Override
 	public void visit(HeaderNode node) {
-		setStyleClass(node, "h" + node.getLevel());
+		StyleClass styleClass;
+		switch (node.getLevel()) {
+			case 1: styleClass = StyleClass.h1; break;
+			case 2: styleClass = StyleClass.h2; break;
+			case 3: styleClass = StyleClass.h3; break;
+			case 4: styleClass = StyleClass.h4; break;
+			case 5: styleClass = StyleClass.h5; break;
+			case 6: styleClass = StyleClass.h6; break;
+			default: return;
+		}
+		setStyleClass(node, styleClass);
+		visitChildren(node);
 	}
 
 	@Override
@@ -226,7 +284,7 @@ class MarkdownSyntaxHighlighter
 
 	@Override
 	public void visit(StrongEmphSuperNode node) {
-		setStyleClass(node, node.isStrong() ? "strong" : "em");
+		setStyleClass(node, node.isStrong() ? StyleClass.strong : StyleClass.em);
 	}
 
 	@Override
@@ -306,14 +364,14 @@ class MarkdownSyntaxHighlighter
 			child.accept(this);
 	}
 
-	private void setStyleClass(Node node, String styleClass) {
+	private void setStyleClass(Node node, StyleClass styleClass) {
 		// because PegDownProcessor.prepareSource() adds two trailing newlines
 		// to the text before parsing, we need to limit the end index
-		int startIndex = node.getStartIndex();
-		int endIndex = Math.min(node.getEndIndex(), textLength);
+		int start = node.getStartIndex();
+		int end = Math.min(node.getEndIndex(), styleClassBits.length);
+		int styleBit = 1 << styleClass.ordinal();
 
-		spansBuilder.add(Collections.emptyList(), startIndex - nextIndex);
-		spansBuilder.add(Collections.singleton(styleClass), endIndex - startIndex);
-		nextIndex = endIndex;
+		for (int i = start; i < end; i++)
+			styleClassBits[i] |= styleBit;
 	}
 }
