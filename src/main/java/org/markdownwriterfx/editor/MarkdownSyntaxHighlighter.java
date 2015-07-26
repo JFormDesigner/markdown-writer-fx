@@ -27,9 +27,12 @@
 
 package org.markdownwriterfx.editor;
 
+import java.util.Collection;
 import java.util.Collections;
 import javafx.application.Platform;
 import org.fxmisc.richtext.StyleClassedTextArea;
+import org.fxmisc.richtext.StyleSpans;
+import org.fxmisc.richtext.StyleSpansBuilder;
 import org.pegdown.ast.*;
 
 /**
@@ -42,23 +45,28 @@ import org.pegdown.ast.*;
 class MarkdownSyntaxHighlighter
 	implements Visitor
 {
-	private final StyleClassedTextArea textArea;
-	private final int textLength;
+	private int textLength;
+	private StyleSpansBuilder<Collection<String>> spansBuilder;
+	private int nextIndex;
 
 	static void highlight(StyleClassedTextArea textArea, RootNode astRoot) {
-		new MarkdownSyntaxHighlighter(textArea).toStyles(astRoot);
-	}
-
-	private MarkdownSyntaxHighlighter(StyleClassedTextArea textArea) {
-		this.textArea = textArea;
-		this.textLength = textArea.getLength();
-	}
-
-	private void toStyles(RootNode astRoot) {
 		assert Platform.isFxApplicationThread();
 
-		textArea.clearStyle(0, textLength);
+		textArea.setStyleSpans(0, new MarkdownSyntaxHighlighter()
+				.computeHighlighting(astRoot, textArea.getLength()));
+	}
+
+	private MarkdownSyntaxHighlighter() {
+	}
+
+	private StyleSpans<Collection<String>> computeHighlighting(RootNode astRoot, int textLength) {
+		this.textLength = textLength;
+
+		spansBuilder = new StyleSpansBuilder<>();
+		nextIndex = 0;
 		astRoot.accept(this);
+		spansBuilder.add(Collections.emptyList(), textLength - nextIndex);
+		return spansBuilder.create();
 	}
 
 	@Override
@@ -299,14 +307,13 @@ class MarkdownSyntaxHighlighter
 	}
 
 	private void setStyleClass(Node node, String styleClass) {
-		try {
-			// because PegDownProcessor.prepareSource() adds two trailing newlines
-			// to the text before parsing, we need to limit the end index
-			textArea.setStyle(node.getStartIndex(),
-					Math.min(node.getEndIndex(), textLength),
-					Collections.singleton(styleClass));
-		} catch(IllegalArgumentException ex) {
-			ex.printStackTrace();
-		}
+		// because PegDownProcessor.prepareSource() adds two trailing newlines
+		// to the text before parsing, we need to limit the end index
+		int startIndex = node.getStartIndex();
+		int endIndex = Math.min(node.getEndIndex(), textLength);
+
+		spansBuilder.add(Collections.emptyList(), startIndex - nextIndex);
+		spansBuilder.add(Collections.singleton(styleClass), endIndex - startIndex);
+		nextIndex = endIndex;
 	}
 }
