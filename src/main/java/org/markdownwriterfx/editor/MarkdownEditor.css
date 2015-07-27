@@ -25,6 +25,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+.markdown-editor {
+	-fx-font-size: 14px;
+}
+
+
+/*---- headers ----*/
+
 .markdown-editor .h1 { -fx-font-size: 2em; }
 .markdown-editor .h2 { -fx-font-size: 1.75em; }
 .markdown-editor .h3 { -fx-font-size: 1.5em; }
@@ -39,15 +46,104 @@
 .markdown-editor .h5,
 .markdown-editor .h6 {
 	-fx-font-weight: bold;
-	-fx-fill: crimson;
+	-fx-fill: derive(crimson, -20%);
+}
+
+
+/*---- inlines ----*/
+
+.markdown-editor .strong {
+	-fx-font-weight: bold;
 }
 
 .markdown-editor .em {
 	-fx-font-style: italic;
-	-fx-fill: #4060c0;
 }
 
-.markdown-editor .strong {
+.markdown-editor .del {
+	-fx-strikethrough: true;
+}
+
+.markdown-editor .a {
+	-fx-fill: #4183C4 !important;
+}
+
+.markdown-editor .img {
+	-fx-fill: #4183C4 !important;
+}
+
+.markdown-editor .code {
+	-fx-font-family: monospace;
+	-fx-fill: #090 !important;
+}
+
+
+/*---- blocks ----*/
+
+.markdown-editor .pre {
+	-fx-font-family: monospace;
+	-fx-fill: #060 !important;
+}
+
+.markdown-editor .blockquote {
+	-fx-fill: #777;
+}
+
+
+/*---- lists ----*/
+
+.markdown-editor .ul {
+}
+
+.markdown-editor .ol {
+}
+
+.markdown-editor .li {
+	-fx-fill: #444;
+}
+
+.markdown-editor .dl {
+}
+
+.markdown-editor .dt {
 	-fx-font-weight: bold;
-	-fx-fill: #4060c0;
+	-fx-font-style: italic;
+}
+
+.markdown-editor .dd {
+	-fx-fill: #444;
+}
+
+
+/*---- table ----*/
+
+.markdown-editor .table {
+	-fx-font-family: monospace;
+}
+
+.markdown-editor .thead {
+}
+
+.markdown-editor .tbody {
+}
+
+.markdown-editor .caption {
+}
+
+.markdown-editor .th {
+	-fx-font-weight: bold;
+}
+
+.markdown-editor .tr {
+}
+
+.markdown-editor .td {
+}
+
+
+/*---- misc ----*/
+
+.markdown-editor .html {
+	-fx-font-family: monospace;
+	-fx-fill: derive(crimson, -50%);
 }

@@ -47,9 +47,6 @@ class MarkdownSyntaxHighlighter
 	implements Visitor
 {
 	private enum StyleClass {
-		strong,
-		em,
-
 		// headers
 		h1,
 		h2,
@@ -57,6 +54,38 @@ class MarkdownSyntaxHighlighter
 		h4,
 		h5,
 		h6,
+
+		// inlines
+		strong,
+		em,
+		del,
+		a,
+		img,
+		code,
+
+		// blocks
+		pre,
+		blockquote,
+
+		// lists
+		ul,
+		ol,
+		li,
+		dl,
+		dt,
+		dd,
+
+		// tables
+		table,
+		thead,
+		tbody,
+		caption,
+		th,
+		tr,
+		td,
+
+		// misc
+		html,
 	};
 
 	/**
@@ -64,6 +93,7 @@ class MarkdownSyntaxHighlighter
 	 * simplifies implementation of overlapping styles
 	 */
 	private int[] styleClassBits;
+	private boolean inTableHeader;
 
 	static void highlight(StyleClassedTextArea textArea, RootNode astRoot) {
 		assert StyleClass.values().length <= 32;
@@ -118,68 +148,64 @@ class MarkdownSyntaxHighlighter
 
 	@Override
 	public void visit(AbbreviationNode node) {
-		// TODO Auto-generated method stub
-
+		// noting to do here
 	}
 
 	@Override
 	public void visit(AnchorLinkNode node) {
-		// TODO Auto-generated method stub
-
+		// noting to do here
 	}
 
 	@Override
 	public void visit(AutoLinkNode node) {
-		// TODO Auto-generated method stub
-
+		setStyleClass(node, StyleClass.a);
 	}
 
 	@Override
 	public void visit(BlockQuoteNode node) {
-		// TODO Auto-generated method stub
-
+		setStyleClass(node, StyleClass.blockquote);
+		visitChildren(node);
 	}
 
 	@Override
 	public void visit(BulletListNode node) {
-		// TODO Auto-generated method stub
-
+		setStyleClass(node, StyleClass.ul);
+		visitChildren(node);
 	}
 
 	@Override
 	public void visit(CodeNode node) {
-		// TODO Auto-generated method stub
-
+		setStyleClass(node, StyleClass.code);
 	}
 
 	@Override
 	public void visit(DefinitionListNode node) {
-		// TODO Auto-generated method stub
-
+		setStyleClass(node, StyleClass.dl);
+		visitChildren(node);
 	}
 
 	@Override
 	public void visit(DefinitionNode node) {
-		// TODO Auto-generated method stub
-
+		setStyleClass(node, StyleClass.dd);
+		visitChildren(node);
 	}
 
 	@Override
 	public void visit(DefinitionTermNode node) {
-		// TODO Auto-generated method stub
-
+		setStyleClass(node, StyleClass.dt);
+		visitChildren(node);
 	}
 
 	@Override
 	public void visit(ExpImageNode node) {
-		// TODO Auto-generated method stub
-
+		setStyleClass(node, StyleClass.img);
+		visitChildren(node);
 	}
 
 	@Override
 	public void visit(ExpLinkNode node) {
-		// TODO Auto-generated method stub
-
+		setStyleClass(node, StyleClass.a);
+		visitChildren(node);
 	}
 
 	@Override
@@ -200,163 +226,155 @@ class MarkdownSyntaxHighlighter
 
 	@Override
 	public void visit(HtmlBlockNode node) {
-		// TODO Auto-generated method stub
-
+		setStyleClass(node, StyleClass.html);
 	}
 
 	@Override
 	public void visit(InlineHtmlNode node) {
-		// TODO Auto-generated method stub
-
+		setStyleClass(node, StyleClass.html);
 	}
 
 	@Override
 	public void visit(ListItemNode node) {
-		// TODO Auto-generated method stub
-
+		setStyleClass(node, StyleClass.li);
+		visitChildren(node);
 	}
 
 	@Override
 	public void visit(MailLinkNode node) {
-		// TODO Auto-generated method stub
-
+		setStyleClass(node, StyleClass.a);
 	}
 
 	@Override
 	public void visit(OrderedListNode node) {
-		// TODO Auto-generated method stub
-
+		setStyleClass(node, StyleClass.ol);
+		visitChildren(node);
 	}
 
 	@Override
 	public void visit(ParaNode node) {
-		// TODO Auto-generated method stub
 		visitChildren(node);
 	}
 
 	@Override
 	public void visit(QuotedNode node) {
-		// TODO Auto-generated method stub
-
+		// noting to do here
 	}
 
 	@Override
 	public void visit(ReferenceNode node) {
-		// TODO Auto-generated method stub
-
+		// noting to do here
 	}
 
 	@Override
 	public void visit(RefImageNode node) {
-		// TODO Auto-generated method stub
-
+		setStyleClass(node, StyleClass.img);
+		visitChildren(node);
 	}
 
 	@Override
 	public void visit(RefLinkNode node) {
-		// TODO Auto-generated method stub
-
+		setStyleClass(node, StyleClass.a);
+		visitChildren(node);
 	}
 
 	@Override
 	public void visit(RootNode node) {
-		// TODO Auto-generated method stub
 		visitChildren(node);
 	}
 
 	@Override
 	public void visit(SimpleNode node) {
-		// TODO Auto-generated method stub
-
+		// noting to do here
 	}
 
 	@Override
 	public void visit(SpecialTextNode node) {
-		// TODO Auto-generated method stub
-
+		// noting to do here
 	}
 
 	@Override
 	public void visit(StrikeNode node) {
-		// TODO Auto-generated method stub
-
+		setStyleClass(node, StyleClass.del);
+		visitChildren(node);
 	}
 
 	@Override
 	public void visit(StrongEmphSuperNode node) {
-		setStyleClass(node, node.isStrong() ? StyleClass.strong : StyleClass.em);
+		if (node.isClosed())
+			setStyleClass(node, node.isStrong() ? StyleClass.strong : StyleClass.em);
+		// else sequence was not closed, treat open chars as ordinary chars
+
+		visitChildren(node);
 	}
 
 	@Override
 	public void visit(TableBodyNode node) {
-		// TODO Auto-generated method stub
-
+		setStyleClass(node, StyleClass.tbody);
+		visitChildren(node);
 	}
 
 	@Override
 	public void visit(TableCaptionNode node) {
-		// TODO Auto-generated method stub
-
+		setStyleClass(node, StyleClass.caption);
+		visitChildren(node);
 	}
 
 	@Override
 	public void visit(TableCellNode node) {
-		// TODO Auto-generated method stub
-
+		setStyleClass(node, inTableHeader ? StyleClass.th : StyleClass.td);
+		visitChildren(node);
 	}
 
 	@Override
 	public void visit(TableColumnNode node) {
-		// TODO Auto-generated method stub
-
+		// noting to do here
 	}
 
 	@Override
 	public void visit(TableHeaderNode node) {
-		// TODO Auto-generated method stub
+		setStyleClass(node, StyleClass.thead);
 
+		inTableHeader = true;
+		visitChildren(node);
+		inTableHeader = false;
 	}
 
 	@Override
 	public void visit(TableNode node) {
-		// TODO Auto-generated method stub
-
+		setStyleClass(node, StyleClass.table);
+		visitChildren(node);
 	}
 
 	@Override
 	public void visit(TableRowNode node) {
-		// TODO Auto-generated method stub
-
+		setStyleClass(node, StyleClass.tr);
+		visitChildren(node);
 	}
 
 	@Override
 	public void visit(VerbatimNode node) {
-		// TODO Auto-generated method stub
-
+		setStyleClass(node, StyleClass.pre);
 	}
 
 	@Override
 	public void visit(WikiLinkNode node) {
-		// TODO Auto-generated method stub
-
+		setStyleClass(node, StyleClass.a);
 	}
 
 	@Override
 	public void visit(TextNode node) {
-		// TODO Auto-generated method stub
-
+		// noting to do here
 	}
 
 	@Override
 	public void visit(SuperNode node) {
-		// TODO Auto-generated method stub
 		visitChildren(node);
 	}
 
 	@Override
 	public void visit(Node node) {
-		// TODO Auto-generated method stub
-
+		// ignore custom Node implementations
 	}
 
 	private void visitChildren(SuperNode node) {
