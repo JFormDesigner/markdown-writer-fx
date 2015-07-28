@@ -120,6 +120,9 @@ class FileEditor
 
 		load();
 
+		// clear undo history after first load
+		markdownEditorPane.getUndoManager().forgetHistory();
+
 		// bind preview to editor
 		markdownPreviewPane.markdownASTProperty().bind(markdownEditorPane.markdownASTProperty());
 		markdownPreviewPane.scrollYProperty().bind(markdownEditorPane.scrollYProperty());

@@ -55,7 +55,7 @@ public class MarkdownEditorPane
 	private PegDownProcessor pegDownProcessor;
 
 	public MarkdownEditorPane() {
-		textArea = new StyleClassedTextArea();
+		textArea = new StyleClassedTextArea(false);
 		textArea.setWrapText(true);
 		textArea.getStyleClass().add("markdown-editor");
 		textArea.getStylesheets().add("org/markdownwriterfx/editor/MarkdownEditor.css");
