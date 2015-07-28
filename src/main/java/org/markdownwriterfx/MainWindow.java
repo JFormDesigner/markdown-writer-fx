@@ -28,6 +28,9 @@
 package org.markdownwriterfx;
 
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ObservableBooleanValue;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
@@ -38,6 +41,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.Separator;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.ToolBar;
 import javafx.scene.control.Tooltip;
@@ -49,6 +53,7 @@ import javafx.stage.WindowEvent;
 import de.jensd.fx.glyphs.GlyphIcons;
 import de.jensd.fx.glyphs.GlyphsDude;
 import static de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon.*;
+import java.util.function.Function;
 
 /**
  * Main window containing a tab pane in the center for file editors.
@@ -108,13 +113,24 @@ class MainWindow
 				new SeparatorMenuItem(),
 				fileExitMenuItem);
 
+		// Edit menu
+		MenuItem editUndoMenuItem = createMenuItem("Undo", "Shortcut+Z", UNDO, e -> editUndo());
+		MenuItem editRedoMenuItem = createMenuItem("Redo", "Shortcut+Y", REPEAT, e -> editRedo());
+
+		editUndoMenuItem.disableProperty().bind(createActiveBooleanProperty(FileEditor::canUndoProperty).not());
+		editRedoMenuItem.disableProperty().bind(createActiveBooleanProperty(FileEditor::canRedoProperty).not());
+
+		Menu editMenu = new Menu("Edit", null,
+				editUndoMenuItem,
+				editRedoMenuItem);
+
 		// Help menu
 		MenuItem helpAboutMenuItem = createMenuItem("About Markdown Writer FX", null, null, e -> helpAbout());
 
 		Menu helpMenu = new Menu("Help", null,
 				helpAboutMenuItem);
 
-		return new MenuBar(fileMenu, helpMenu);
+		return new MenuBar(fileMenu, editMenu, helpMenu);
 	}
 
 	private ToolBar createToolBar() {
@@ -122,12 +138,21 @@ class MainWindow
 		Button fileOpenButton = createToolBarButton(FOLDER_OPEN_ALT, "Open", "Shortcut+O", e -> fileOpen());
 		Button fileSaveButton = createToolBarButton(FLOPPY_ALT, "Save", "Shortcut+S", e -> fileSave());
 
+		Button editUndoButton = createToolBarButton(UNDO, "Undo", "Shortcut+Z", e -> editUndo());
+		Button editRedoButton = createToolBarButton(REPEAT, "Redo", "Shortcut+Y", e -> editRedo());
+
 		fileSaveButton.disableProperty().bind(Bindings.not(fileEditorTabPane.activeFileEditorModifiedProperty()));
+
+		editUndoButton.disableProperty().bind(createActiveBooleanProperty(FileEditor::canUndoProperty).not());
+		editRedoButton.disableProperty().bind(createActiveBooleanProperty(FileEditor::canRedoProperty).not());
 
 		return new ToolBar(
 				fileNewButton,
 				fileOpenButton,
-				fileSaveButton);
+				fileSaveButton,
+				new Separator(),
+				editUndoButton,
+				editRedoButton);
 	}
 
 	private MenuItem createMenuItem(String text, String accelerator,
@@ -153,6 +178,25 @@ class MainWindow
 		button.setFocusTraversable(false);
 		button.setOnAction(action);
 		return button;
+	}
+
+	/**
+	 * Creates a boolean property that is bound to another boolean value
+	 * of the active editor.
+	 */
+	private BooleanProperty createActiveBooleanProperty(Function<FileEditor, ObservableBooleanValue> func) {
+		BooleanProperty b = new SimpleBooleanProperty();
+		FileEditor fileEditor = fileEditorTabPane.activeFileEditorProperty().get();
+		if (fileEditor != null)
+			b.bind(func.apply(fileEditor));
+		fileEditorTabPane.activeFileEditorProperty().addListener((observable, oldFileEditor, newFileEditor) -> {
+			b.unbind();
+			if (newFileEditor != null)
+				b.bind(func.apply(newFileEditor));
+			else
+				b.set(false);
+		});
+		return b;
 	}
 
 	Alert createAlert(AlertType alertType, String title,
@@ -195,6 +239,16 @@ class MainWindow
 	private void fileExit() {
 		Window window = scene.getWindow();
 		Event.fireEvent(window, new WindowEvent(window, WindowEvent.WINDOW_CLOSE_REQUEST));
+	}
+
+	//---- Edit menu ----------------------------------------------------------
+
+	private void editUndo() {
+		fileEditorTabPane.activeFileEditorProperty().get().undo();
+	}
+
+	private void editRedo() {
+		fileEditorTabPane.activeFileEditorProperty().get().redo();
 	}
 
 	//---- Help menu ----------------------------------------------------------

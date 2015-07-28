@@ -32,9 +32,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -42,6 +44,7 @@ import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.Tooltip;
 import javafx.scene.text.Text;
+import org.fxmisc.undo.UndoManager;
 import org.markdownwriterfx.editor.MarkdownEditorPane;
 import org.markdownwriterfx.preview.MarkdownPreviewPane;
 
@@ -89,6 +92,14 @@ class FileEditor
 	boolean isModified() { return modified.get(); }
 	ReadOnlyBooleanProperty modifiedProperty() { return modified; }
 
+	// 'canUndo' property
+	private final BooleanProperty canUndo = new SimpleBooleanProperty();
+	BooleanProperty canUndoProperty() { return canUndo; }
+
+	// 'canRedo' property
+	private final BooleanProperty canRedo = new SimpleBooleanProperty();
+	BooleanProperty canRedoProperty() { return canRedo; }
+
 	private void updateTab() {
 		Path path = this.path.get();
 		tab.setText((path != null) ? path.getFileName().toString() : "Untitled");
@@ -113,8 +124,11 @@ class FileEditor
 		markdownPreviewPane.markdownASTProperty().bind(markdownEditorPane.markdownASTProperty());
 		markdownPreviewPane.scrollYProperty().bind(markdownEditorPane.scrollYProperty());
 
-		// bind the editor undo manager to the 'modified' property
-		modified.bind(Bindings.not(markdownEditorPane.getUndoManager().atMarkedPositionProperty()));
+		// bind the editor undo manager to the properties
+		UndoManager undoManager = markdownEditorPane.getUndoManager();
+		modified.bind(Bindings.not(undoManager.atMarkedPositionProperty()));
+		canUndo.bind(undoManager.undoAvailableProperty());
+		canRedo.bind(undoManager.redoAvailableProperty());
 
 		SplitPane splitPane = new SplitPane(markdownEditorPane.getNode(), markdownPreviewPane.getNode());
 		tab.setContent(splitPane);
@@ -150,5 +164,15 @@ class FileEditor
 			alert.showAndWait();
 			return false;
 		}
+	}
+
+	void undo() {
+		if (markdownEditorPane != null)
+			markdownEditorPane.getUndoManager().undo();
+	}
+
+	void redo() {
+		if (markdownEditorPane != null)
+			markdownEditorPane.getUndoManager().redo();
 	}
 }
