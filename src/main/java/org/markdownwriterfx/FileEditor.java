@@ -118,6 +118,8 @@ class FileEditor
 		markdownEditorPane = new MarkdownEditorPane();
 		markdownPreviewPane = new MarkdownPreviewPane();
 
+		markdownEditorPane.installEditorShortcuts(mainWindow.getEditorShortcuts());
+
 		load();
 
 		// clear undo history after first load

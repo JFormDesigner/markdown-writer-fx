@@ -33,10 +33,13 @@ import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.value.ObservableValue;
+import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollBar;
+import javafx.scene.input.KeyEvent;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.undo.UndoManager;
+import org.fxmisc.wellbehaved.event.EventHandlerHelper;
 import org.markdownwriterfx.util.Utils;
 import org.pegdown.Extensions;
 import org.pegdown.PegDownProcessor;
@@ -77,6 +80,10 @@ public class MarkdownEditorPane
 				});
 			}
 		});
+	}
+
+	public void installEditorShortcuts(EventHandler<KeyEvent> editorShortcuts) {
+		EventHandlerHelper.install(textArea.onKeyPressedProperty(), editorShortcuts);
 	}
 
 	public Node getNode() {

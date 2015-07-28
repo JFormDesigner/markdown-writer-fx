@@ -45,11 +45,15 @@ import javafx.scene.control.Separator;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.ToolBar;
 import javafx.scene.control.Tooltip;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
+import org.fxmisc.wellbehaved.event.EventHandlerHelper;
+import org.fxmisc.wellbehaved.event.EventPattern;
 import de.jensd.fx.glyphs.GlyphIcons;
 import de.jensd.fx.glyphs.GlyphsDude;
 import static de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon.*;
@@ -208,6 +212,26 @@ class MainWindow
 		alert.setContentText(String.format(contentTextFormat, contentTextArgs));
 		alert.initOwner(getScene().getWindow());
 		return alert;
+	}
+
+	/**
+	 * When the editor control (RichTextFX) is focused, it consumes all key events
+	 * and the menu accelerators do not work. Looks like a bug to me...
+	 * Workaround: install keyboard shortcuts into the editor component.
+	 */
+	private EventHandler<KeyEvent> editorShortcuts;
+	EventHandler<KeyEvent> getEditorShortcuts() {
+		if (editorShortcuts != null)
+			return editorShortcuts;
+
+		editorShortcuts = EventHandlerHelper
+			.on(EventPattern.keyPressed(KeyCode.N, KeyCombination.SHORTCUT_DOWN)).act(e -> fileNew())
+			.on(EventPattern.keyPressed(KeyCode.O, KeyCombination.SHORTCUT_DOWN)).act(e -> fileOpen())
+			.on(EventPattern.keyPressed(KeyCode.W, KeyCombination.SHORTCUT_DOWN)).act(e -> fileClose())
+			.on(EventPattern.keyPressed(KeyCode.S, KeyCombination.SHORTCUT_DOWN)).act(e -> fileSave())
+			.on(EventPattern.keyPressed(KeyCode.S, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN)).act(e -> fileSaveAll())
+			.create();
+		return editorShortcuts;
 	}
 
 	//---- File menu ----------------------------------------------------------
