@@ -40,11 +40,17 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.SingleSelectionModel;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.Tooltip;
 import javafx.scene.text.Text;
 import org.fxmisc.undo.UndoManager;
+import org.fxmisc.wellbehaved.event.EventHandlerHelper;
+import org.fxmisc.wellbehaved.event.EventPattern;
 import org.markdownwriterfx.editor.MarkdownEditorPane;
 import org.markdownwriterfx.preview.MarkdownPreviewPane;
 
@@ -107,6 +113,19 @@ class FileEditor
 		tab.setGraphic(isModified() ? new Text("*") : null);
 	}
 
+	private void selectNextPreviousTab(int offset) {
+		TabPane tabPane = tab.getTabPane();
+		SingleSelectionModel<Tab> selectionModel = tabPane.getSelectionModel();
+
+		int selectIndex = selectionModel.getSelectedIndex() + offset;
+		if (selectIndex < 0)
+			selectionModel.selectLast();
+		else if(selectIndex >= tabPane.getTabs().size())
+			selectionModel.selectFirst();
+		else
+			selectionModel.select(selectIndex);
+	}
+
 	private void activated() {
 		if( tab.getTabPane() == null || !tab.isSelected())
 			return; // tab is already closed or no longer active
@@ -122,6 +141,10 @@ class FileEditor
 		markdownPreviewPane = new MarkdownPreviewPane();
 
 		markdownEditorPane.installEditorShortcuts(mainWindow.getEditorShortcuts());
+		markdownEditorPane.installEditorShortcuts(EventHandlerHelper
+			.on(EventPattern.keyPressed(KeyCode.TAB, KeyCombination.CONTROL_DOWN)).act(e -> selectNextPreviousTab(1))
+			.on(EventPattern.keyPressed(KeyCode.TAB, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN)).act(e -> selectNextPreviousTab(-1))
+			.create());
 
 		load();
 
