@@ -28,6 +28,7 @@
 package org.markdownwriterfx.editor;
 
 import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -70,7 +71,7 @@ public class MarkdownEditorPane
 		});
 
 		// search for vertical scrollbar and add change listener to update 'scrollY' property
-		Platform.runLater(() -> {
+		textArea.getChildrenUnmodifiable().addListener((InvalidationListener) e -> {
 			ScrollBar vScrollBar = Utils.findVScrollBar(textArea);
 			if (vScrollBar != null) {
 				vScrollBar.valueProperty().addListener((observable, oldValue, newValue) -> {
