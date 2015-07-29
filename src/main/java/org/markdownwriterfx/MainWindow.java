@@ -102,7 +102,7 @@ class MainWindow
 
 		fileCloseMenuItem.disableProperty().bind(fileEditorTabPane.activeFileEditorProperty().isNull());
 		fileCloseAllMenuItem.disableProperty().bind(fileEditorTabPane.activeFileEditorProperty().isNull());
-		fileSaveMenuItem.disableProperty().bind(Bindings.not(fileEditorTabPane.activeFileEditorModifiedProperty()));
+		fileSaveMenuItem.disableProperty().bind(createActiveBooleanProperty(FileEditor::modifiedProperty).not());
 		fileSaveAllMenuItem.disableProperty().bind(Bindings.not(fileEditorTabPane.anyFileEditorModifiedProperty()));
 
 		Menu fileMenu = new Menu("File", null,
@@ -145,7 +145,7 @@ class MainWindow
 		Button editUndoButton = createToolBarButton(UNDO, "Undo", "Shortcut+Z", e -> editUndo());
 		Button editRedoButton = createToolBarButton(REPEAT, "Redo", "Shortcut+Y", e -> editRedo());
 
-		fileSaveButton.disableProperty().bind(Bindings.not(fileEditorTabPane.activeFileEditorModifiedProperty()));
+		fileSaveButton.disableProperty().bind(createActiveBooleanProperty(FileEditor::modifiedProperty).not());
 
 		editUndoButton.disableProperty().bind(createActiveBooleanProperty(FileEditor::canUndoProperty).not());
 		editRedoButton.disableProperty().bind(createActiveBooleanProperty(FileEditor::canRedoProperty).not());

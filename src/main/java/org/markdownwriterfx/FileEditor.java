@@ -90,7 +90,7 @@ class FileEditor
 	// 'modified' property
 	private final ReadOnlyBooleanWrapper modified = new ReadOnlyBooleanWrapper();
 	boolean isModified() { return modified.get(); }
-	ReadOnlyBooleanProperty modifiedProperty() { return modified; }
+	ReadOnlyBooleanProperty modifiedProperty() { return modified.getReadOnlyProperty(); }
 
 	// 'canUndo' property
 	private final BooleanProperty canUndo = new SimpleBooleanProperty();

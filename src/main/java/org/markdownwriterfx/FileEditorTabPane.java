@@ -61,7 +61,6 @@ class FileEditorTabPane
 	private final MainWindow mainWindow;
 	private final TabPane tabPane;
 	private final ReadOnlyObjectWrapper<FileEditor> activeFileEditor = new ReadOnlyObjectWrapper<>();
-	private final ReadOnlyBooleanWrapper activeFileEditorModified = new ReadOnlyBooleanWrapper();
 	private final ReadOnlyBooleanWrapper anyFileEditorModified = new ReadOnlyBooleanWrapper();
 
 	FileEditorTabPane(MainWindow mainWindow) {
@@ -71,16 +70,9 @@ class FileEditorTabPane
 		tabPane.setFocusTraversable(false);
 		tabPane.setTabClosingPolicy(TabClosingPolicy.ALL_TABS);
 
-		// update activeFileEditor and activeFileEditorModified properties
+		// update activeFileEditor property
 		tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
-			if (newTab != null) {
-				activeFileEditor.set((FileEditor) newTab.getUserData());
-				activeFileEditorModified.bind(activeFileEditor.get().modifiedProperty());
-			} else {
-				activeFileEditor.set(null);
-				activeFileEditorModified.unbind();
-				activeFileEditorModified.set(false);
-			}
+			activeFileEditor.set((newTab != null) ? (FileEditor) newTab.getUserData() : null);
 		});
 
 		// update anyFileEditorModified property
@@ -120,10 +112,6 @@ class FileEditorTabPane
 
 	ReadOnlyObjectProperty<FileEditor> activeFileEditorProperty() {
 		return activeFileEditor.getReadOnlyProperty();
-	}
-
-	ReadOnlyBooleanProperty activeFileEditorModifiedProperty() {
-		return activeFileEditorModified.getReadOnlyProperty();
 	}
 
 	ReadOnlyBooleanProperty anyFileEditorModifiedProperty() {
