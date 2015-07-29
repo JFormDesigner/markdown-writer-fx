@@ -58,10 +58,18 @@ class WebViewPreview
 	}
 
 	void update(RootNode astRoot) {
+		Object scrollXobj = webView.getEngine().executeScript("window.scrollX");
+		Object scrollYobj = webView.getEngine().executeScript("window.scrollY");
+		int scrollX = (scrollXobj instanceof Number) ? ((Number)scrollXobj).intValue() : 0;
+		int scrollY = (scrollYobj instanceof Number) ? ((Number)scrollYobj).intValue() : 0;
+		String scrollScript = (scrollX > 0 || scrollY > 0)
+				? ("  onload='window.scrollTo("+scrollX+", "+scrollY+");'")
+				: null;
+
 		webView.getEngine().loadContent(
 			"<!DOCTYPE html><html><head><link rel=\"stylesheet\" href=\""
 			+ getClass().getResource("markdownpad-github.css")
-			+ "\"></head><body>"
+			+ "\"></head><body" + scrollScript + ">"
 			+ toHtml(astRoot)
 			+ "</body></html>");
 	}

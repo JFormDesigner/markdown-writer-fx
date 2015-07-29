@@ -53,7 +53,11 @@ class HtmlSourcePreview
 	}
 
 	void update(RootNode astRoot) {
+		double scrollTop = textArea.getScrollTop();
+
 		textArea.setText(WebViewPreview.toHtml(astRoot));
+
+		textArea.setScrollTop(scrollTop);
 	}
 
 	void scrollY(double value) {

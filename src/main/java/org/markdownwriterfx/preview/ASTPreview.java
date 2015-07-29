@@ -55,7 +55,13 @@ class ASTPreview
 	}
 
 	void update(RootNode astRoot) {
+		double scrollTop = textArea.getScrollTop();
+		double scrollLeft = textArea.getScrollLeft();
+
 		textArea.setText(GraphUtils.printTree(astRoot, new ToStringFormatter<>()));
+
+		textArea.setScrollTop(scrollTop);
+		textArea.setScrollLeft(scrollLeft);
 	}
 
 	void scrollY(double value) {
