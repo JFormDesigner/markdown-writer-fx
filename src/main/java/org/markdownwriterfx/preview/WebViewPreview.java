@@ -43,6 +43,7 @@ import org.pegdown.plugins.PegDownPlugins;
  * @author Karl Tauber
  */
 class WebViewPreview
+	implements MarkdownPreviewPane.Preview
 {
 	private final WebView webView = new WebView();
 
@@ -57,7 +58,8 @@ class WebViewPreview
 			.toHtml(astRoot);
 	}
 
-	void update(RootNode astRoot) {
+	@Override
+	public void update(RootNode astRoot) {
 		Object scrollXobj = webView.getEngine().executeScript("window.scrollX");
 		Object scrollYobj = webView.getEngine().executeScript("window.scrollY");
 		int scrollX = (scrollXobj instanceof Number) ? ((Number)scrollXobj).intValue() : 0;
@@ -74,7 +76,8 @@ class WebViewPreview
 			+ "</body></html>");
 	}
 
-	void scrollY(double value) {
+	@Override
+	public void scrollY(double value) {
 		webView.getEngine().executeScript(
 			"window.scrollTo(0, (document.body.scrollHeight - window.innerHeight) * "+value+");");
 	}

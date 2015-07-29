@@ -48,43 +48,65 @@ import org.pegdown.ast.RootNode;
  */
 public class MarkdownPreviewPane
 {
+	private final TabPane tabPane = new TabPane();
 	private final WebViewPreview webViewPreview = new WebViewPreview();
 	private final HtmlSourcePreview htmlSourcePreview = new HtmlSourcePreview();
 	private final ASTPreview astPreview = new ASTPreview();
-	private TabPane tabPane;
+
+	interface Preview {
+		void update(RootNode astRoot);
+		void scrollY(double value);
+	}
 
 	public MarkdownPreviewPane() {
+		tabPane.setSide(Side.BOTTOM);
+		tabPane.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
+
+		Tab webViewTab = new Tab("Preview", webViewPreview.getNode());
+		webViewTab.setUserData(webViewPreview);
+		tabPane.getTabs().add(webViewTab);
+
+		Tab htmlSourceTab = new Tab("HTML Source", htmlSourcePreview.getNode());
+		htmlSourceTab.setUserData(htmlSourcePreview);
+		tabPane.getTabs().add(htmlSourceTab);
+
+		Tab astTab = new Tab("Markdown AST", astPreview.getNode());
+		astTab.setUserData(astPreview);
+		tabPane.getTabs().add(astTab);
+
+		tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
+			getActivePreview().update(getMarkdownAST());
+			scrollY();
+		});
+
 		markdownAST.addListener((observable, oldValue, newValue) -> {
-			webViewPreview.update(newValue);
-			htmlSourcePreview.update(newValue);
-			astPreview.update(newValue);
+			getActivePreview().update(newValue);
 		});
 
 		scrollY.addListener((observable, oldValue, newValue) -> {
-			Platform.runLater(() -> {
-				webViewPreview.scrollY(newValue.doubleValue());
-				htmlSourcePreview.scrollY(newValue.doubleValue());
-				astPreview.scrollY(newValue.doubleValue());
-			});
+			scrollY();
 		});
 	}
 
 	public Node getNode() {
-		if(tabPane == null) {
-			tabPane = new TabPane();
-			tabPane.setSide(Side.BOTTOM);
-			tabPane.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
-
-			Tab webViewTab = new Tab("Preview", webViewPreview.getNode());
-			tabPane.getTabs().add(webViewTab);
-
-			Tab htmlSourceTab = new Tab("HTML Source", htmlSourcePreview.getNode());
-			tabPane.getTabs().add(htmlSourceTab);
-
-			Tab astTab = new Tab("Markdown AST", astPreview.getNode());
-			tabPane.getTabs().add(astTab);
-		}
 		return tabPane;
+	}
+
+	private Preview getActivePreview() {
+		return (Preview) tabPane.getSelectionModel().getSelectedItem().getUserData();
+	}
+
+	private boolean scrollYrunLaterPending;
+	private void scrollY() {
+		// avoid too many (and useless) runLater() invocations
+		if (scrollYrunLaterPending)
+			return;
+		scrollYrunLaterPending = true;
+
+		Platform.runLater(() -> {
+			scrollYrunLaterPending = false;
+			getActivePreview().scrollY(getScrollY());
+		});
 	}
 
 	// 'markdownAST' property

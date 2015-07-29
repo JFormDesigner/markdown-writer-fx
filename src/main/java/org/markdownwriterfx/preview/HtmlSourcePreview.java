@@ -39,6 +39,7 @@ import org.pegdown.ast.RootNode;
  * @author Karl Tauber
  */
 class HtmlSourcePreview
+	implements MarkdownPreviewPane.Preview
 {
 	private final TextArea textArea = new TextArea();
 	private ScrollBar vScrollBar;
@@ -52,7 +53,8 @@ class HtmlSourcePreview
 		return textArea;
 	}
 
-	void update(RootNode astRoot) {
+	@Override
+	public void update(RootNode astRoot) {
 		double scrollTop = textArea.getScrollTop();
 
 		textArea.setText(WebViewPreview.toHtml(astRoot));
@@ -60,7 +62,8 @@ class HtmlSourcePreview
 		textArea.setScrollTop(scrollTop);
 	}
 
-	void scrollY(double value) {
+	@Override
+	public void scrollY(double value) {
 		if (vScrollBar == null)
 			vScrollBar = Utils.findVScrollBar(textArea);
 		if (vScrollBar == null)
