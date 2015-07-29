@@ -108,6 +108,9 @@ class FileEditor
 	}
 
 	private void activated() {
+		if( tab.getTabPane() == null || !tab.isSelected())
+			return; // tab is already closed or no longer active
+
 		if (tab.getContent() != null) {
 			markdownEditorPane.requestFocus();
 			return;
