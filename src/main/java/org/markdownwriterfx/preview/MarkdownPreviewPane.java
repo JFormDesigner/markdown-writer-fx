@@ -49,18 +49,21 @@ import org.pegdown.ast.RootNode;
 public class MarkdownPreviewPane
 {
 	private final WebViewPreview webViewPreview = new WebViewPreview();
+	private final HtmlSourcePreview htmlSourcePreview = new HtmlSourcePreview();
 	private final ASTPreview astPreview = new ASTPreview();
 	private TabPane tabPane;
 
 	public MarkdownPreviewPane() {
 		markdownAST.addListener((observable, oldValue, newValue) -> {
 			webViewPreview.update(newValue);
+			htmlSourcePreview.update(newValue);
 			astPreview.update(newValue);
 		});
 
 		scrollY.addListener((observable, oldValue, newValue) -> {
 			Platform.runLater(() -> {
 				webViewPreview.scrollY(newValue.doubleValue());
+				htmlSourcePreview.scrollY(newValue.doubleValue());
 				astPreview.scrollY(newValue.doubleValue());
 			});
 		});
@@ -75,7 +78,10 @@ public class MarkdownPreviewPane
 			Tab webViewTab = new Tab("Preview", webViewPreview.getNode());
 			tabPane.getTabs().add(webViewTab);
 
-			Tab astTab = new Tab("AST", astPreview.getNode());
+			Tab htmlSourceTab = new Tab("HTML Source", htmlSourcePreview.getNode());
+			tabPane.getTabs().add(htmlSourceTab);
+
+			Tab astTab = new Tab("Markdown AST", astPreview.getNode());
 			tabPane.getTabs().add(astTab);
 		}
 		return tabPane;

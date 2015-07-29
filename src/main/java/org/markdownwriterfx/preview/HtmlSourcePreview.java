@@ -27,47 +27,42 @@
 
 package org.markdownwriterfx.preview;
 
-import java.util.Collections;
 import javafx.scene.Node;
-import javafx.scene.web.WebView;
-import org.pegdown.LinkRenderer;
-import org.pegdown.ToHtmlSerializer;
-import org.pegdown.VerbatimSerializer;
+import javafx.scene.control.ScrollBar;
+import javafx.scene.control.TextArea;
+import org.markdownwriterfx.util.Utils;
 import org.pegdown.ast.RootNode;
-import org.pegdown.plugins.PegDownPlugins;
 
 /**
- * WebView preview.
- * Serializes the AST tree to HTML and shows it in a WebView.
+ * HTML source preview.
  *
  * @author Karl Tauber
  */
-class WebViewPreview
+class HtmlSourcePreview
 {
-	private final WebView webView = new WebView();
+	private final TextArea textArea = new TextArea();
+	private ScrollBar vScrollBar;
 
-	Node getNode() {
-		return webView;
+	HtmlSourcePreview() {
+		textArea.setEditable(false);
+		textArea.setWrapText(true);
 	}
 
-	static String toHtml(RootNode astRoot) {
-		return new ToHtmlSerializer(new LinkRenderer(),
-				Collections.<String, VerbatimSerializer>emptyMap(),
-				PegDownPlugins.NONE.getHtmlSerializerPlugins())
-			.toHtml(astRoot);
+	Node getNode() {
+		return textArea;
 	}
 
 	void update(RootNode astRoot) {
-		webView.getEngine().loadContent(
-			"<!DOCTYPE html><html><head><link rel=\"stylesheet\" href=\""
-			+ getClass().getResource("markdownpad-github.css")
-			+ "\"></head><body>"
-			+ toHtml(astRoot)
-			+ "</body></html>");
+		textArea.setText(WebViewPreview.toHtml(astRoot));
 	}
 
 	void scrollY(double value) {
-		webView.getEngine().executeScript(
-			"window.scrollTo(0, (document.body.scrollHeight - window.innerHeight) * "+value+");");
+		if (vScrollBar == null)
+			vScrollBar = Utils.findVScrollBar(textArea);
+		if (vScrollBar == null)
+			return;
+
+		double maxValue = vScrollBar.maxProperty().get();
+		vScrollBar.setValue(maxValue * value);
 	}
 }
