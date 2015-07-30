@@ -35,6 +35,7 @@ import javafx.beans.value.ObservableBooleanValue;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -75,7 +76,7 @@ class MainWindow
 
 		BorderPane borderPane = new BorderPane();
 		borderPane.setPrefSize(800, 800);
-		borderPane.setTop(new VBox(createMenuBar(), createToolBar()));
+		borderPane.setTop(createMenuBarAndToolBar());
 		borderPane.setCenter(fileEditorTabPane.getNode());
 
 		scene = new Scene(borderPane);
@@ -91,7 +92,10 @@ class MainWindow
 		return scene;
 	}
 
-	private MenuBar createMenuBar() {
+	private Node createMenuBarAndToolBar() {
+
+		//---- MenuBar ----
+
 		// File menu
 		MenuItem fileNewMenuItem = createMenuItem("New", "Shortcut+N", FILE_ALT, e -> fileNew());
 		MenuItem fileOpenMenuItem = createMenuItem("Open...", "Shortcut+O", FOLDER_OPEN_ALT, e -> fileOpen());
@@ -147,10 +151,11 @@ class MainWindow
 		Menu helpMenu = new Menu("Help", null,
 				helpAboutMenuItem);
 
-		return new MenuBar(fileMenu, editMenu, insertMenu, helpMenu);
-	}
+		MenuBar menuBar = new MenuBar(fileMenu, editMenu, insertMenu, helpMenu);
 
-	private ToolBar createToolBar() {
+
+		//---- ToolBar ----
+
 		Button fileNewButton = createToolBarButton(FILE_ALT, "New", "Shortcut+N", e -> fileNew());
 		Button fileOpenButton = createToolBarButton(FOLDER_OPEN_ALT, "Open", "Shortcut+O", e -> fileOpen());
 		Button fileSaveButton = createToolBarButton(FLOPPY_ALT, "Save", "Shortcut+S", e -> fileSave());
@@ -161,16 +166,15 @@ class MainWindow
 		Button insertBoldButton = createToolBarButton(BOLD, "Bold", "Shortcut+B", e -> insertBold());
 		Button insertItalicButton = createToolBarButton(ITALIC, "Italic", "Shortcut+I", e -> insertItalic());
 
-		fileSaveButton.disableProperty().bind(createActiveBooleanProperty(FileEditor::modifiedProperty).not());
+		fileSaveButton.disableProperty().bind(fileSaveMenuItem.disableProperty());
 
-		editUndoButton.disableProperty().bind(createActiveBooleanProperty(FileEditor::canUndoProperty).not());
-		editRedoButton.disableProperty().bind(createActiveBooleanProperty(FileEditor::canRedoProperty).not());
+		editUndoButton.disableProperty().bind(editUndoMenuItem.disableProperty());
+		editRedoButton.disableProperty().bind(editRedoMenuItem.disableProperty());
 
-		BooleanBinding activeFileEditorIsNull = fileEditorTabPane.activeFileEditorProperty().isNull();
 		insertBoldButton.disableProperty().bind(activeFileEditorIsNull);
 		insertItalicButton.disableProperty().bind(activeFileEditorIsNull);
 
-		return new ToolBar(
+		ToolBar toolBar = new ToolBar(
 				fileNewButton,
 				fileOpenButton,
 				fileSaveButton,
@@ -180,6 +184,8 @@ class MainWindow
 				new Separator(),
 				insertBoldButton,
 				insertItalicButton);
+
+		return new VBox(menuBar, toolBar);
 	}
 
 	private MenuItem createMenuItem(String text, String accelerator,
