@@ -50,6 +50,7 @@ import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import org.fxmisc.wellbehaved.event.EventHandlerHelper;
 import org.fxmisc.wellbehaved.event.EventPattern;
+import org.markdownwriterfx.editor.MarkdownEditorPane;
 import org.markdownwriterfx.util.Action;
 import org.markdownwriterfx.util.ActionUtils;
 import static de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon.*;
@@ -103,14 +104,20 @@ class MainWindow
 		Action fileExitAction = new Action("Exit", null, null, e -> fileExit());
 
 		// Edit actions
-		Action editUndoAction = new Action("Undo", "Shortcut+Z", UNDO, e -> editUndo(),
+		Action editUndoAction = new Action("Undo", "Shortcut+Z", UNDO,
+				e -> fileEditorTabPane.getActiveFileEditor().undo(),
 				createActiveBooleanProperty(FileEditor::canUndoProperty).not());
-		Action editRedoAction = new Action("Redo", "Shortcut+Y", REPEAT, e -> editRedo(),
+		Action editRedoAction = new Action("Redo", "Shortcut+Y", REPEAT,
+				e -> fileEditorTabPane.getActiveFileEditor().redo(),
 				createActiveBooleanProperty(FileEditor::canRedoProperty).not());
 
 		// Insert actions
-		Action insertBoldAction = new Action("Bold", "Shortcut+B", BOLD, e -> insertBold(), activeFileEditorIsNull);
-		Action insertItalicAction = new Action("Italic", "Shortcut+I", ITALIC, e -> insertItalic(), activeFileEditorIsNull);
+		Action insertBoldAction = new Action("Bold", "Shortcut+B", BOLD,
+				e -> getActiveEditor().surroundSelection("**", "**"),
+				activeFileEditorIsNull);
+		Action insertItalicAction = new Action("Italic", "Shortcut+I", ITALIC,
+				e -> getActiveEditor().surroundSelection("*", "*"),
+				activeFileEditorIsNull);
 
 		// Help actions
 		Action helpAboutAction = new Action("About Markdown Writer FX", null, null, e -> helpAbout());
@@ -160,6 +167,9 @@ class MainWindow
 		return new VBox(menuBar, toolBar);
 	}
 
+	private MarkdownEditorPane getActiveEditor() {
+		return fileEditorTabPane.getActiveFileEditor().getEditor();
+	}
 
 	/**
 	 * Creates a boolean property that is bound to another boolean value
@@ -247,26 +257,6 @@ class MainWindow
 	private void fileExit() {
 		Window window = scene.getWindow();
 		Event.fireEvent(window, new WindowEvent(window, WindowEvent.WINDOW_CLOSE_REQUEST));
-	}
-
-	//---- Edit actions -------------------------------------------------------
-
-	private void editUndo() {
-		fileEditorTabPane.getActiveFileEditor().undo();
-	}
-
-	private void editRedo() {
-		fileEditorTabPane.getActiveFileEditor().redo();
-	}
-
-	//---- Insert actions -----------------------------------------------------
-
-	private void insertBold() {
-		fileEditorTabPane.getActiveFileEditor().getEditor().surroundSelection("**", "**");
-	}
-
-	private void insertItalic() {
-		fileEditorTabPane.getActiveFileEditor().getEditor().surroundSelection("*", "*");
 	}
 
 	//---- Help actions -------------------------------------------------------
