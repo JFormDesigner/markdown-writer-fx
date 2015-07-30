@@ -87,6 +87,10 @@ class FileEditor
 		return tab;
 	}
 
+	MarkdownEditorPane getEditor() {
+		return markdownEditorPane;
+	}
+
 	// 'path' property
 	private final ObjectProperty<Path> path = new SimpleObjectProperty<>();
 	Path getPath() { return path.get(); }

@@ -36,6 +36,7 @@ import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
+import javafx.scene.control.IndexRange;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.input.KeyEvent;
 import org.fxmisc.richtext.StyleClassedTextArea;
@@ -122,5 +123,26 @@ public class MarkdownEditorPane
 
 	private void applyHighlighting(RootNode astRoot) {
 		MarkdownSyntaxHighlighter.highlight(textArea, astRoot);
+	}
+
+	public void surroundSelection(String leading, String trailing) {
+		// Note: not using textArea.insertText() to insert leading and trailing
+		//       because this would add two changes to undo history
+
+		IndexRange selection = textArea.getSelection();
+		int start = selection.getStart();
+		int end = selection.getEnd();
+
+		String selectedText = textArea.getSelectedText();
+
+		// remove leading and trailing whitespaces from selected text
+		String trimmedSelectedText = selectedText.trim();
+		if (trimmedSelectedText.length() < selectedText.length()) {
+			start += selectedText.indexOf(trimmedSelectedText);
+			end = start + trimmedSelectedText.length();
+		}
+
+		textArea.replaceText(start, end, leading + trimmedSelectedText + trailing);
+		textArea.selectRange(start + leading.length(), end + leading.length());
 	}
 }

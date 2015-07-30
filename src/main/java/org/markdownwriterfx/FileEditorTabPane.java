@@ -110,10 +110,13 @@ class FileEditorTabPane
 		return tabPane;
 	}
 
+	// 'activeFileEditor' property
+	FileEditor getActiveFileEditor() { return activeFileEditor.get(); }
 	ReadOnlyObjectProperty<FileEditor> activeFileEditorProperty() {
 		return activeFileEditor.getReadOnlyProperty();
 	}
 
+	// 'anyFileEditorModified' property
 	ReadOnlyBooleanProperty anyFileEditorModifiedProperty() {
 		return anyFileEditorModified.getReadOnlyProperty();
 	}

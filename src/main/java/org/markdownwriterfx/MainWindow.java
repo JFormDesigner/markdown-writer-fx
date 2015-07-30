@@ -28,6 +28,7 @@
 package org.markdownwriterfx;
 
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ObservableBooleanValue;
@@ -100,8 +101,9 @@ class MainWindow
 		MenuItem fileSaveAllMenuItem = createMenuItem("Save All", "Shortcut+Shift+S", null, e -> fileSaveAll());
 		MenuItem fileExitMenuItem = createMenuItem("Exit", null, null, e -> fileExit());
 
-		fileCloseMenuItem.disableProperty().bind(fileEditorTabPane.activeFileEditorProperty().isNull());
-		fileCloseAllMenuItem.disableProperty().bind(fileEditorTabPane.activeFileEditorProperty().isNull());
+		BooleanBinding activeFileEditorIsNull = fileEditorTabPane.activeFileEditorProperty().isNull();
+		fileCloseMenuItem.disableProperty().bind(activeFileEditorIsNull);
+		fileCloseAllMenuItem.disableProperty().bind(activeFileEditorIsNull);
 		fileSaveMenuItem.disableProperty().bind(createActiveBooleanProperty(FileEditor::modifiedProperty).not());
 		fileSaveAllMenuItem.disableProperty().bind(Bindings.not(fileEditorTabPane.anyFileEditorModifiedProperty()));
 
@@ -128,13 +130,24 @@ class MainWindow
 				editUndoMenuItem,
 				editRedoMenuItem);
 
+		// Insert menu
+		MenuItem insertBoldMenuItem = createMenuItem("Bold", "Shortcut+B", BOLD, e -> insertBold());
+		MenuItem insertItalicMenuItem = createMenuItem("Italic", "Shortcut+I", ITALIC, e -> insertItalic());
+
+		insertBoldMenuItem.disableProperty().bind(activeFileEditorIsNull);
+		insertItalicMenuItem.disableProperty().bind(activeFileEditorIsNull);
+
+		Menu insertMenu = new Menu("Insert", null,
+				insertBoldMenuItem,
+				insertItalicMenuItem);
+
 		// Help menu
 		MenuItem helpAboutMenuItem = createMenuItem("About Markdown Writer FX", null, null, e -> helpAbout());
 
 		Menu helpMenu = new Menu("Help", null,
 				helpAboutMenuItem);
 
-		return new MenuBar(fileMenu, editMenu, helpMenu);
+		return new MenuBar(fileMenu, editMenu, insertMenu, helpMenu);
 	}
 
 	private ToolBar createToolBar() {
@@ -145,10 +158,17 @@ class MainWindow
 		Button editUndoButton = createToolBarButton(UNDO, "Undo", "Shortcut+Z", e -> editUndo());
 		Button editRedoButton = createToolBarButton(REPEAT, "Redo", "Shortcut+Y", e -> editRedo());
 
+		Button insertBoldButton = createToolBarButton(BOLD, "Bold", "Shortcut+B", e -> insertBold());
+		Button insertItalicButton = createToolBarButton(ITALIC, "Italic", "Shortcut+I", e -> insertItalic());
+
 		fileSaveButton.disableProperty().bind(createActiveBooleanProperty(FileEditor::modifiedProperty).not());
 
 		editUndoButton.disableProperty().bind(createActiveBooleanProperty(FileEditor::canUndoProperty).not());
 		editRedoButton.disableProperty().bind(createActiveBooleanProperty(FileEditor::canRedoProperty).not());
+
+		BooleanBinding activeFileEditorIsNull = fileEditorTabPane.activeFileEditorProperty().isNull();
+		insertBoldButton.disableProperty().bind(activeFileEditorIsNull);
+		insertItalicButton.disableProperty().bind(activeFileEditorIsNull);
 
 		return new ToolBar(
 				fileNewButton,
@@ -156,7 +176,10 @@ class MainWindow
 				fileSaveButton,
 				new Separator(),
 				editUndoButton,
-				editRedoButton);
+				editRedoButton,
+				new Separator(),
+				insertBoldButton,
+				insertItalicButton);
 	}
 
 	private MenuItem createMenuItem(String text, String accelerator,
@@ -190,7 +213,7 @@ class MainWindow
 	 */
 	private BooleanProperty createActiveBooleanProperty(Function<FileEditor, ObservableBooleanValue> func) {
 		BooleanProperty b = new SimpleBooleanProperty();
-		FileEditor fileEditor = fileEditorTabPane.activeFileEditorProperty().get();
+		FileEditor fileEditor = fileEditorTabPane.getActiveFileEditor();
 		if (fileEditor != null)
 			b.bind(func.apply(fileEditor));
 		fileEditorTabPane.activeFileEditorProperty().addListener((observable, oldFileEditor, newFileEditor) -> {
@@ -225,11 +248,15 @@ class MainWindow
 			return editorShortcuts;
 
 		editorShortcuts = EventHandlerHelper
+			// File
 			.on(EventPattern.keyPressed(KeyCode.N, KeyCombination.SHORTCUT_DOWN)).act(e -> fileNew())
 			.on(EventPattern.keyPressed(KeyCode.O, KeyCombination.SHORTCUT_DOWN)).act(e -> fileOpen())
 			.on(EventPattern.keyPressed(KeyCode.W, KeyCombination.SHORTCUT_DOWN)).act(e -> fileClose())
 			.on(EventPattern.keyPressed(KeyCode.S, KeyCombination.SHORTCUT_DOWN)).act(e -> fileSave())
 			.on(EventPattern.keyPressed(KeyCode.S, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN)).act(e -> fileSaveAll())
+			// Insert
+			.on(EventPattern.keyPressed(KeyCode.B, KeyCombination.SHORTCUT_DOWN)).act(e -> insertBold())
+			.on(EventPattern.keyPressed(KeyCode.I, KeyCombination.SHORTCUT_DOWN)).act(e -> insertItalic())
 			.create();
 		return editorShortcuts;
 	}
@@ -245,7 +272,7 @@ class MainWindow
 	}
 
 	private void fileClose() {
-		fileEditorTabPane.closeEditor(fileEditorTabPane.activeFileEditorProperty().get());
+		fileEditorTabPane.closeEditor(fileEditorTabPane.getActiveFileEditor());
 	}
 
 	private void fileCloseAll() {
@@ -253,7 +280,7 @@ class MainWindow
 	}
 
 	private void fileSave() {
-		fileEditorTabPane.saveEditor(fileEditorTabPane.activeFileEditorProperty().get());
+		fileEditorTabPane.saveEditor(fileEditorTabPane.getActiveFileEditor());
 	}
 
 	private void fileSaveAll() {
@@ -268,11 +295,21 @@ class MainWindow
 	//---- Edit menu ----------------------------------------------------------
 
 	private void editUndo() {
-		fileEditorTabPane.activeFileEditorProperty().get().undo();
+		fileEditorTabPane.getActiveFileEditor().undo();
 	}
 
 	private void editRedo() {
-		fileEditorTabPane.activeFileEditorProperty().get().redo();
+		fileEditorTabPane.getActiveFileEditor().redo();
+	}
+
+	//---- Insert menu --------------------------------------------------------
+
+	private void insertBold() {
+		fileEditorTabPane.getActiveFileEditor().getEditor().surroundSelection("**", "**");
+	}
+
+	private void insertItalic() {
+		fileEditorTabPane.getActiveFileEditor().getEditor().surroundSelection("*", "*");
 	}
 
 	//---- Help menu ----------------------------------------------------------
