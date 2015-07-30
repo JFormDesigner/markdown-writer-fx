@@ -46,6 +46,8 @@ class WebViewPreview
 	implements MarkdownPreviewPane.Preview
 {
 	private final WebView webView = new WebView();
+	private int lastScrollX;
+	private int lastScrollY;
 
 	Node getNode() {
 		return webView;
@@ -60,12 +62,17 @@ class WebViewPreview
 
 	@Override
 	public void update(RootNode astRoot) {
-		Object scrollXobj = webView.getEngine().executeScript("window.scrollX");
-		Object scrollYobj = webView.getEngine().executeScript("window.scrollY");
-		int scrollX = (scrollXobj instanceof Number) ? ((Number)scrollXobj).intValue() : 0;
-		int scrollY = (scrollYobj instanceof Number) ? ((Number)scrollYobj).intValue() : 0;
-		String scrollScript = (scrollX > 0 || scrollY > 0)
-				? ("  onload='window.scrollTo("+scrollX+", "+scrollY+");'")
+		if (!webView.getEngine().getLoadWorker().isRunning()) {
+			// get window.scrollX and window.scrollY from web engine,
+			// but only no worker is running (in this case the result would be zero)
+			Object scrollXobj = webView.getEngine().executeScript("window.scrollX");
+			Object scrollYobj = webView.getEngine().executeScript("window.scrollY");
+			lastScrollX = (scrollXobj instanceof Number) ? ((Number)scrollXobj).intValue() : 0;
+			lastScrollY = (scrollYobj instanceof Number) ? ((Number)scrollYobj).intValue() : 0;
+		}
+
+		String scrollScript = (lastScrollX > 0 || lastScrollY > 0)
+				? ("  onload='window.scrollTo("+lastScrollX+", "+lastScrollY+");'")
 				: null;
 
 		webView.getEngine().loadContent(
