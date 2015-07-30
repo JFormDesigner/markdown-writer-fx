@@ -47,7 +47,6 @@ import javafx.scene.control.Separator;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.ToolBar;
 import javafx.scene.control.Tooltip;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
@@ -59,6 +58,7 @@ import org.fxmisc.wellbehaved.event.EventPattern;
 import de.jensd.fx.glyphs.GlyphIcons;
 import de.jensd.fx.glyphs.GlyphsDude;
 import static de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -70,6 +70,7 @@ class MainWindow
 {
 	private final Scene scene;
 	private final FileEditorTabPane fileEditorTabPane;
+	private MenuBar menuBar;
 
 	MainWindow() {
 		fileEditorTabPane = new FileEditorTabPane(this);
@@ -151,7 +152,7 @@ class MainWindow
 		Menu helpMenu = new Menu("Help", null,
 				helpAboutMenuItem);
 
-		MenuBar menuBar = new MenuBar(fileMenu, editMenu, insertMenu, helpMenu);
+		menuBar = new MenuBar(fileMenu, editMenu, insertMenu, helpMenu);
 
 
 		//---- ToolBar ----
@@ -253,17 +254,20 @@ class MainWindow
 		if (editorShortcuts != null)
 			return editorShortcuts;
 
-		editorShortcuts = EventHandlerHelper
-			// File
-			.on(EventPattern.keyPressed(KeyCode.N, KeyCombination.SHORTCUT_DOWN)).act(e -> fileNew())
-			.on(EventPattern.keyPressed(KeyCode.O, KeyCombination.SHORTCUT_DOWN)).act(e -> fileOpen())
-			.on(EventPattern.keyPressed(KeyCode.W, KeyCombination.SHORTCUT_DOWN)).act(e -> fileClose())
-			.on(EventPattern.keyPressed(KeyCode.S, KeyCombination.SHORTCUT_DOWN)).act(e -> fileSave())
-			.on(EventPattern.keyPressed(KeyCode.S, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN)).act(e -> fileSaveAll())
-			// Insert
-			.on(EventPattern.keyPressed(KeyCode.B, KeyCombination.SHORTCUT_DOWN)).act(e -> insertBold())
-			.on(EventPattern.keyPressed(KeyCode.I, KeyCombination.SHORTCUT_DOWN)).act(e -> insertItalic())
-			.create();
+		EventHandlerHelper.Builder<KeyEvent> builder = null;
+		for (Menu menu : menuBar.getMenus()) {
+			for (MenuItem menuItem : menu.getItems()) {
+				KeyCombination accelerator = menuItem.getAccelerator();
+				if (accelerator != null) {
+					Consumer<? super KeyEvent> action = e -> menuItem.getOnAction().handle(null);
+					if (builder != null)
+						builder = builder.on(EventPattern.keyPressed(accelerator)).act(action);
+					else
+						builder = EventHandlerHelper.on(EventPattern.keyPressed(accelerator)).act(action);
+				}
+			}
+		}
+		editorShortcuts = builder.create();
 		return editorShortcuts;
 	}
 
