@@ -32,21 +32,16 @@ import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ObservableBooleanValue;
-import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.Button;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.Separator;
-import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.ToolBar;
-import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
@@ -55,8 +50,8 @@ import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import org.fxmisc.wellbehaved.event.EventHandlerHelper;
 import org.fxmisc.wellbehaved.event.EventPattern;
-import de.jensd.fx.glyphs.GlyphIcons;
-import de.jensd.fx.glyphs.GlyphsDude;
+import org.markdownwriterfx.util.Action;
+import org.markdownwriterfx.util.ActionUtils;
 import static de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -94,125 +89,77 @@ class MainWindow
 	}
 
 	private Node createMenuBarAndToolBar() {
+		BooleanBinding activeFileEditorIsNull = fileEditorTabPane.activeFileEditorProperty().isNull();
+
+		// File actions
+		Action fileNewAction = new Action("New", "Shortcut+N", FILE_ALT, e -> fileNew());
+		Action fileOpenAction = new Action("Open...", "Shortcut+O", FOLDER_OPEN_ALT, e -> fileOpen());
+		Action fileCloseAction = new Action("Close", "Shortcut+W", null, e -> fileClose(), activeFileEditorIsNull);
+		Action fileCloseAllAction = new Action("Close All", null, null, e -> fileCloseAll(), activeFileEditorIsNull);
+		Action fileSaveAction = new Action("Save", "Shortcut+S", FLOPPY_ALT, e -> fileSave(),
+				createActiveBooleanProperty(FileEditor::modifiedProperty).not());
+		Action fileSaveAllAction = new Action("Save All", "Shortcut+Shift+S", null, e -> fileSaveAll(),
+				Bindings.not(fileEditorTabPane.anyFileEditorModifiedProperty()));
+		Action fileExitAction = new Action("Exit", null, null, e -> fileExit());
+
+		// Edit actions
+		Action editUndoAction = new Action("Undo", "Shortcut+Z", UNDO, e -> editUndo(),
+				createActiveBooleanProperty(FileEditor::canUndoProperty).not());
+		Action editRedoAction = new Action("Redo", "Shortcut+Y", REPEAT, e -> editRedo(),
+				createActiveBooleanProperty(FileEditor::canRedoProperty).not());
+
+		// Insert actions
+		Action insertBoldAction = new Action("Bold", "Shortcut+B", BOLD, e -> insertBold(), activeFileEditorIsNull);
+		Action insertItalicAction = new Action("Italic", "Shortcut+I", ITALIC, e -> insertItalic(), activeFileEditorIsNull);
+
+		// Help actions
+		Action helpAboutAction = new Action("About Markdown Writer FX", null, null, e -> helpAbout());
+
 
 		//---- MenuBar ----
 
-		// File menu
-		MenuItem fileNewMenuItem = createMenuItem("New", "Shortcut+N", FILE_ALT, e -> fileNew());
-		MenuItem fileOpenMenuItem = createMenuItem("Open...", "Shortcut+O", FOLDER_OPEN_ALT, e -> fileOpen());
-		MenuItem fileCloseMenuItem = createMenuItem("Close", "Shortcut+W", null, e -> fileClose());
-		MenuItem fileCloseAllMenuItem = createMenuItem("Close All", null, null, e -> fileCloseAll());
-		MenuItem fileSaveMenuItem = createMenuItem("Save", "Shortcut+S", FLOPPY_ALT, e -> fileSave());
-		MenuItem fileSaveAllMenuItem = createMenuItem("Save All", "Shortcut+Shift+S", null, e -> fileSaveAll());
-		MenuItem fileExitMenuItem = createMenuItem("Exit", null, null, e -> fileExit());
+		Menu fileMenu = ActionUtils.createMenu("File",
+				fileNewAction,
+				fileOpenAction,
+				null,
+				fileCloseAction,
+				fileCloseAllAction,
+				null,
+				fileSaveAction,
+				fileSaveAllAction,
+				null,
+				fileExitAction);
 
-		BooleanBinding activeFileEditorIsNull = fileEditorTabPane.activeFileEditorProperty().isNull();
-		fileCloseMenuItem.disableProperty().bind(activeFileEditorIsNull);
-		fileCloseAllMenuItem.disableProperty().bind(activeFileEditorIsNull);
-		fileSaveMenuItem.disableProperty().bind(createActiveBooleanProperty(FileEditor::modifiedProperty).not());
-		fileSaveAllMenuItem.disableProperty().bind(Bindings.not(fileEditorTabPane.anyFileEditorModifiedProperty()));
+		Menu editMenu = ActionUtils.createMenu("Edit",
+				editUndoAction,
+				editRedoAction);
 
-		Menu fileMenu = new Menu("File", null,
-				fileNewMenuItem,
-				fileOpenMenuItem,
-				new SeparatorMenuItem(),
-				fileCloseMenuItem,
-				fileCloseAllMenuItem,
-				new SeparatorMenuItem(),
-				fileSaveMenuItem,
-				fileSaveAllMenuItem,
-				new SeparatorMenuItem(),
-				fileExitMenuItem);
+		Menu insertMenu = ActionUtils.createMenu("Insert",
+				insertBoldAction,
+				insertItalicAction);
 
-		// Edit menu
-		MenuItem editUndoMenuItem = createMenuItem("Undo", "Shortcut+Z", UNDO, e -> editUndo());
-		MenuItem editRedoMenuItem = createMenuItem("Redo", "Shortcut+Y", REPEAT, e -> editRedo());
-
-		editUndoMenuItem.disableProperty().bind(createActiveBooleanProperty(FileEditor::canUndoProperty).not());
-		editRedoMenuItem.disableProperty().bind(createActiveBooleanProperty(FileEditor::canRedoProperty).not());
-
-		Menu editMenu = new Menu("Edit", null,
-				editUndoMenuItem,
-				editRedoMenuItem);
-
-		// Insert menu
-		MenuItem insertBoldMenuItem = createMenuItem("Bold", "Shortcut+B", BOLD, e -> insertBold());
-		MenuItem insertItalicMenuItem = createMenuItem("Italic", "Shortcut+I", ITALIC, e -> insertItalic());
-
-		insertBoldMenuItem.disableProperty().bind(activeFileEditorIsNull);
-		insertItalicMenuItem.disableProperty().bind(activeFileEditorIsNull);
-
-		Menu insertMenu = new Menu("Insert", null,
-				insertBoldMenuItem,
-				insertItalicMenuItem);
-
-		// Help menu
-		MenuItem helpAboutMenuItem = createMenuItem("About Markdown Writer FX", null, null, e -> helpAbout());
-
-		Menu helpMenu = new Menu("Help", null,
-				helpAboutMenuItem);
+		Menu helpMenu = ActionUtils.createMenu("Help",
+				helpAboutAction);
 
 		menuBar = new MenuBar(fileMenu, editMenu, insertMenu, helpMenu);
 
 
 		//---- ToolBar ----
 
-		Button fileNewButton = createToolBarButton(FILE_ALT, "New", "Shortcut+N", e -> fileNew());
-		Button fileOpenButton = createToolBarButton(FOLDER_OPEN_ALT, "Open", "Shortcut+O", e -> fileOpen());
-		Button fileSaveButton = createToolBarButton(FLOPPY_ALT, "Save", "Shortcut+S", e -> fileSave());
-
-		Button editUndoButton = createToolBarButton(UNDO, "Undo", "Shortcut+Z", e -> editUndo());
-		Button editRedoButton = createToolBarButton(REPEAT, "Redo", "Shortcut+Y", e -> editRedo());
-
-		Button insertBoldButton = createToolBarButton(BOLD, "Bold", "Shortcut+B", e -> insertBold());
-		Button insertItalicButton = createToolBarButton(ITALIC, "Italic", "Shortcut+I", e -> insertItalic());
-
-		fileSaveButton.disableProperty().bind(fileSaveMenuItem.disableProperty());
-
-		editUndoButton.disableProperty().bind(editUndoMenuItem.disableProperty());
-		editRedoButton.disableProperty().bind(editRedoMenuItem.disableProperty());
-
-		insertBoldButton.disableProperty().bind(activeFileEditorIsNull);
-		insertItalicButton.disableProperty().bind(activeFileEditorIsNull);
-
-		ToolBar toolBar = new ToolBar(
-				fileNewButton,
-				fileOpenButton,
-				fileSaveButton,
-				new Separator(),
-				editUndoButton,
-				editRedoButton,
-				new Separator(),
-				insertBoldButton,
-				insertItalicButton);
+		ToolBar toolBar = ActionUtils.createToolBar(
+				fileNewAction,
+				fileOpenAction,
+				fileSaveAction,
+				null,
+				editUndoAction,
+				editRedoAction,
+				null,
+				insertBoldAction,
+				insertItalicAction);
 
 		return new VBox(menuBar, toolBar);
 	}
 
-	private MenuItem createMenuItem(String text, String accelerator,
-		GlyphIcons icon, EventHandler<ActionEvent> action)
-	{
-		MenuItem menuItem = new MenuItem(text);
-		if(accelerator != null)
-			menuItem.setAccelerator(KeyCombination.valueOf(accelerator));
-		if(icon != null)
-			menuItem.setGraphic(GlyphsDude.createIcon(icon));
-		menuItem.setOnAction(action);
-		return menuItem;
-	}
-
-	private Button createToolBarButton(GlyphIcons icon, String tooltip,
-		String accelerator, EventHandler<ActionEvent> action)
-	{
-		Button button = new Button();
-		button.setGraphic(GlyphsDude.createIcon(icon, "1.2em"));
-		if(accelerator != null)
-			tooltip = tooltip + " (" + KeyCombination.valueOf(accelerator).getDisplayText() + ')';
-		button.setTooltip(new Tooltip(tooltip));
-		button.setFocusTraversable(false);
-		button.setOnAction(action);
-		return button;
-	}
 
 	/**
 	 * Creates a boolean property that is bound to another boolean value
@@ -271,7 +218,7 @@ class MainWindow
 		return editorShortcuts;
 	}
 
-	//---- File menu ----------------------------------------------------------
+	//---- File actions -------------------------------------------------------
 
 	private void fileNew() {
 		fileEditorTabPane.newEditor();
@@ -302,7 +249,7 @@ class MainWindow
 		Event.fireEvent(window, new WindowEvent(window, WindowEvent.WINDOW_CLOSE_REQUEST));
 	}
 
-	//---- Edit menu ----------------------------------------------------------
+	//---- Edit actions -------------------------------------------------------
 
 	private void editUndo() {
 		fileEditorTabPane.getActiveFileEditor().undo();
@@ -312,7 +259,7 @@ class MainWindow
 		fileEditorTabPane.getActiveFileEditor().redo();
 	}
 
-	//---- Insert menu --------------------------------------------------------
+	//---- Insert actions -----------------------------------------------------
 
 	private void insertBold() {
 		fileEditorTabPane.getActiveFileEditor().getEditor().surroundSelection("**", "**");
@@ -322,7 +269,7 @@ class MainWindow
 		fileEditorTabPane.getActiveFileEditor().getEditor().surroundSelection("*", "*");
 	}
 
-	//---- Help menu ----------------------------------------------------------
+	//---- Help actions -------------------------------------------------------
 
 	private void helpAbout() {
 		Alert alert = new Alert(AlertType.INFORMATION);
