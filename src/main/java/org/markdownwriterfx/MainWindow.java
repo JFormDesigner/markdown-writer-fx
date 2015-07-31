@@ -118,6 +118,47 @@ class MainWindow
 		Action insertItalicAction = new Action("Italic", "Shortcut+I", ITALIC,
 				e -> getActiveEditor().surroundSelection("*", "*"),
 				activeFileEditorIsNull);
+		Action insertStrikethroughAction = new Action("Strikethrough", "Shortcut+T", STRIKETHROUGH,
+				e -> getActiveEditor().surroundSelection("~~", "~~"),
+				activeFileEditorIsNull);
+		Action insertBlockquoteAction = new Action("Blockquote", "Shortcut+Q", QUOTE_LEFT,
+				e -> getActiveEditor().surroundSelection("\n\n> ", ""),
+				activeFileEditorIsNull);
+		Action insertCodeAction = new Action("Inline Code", "Shortcut+K", CODE,
+				e -> getActiveEditor().surroundSelection("`", "`"),
+				activeFileEditorIsNull);
+		Action insertFencedCodeBlockAction = new Action("Fenced Code Block", "Shortcut+Shift+K", FILE_CODE_ALT,
+				e -> getActiveEditor().surroundSelection("\n\n~~~\n", "\n~~~\n\n", "enter code here"),
+				activeFileEditorIsNull);
+
+		Action insertHeader1Action = new Action("Header 1", "Shortcut+1", HEADER,
+				e -> getActiveEditor().surroundSelection("\n\n# ", "", "header 1"),
+				activeFileEditorIsNull);
+		Action insertHeader2Action = new Action("Header 2", "Shortcut+2", HEADER,
+				e -> getActiveEditor().surroundSelection("\n\n## ", "", "header 2"),
+				activeFileEditorIsNull);
+		Action insertHeader3Action = new Action("Header 3", "Shortcut+3", HEADER,
+				e -> getActiveEditor().surroundSelection("\n\n### ", "", "header 3"),
+				activeFileEditorIsNull);
+		Action insertHeader4Action = new Action("Header 4", "Shortcut+4", HEADER,
+				e -> getActiveEditor().surroundSelection("\n\n#### ", "", "header 4"),
+				activeFileEditorIsNull);
+		Action insertHeader5Action = new Action("Header 5", "Shortcut+5", HEADER,
+				e -> getActiveEditor().surroundSelection("\n\n##### ", "", "header 5"),
+				activeFileEditorIsNull);
+		Action insertHeader6Action = new Action("Header 6", "Shortcut+6", HEADER,
+				e -> getActiveEditor().surroundSelection("\n\n###### ", "", "header 6"),
+				activeFileEditorIsNull);
+
+		Action insertUnorderedListAction = new Action("Unordered List", "Shortcut+U", LIST_UL,
+				e -> getActiveEditor().surroundSelection("\n\n- ", ""),
+				activeFileEditorIsNull);
+		Action insertOrderedListAction = new Action("Ordered List", "Shortcut+Shift+O", LIST_OL,
+				e -> getActiveEditor().surroundSelection("\n\n1. ", ""),
+				activeFileEditorIsNull);
+		Action insertHorizontalRuleAction = new Action("Horizontal Rule", "Shortcut+H", null,
+				e -> getActiveEditor().surroundSelection("\n\n---\n\n", ""),
+				activeFileEditorIsNull);
 
 		// Help actions
 		Action helpAboutAction = new Action("About Markdown Writer FX", null, null, e -> helpAbout());
@@ -143,7 +184,22 @@ class MainWindow
 
 		Menu insertMenu = ActionUtils.createMenu("Insert",
 				insertBoldAction,
-				insertItalicAction);
+				insertItalicAction,
+				insertStrikethroughAction,
+				insertBlockquoteAction,
+				insertCodeAction,
+				insertFencedCodeBlockAction,
+				null,
+				insertHeader1Action,
+				insertHeader2Action,
+				insertHeader3Action,
+				insertHeader4Action,
+				insertHeader5Action,
+				insertHeader6Action,
+				null,
+				insertUnorderedListAction,
+				insertOrderedListAction,
+				insertHorizontalRuleAction);
 
 		Menu helpMenu = ActionUtils.createMenu("Help",
 				helpAboutAction);
@@ -162,7 +218,15 @@ class MainWindow
 				editRedoAction,
 				null,
 				insertBoldAction,
-				insertItalicAction);
+				insertItalicAction,
+				insertBlockquoteAction,
+				insertCodeAction,
+				insertFencedCodeBlockAction,
+				null,
+				insertHeader1Action,
+				null,
+				insertUnorderedListAction,
+				insertOrderedListAction);
 
 		return new VBox(menuBar, toolBar);
 	}

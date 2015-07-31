@@ -126,6 +126,10 @@ public class MarkdownEditorPane
 	}
 
 	public void surroundSelection(String leading, String trailing) {
+		surroundSelection(leading, trailing, null);
+	}
+
+	public void surroundSelection(String leading, String trailing, String hint) {
 		// Note: not using textArea.insertText() to insert leading and trailing
 		//       because this would add two changes to undo history
 
@@ -142,7 +146,28 @@ public class MarkdownEditorPane
 			end = start + trimmedSelectedText.length();
 		}
 
+		// remove leading whitespaces from leading text if selection starts at zero
+		if (start == 0)
+			leading = Utils.ltrim(leading);
+
+		// remove trailing whitespaces from trailing text if selection ends at text end
+		if (end == textArea.getLength())
+			trailing = Utils.rtrim(trailing);
+
+		int selStart = start + leading.length();
+		int selEnd = end + leading.length();
+
+		// insert hint text if selection is empty
+		if (hint != null && trimmedSelectedText.isEmpty()) {
+			trimmedSelectedText = hint;
+			selEnd = selStart + hint.length();
+		}
+
+		// prevent undo merging with previous text entered by user
+		textArea.getUndoManager().preventMerge();
+
+		// replace text and update selection
 		textArea.replaceText(start, end, leading + trimmedSelectedText + trailing);
-		textArea.selectRange(start + leading.length(), end + leading.length());
+		textArea.selectRange(selStart, selEnd);
 	}
 }
