@@ -200,14 +200,4 @@ class FileEditor
 			return false;
 		}
 	}
-
-	void undo() {
-		if (markdownEditorPane != null)
-			markdownEditorPane.getUndoManager().undo();
-	}
-
-	void redo() {
-		if (markdownEditorPane != null)
-			markdownEditorPane.getUndoManager().redo();
-	}
 }

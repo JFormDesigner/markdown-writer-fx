@@ -105,10 +105,10 @@ class MainWindow
 
 		// Edit actions
 		Action editUndoAction = new Action("Undo", "Shortcut+Z", UNDO,
-				e -> fileEditorTabPane.getActiveFileEditor().undo(),
+				e -> getActiveEditor().undo(),
 				createActiveBooleanProperty(FileEditor::canUndoProperty).not());
 		Action editRedoAction = new Action("Redo", "Shortcut+Y", REPEAT,
-				e -> fileEditorTabPane.getActiveFileEditor().redo(),
+				e -> getActiveEditor().redo(),
 				createActiveBooleanProperty(FileEditor::canRedoProperty).not());
 
 		// Insert actions

@@ -125,6 +125,14 @@ public class MarkdownEditorPane
 		MarkdownSyntaxHighlighter.highlight(textArea, astRoot);
 	}
 
+	public void undo() {
+		textArea.getUndoManager().undo();
+	}
+
+	public void redo() {
+		textArea.getUndoManager().redo();
+	}
+
 	public void surroundSelection(String leading, String trailing) {
 		surroundSelection(leading, trailing, null);
 	}
