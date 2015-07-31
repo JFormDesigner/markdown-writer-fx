@@ -27,6 +27,11 @@
 
 package org.markdownwriterfx.editor;
 
+import static javafx.scene.input.KeyCode.*;
+import static org.fxmisc.wellbehaved.event.EventPattern.keyPressed;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.ReadOnlyDoubleProperty;
@@ -56,6 +61,9 @@ import org.pegdown.ast.RootNode;
  */
 public class MarkdownEditorPane
 {
+	private static final Pattern AUTO_INDENT_PATTERN = Pattern.compile(
+			"(\\s*-\\s+|\\s*[0-9]+\\.\\s+|\\s+).*");
+
 	private final StyleClassedTextArea textArea;
 	private PegDownProcessor pegDownProcessor;
 
@@ -70,6 +78,10 @@ public class MarkdownEditorPane
 			applyHighlighting(astRoot);
 			markdownAST.set(astRoot);
 		});
+
+		EventHandlerHelper.install(textArea.onKeyPressedProperty(), EventHandlerHelper
+				.on(keyPressed(ENTER)).act(this::enterPressed)
+				.create());
 
 		// search for vertical scrollbar and add change listener to update 'scrollY' property
 		textArea.getChildrenUnmodifiable().addListener((InvalidationListener) e -> {
@@ -123,6 +135,16 @@ public class MarkdownEditorPane
 
 	private void applyHighlighting(RootNode astRoot) {
 		MarkdownSyntaxHighlighter.highlight(textArea, astRoot);
+	}
+
+	private void enterPressed(KeyEvent e) {
+		String currentLine = textArea.getText(textArea.getCurrentParagraph());
+
+		String newText = "\n";
+		Matcher matcher = AUTO_INDENT_PATTERN.matcher(currentLine);
+		if (matcher.matches())
+			newText = newText.concat(matcher.group(1));
+		textArea.replaceSelection(newText);
 	}
 
 	public void undo() {
