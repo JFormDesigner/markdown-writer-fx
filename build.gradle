@@ -1,0 +1,12 @@
+apply plugin: 'java'
+apply plugin: 'java-library-distribution'
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	compile group: 'org.fxmisc.richtext', name: 'richtextfx', version: '0.6.4'
+	compile group: 'de.jensd', name: 'fontawesomefx', version: '8.4'
+	compile group: 'org.pegdown', name: 'pegdown', version: '1.5.0'
+}
