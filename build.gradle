@@ -1,3 +1,5 @@
+version = '0.1'
+
 apply plugin: 'java'
 apply plugin: 'java-library-distribution'
 
@@ -12,4 +14,23 @@ dependencies {
 
 	// newer versions of dependencies
 	compile group: 'org.fxmisc.flowless', name: 'flowless', version: '0.4.4'
+}
+
+sourceCompatibility = 1.8
+
+jar {
+	baseName = 'markdown-writer-fx'
+	manifest {
+		attributes 'Main-Class': 'org.markdownwriterfx.MarkdownWriterFXApp',
+					'Class-Path': configurations.compile.collect { 'lib/' + it.getName() }.join(' ')
+	}
+}
+
+distributions {
+	main {
+		baseName = 'markdown-writer-fx'
+		contents {
+			from { ['LICENSE', 'README.md'] }
+		}
+	}
 }
