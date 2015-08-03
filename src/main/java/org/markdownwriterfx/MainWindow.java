@@ -129,7 +129,7 @@ class MainWindow
 				e -> getActiveEditor().surroundSelection("`", "`"),
 				activeFileEditorIsNull);
 		Action insertFencedCodeBlockAction = new Action("Fenced Code Block", "Shortcut+Shift+K", FILE_CODE_ALT,
-				e -> getActiveEditor().surroundSelection("\n\n~~~\n", "\n~~~\n\n", "enter code here"),
+				e -> getActiveEditor().surroundSelection("\n\n```\n", "\n```\n\n", "enter code here"),
 				activeFileEditorIsNull);
 
 		Action insertHeader1Action = new Action("Header 1", "Shortcut+1", HEADER,
@@ -152,7 +152,7 @@ class MainWindow
 				activeFileEditorIsNull);
 
 		Action insertUnorderedListAction = new Action("Unordered List", "Shortcut+U", LIST_UL,
-				e -> getActiveEditor().surroundSelection("\n\n- ", ""),
+				e -> getActiveEditor().surroundSelection("\n\n* ", ""),
 				activeFileEditorIsNull);
 		Action insertOrderedListAction = new Action("Ordered List", "Shortcut+Shift+O", LIST_OL,
 				e -> getActiveEditor().surroundSelection("\n\n1. ", ""),
