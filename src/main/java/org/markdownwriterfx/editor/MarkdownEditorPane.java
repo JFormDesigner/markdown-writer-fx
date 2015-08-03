@@ -43,6 +43,7 @@ import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.IndexRange;
 import javafx.scene.control.ScrollBar;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.undo.UndoManager;
@@ -65,6 +66,8 @@ public class MarkdownEditorPane
 			"(\\s*-\\s+|\\s*[0-9]+\\.\\s+|\\s+).*");
 
 	private final StyleClassedTextArea textArea;
+	private final ParagraphOverlayGraphicFactory overlayGraphicFactory;
+	private WhitespaceOverlayFactory whitespaceOverlayFactory;
 	private PegDownProcessor pegDownProcessor;
 
 	public MarkdownEditorPane() {
@@ -81,6 +84,7 @@ public class MarkdownEditorPane
 
 		EventHandlerHelper.install(textArea.onKeyPressedProperty(), EventHandlerHelper
 				.on(keyPressed(ENTER)).act(this::enterPressed)
+				.on(keyPressed(W, KeyCombination.ALT_DOWN)).act(this::showWhitespace)
 				.create());
 
 		// search for vertical scrollbar and add change listener to update 'scrollY' property
@@ -94,6 +98,9 @@ public class MarkdownEditorPane
 				});
 			}
 		});
+
+		overlayGraphicFactory = new ParagraphOverlayGraphicFactory(textArea);
+		textArea.setParagraphGraphicFactory(overlayGraphicFactory);
 	}
 
 	public void installEditorShortcuts(EventHandler<KeyEvent> editorShortcuts) {
@@ -145,6 +152,16 @@ public class MarkdownEditorPane
 		if (matcher.matches())
 			newText = newText.concat(matcher.group(1));
 		textArea.replaceSelection(newText);
+	}
+
+	private void showWhitespace(KeyEvent e) {
+		if (whitespaceOverlayFactory == null) {
+			whitespaceOverlayFactory = new WhitespaceOverlayFactory();
+			overlayGraphicFactory.addOverlayFactory(whitespaceOverlayFactory);
+		} else {
+			overlayGraphicFactory.removeOverlayFactory(whitespaceOverlayFactory);
+			whitespaceOverlayFactory = null;
+		}
 	}
 
 	public void undo() {
