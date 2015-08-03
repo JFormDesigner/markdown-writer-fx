@@ -84,6 +84,7 @@ public class MarkdownEditorPane
 
 		EventHandlerHelper.install(textArea.onKeyPressedProperty(), EventHandlerHelper
 				.on(keyPressed(ENTER)).act(this::enterPressed)
+				.on(keyPressed(D, KeyCombination.SHORTCUT_DOWN)).act(this::deleteLine)
 				.on(keyPressed(W, KeyCombination.ALT_DOWN)).act(this::showWhitespace)
 				.create());
 
@@ -152,6 +153,12 @@ public class MarkdownEditorPane
 		if (matcher.matches())
 			newText = newText.concat(matcher.group(1));
 		textArea.replaceSelection(newText);
+	}
+
+	private void deleteLine(KeyEvent e) {
+		int start = textArea.getCaretPosition() - textArea.getCaretColumn();
+		int end = start + textArea.getParagraph(textArea.getCurrentParagraph()).fullLength();
+		textArea.deleteText(start, end);
 	}
 
 	private void showWhitespace(KeyEvent e) {
