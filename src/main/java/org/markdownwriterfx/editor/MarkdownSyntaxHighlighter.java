@@ -86,6 +86,7 @@ class MarkdownSyntaxHighlighter
 
 		// misc
 		html,
+		monospace,
 	};
 
 	/**
@@ -221,6 +222,12 @@ class MarkdownSyntaxHighlighter
 			default: return;
 		}
 		setStyleClass(node, styleClass);
+
+		// use monospace font for underlined headers
+		if (!node.getChildren().isEmpty() &&
+				node.getChildren().get(0).getStartIndex() == node.getStartIndex())
+			setStyleClass(node, StyleClass.monospace);
+
 		visitChildren(node);
 	}
 
