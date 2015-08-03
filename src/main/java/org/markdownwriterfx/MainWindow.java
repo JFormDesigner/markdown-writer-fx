@@ -77,6 +77,7 @@ class MainWindow
 		borderPane.setCenter(fileEditorTabPane.getNode());
 
 		scene = new Scene(borderPane);
+		scene.getStylesheets().add("org/markdownwriterfx/MarkdownWriter.css");
 		scene.windowProperty().addListener((observable, oldWindow, newWindow) -> {
 			newWindow.setOnCloseRequest(e -> {
 				if (!fileEditorTabPane.closeAllEditors())
