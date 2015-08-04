@@ -63,7 +63,7 @@ import org.pegdown.ast.RootNode;
 public class MarkdownEditorPane
 {
 	private static final Pattern AUTO_INDENT_PATTERN = Pattern.compile(
-			"(\\s*[*+-]\\s+|\\s*[0-9]+\\.\\s+|\\s+).*");
+			"(\\s*[*+-]\\s+|\\s*[0-9]+\\.\\s+|\\s+)(.*)");
 
 	private final StyleClassedTextArea textArea;
 	private final ParagraphOverlayGraphicFactory overlayGraphicFactory;
@@ -150,8 +150,17 @@ public class MarkdownEditorPane
 
 		String newText = "\n";
 		Matcher matcher = AUTO_INDENT_PATTERN.matcher(currentLine);
-		if (matcher.matches())
-			newText = newText.concat(matcher.group(1));
+		if (matcher.matches()) {
+			if (!matcher.group(2).isEmpty()) {
+				// indent new line with same whitespace characters and list markers as current line
+				newText = newText.concat(matcher.group(1));
+			} else {
+				// current line contains only whitespace characters and list markers
+				// --> empty current line
+				int caretPosition = textArea.getCaretPosition();
+				textArea.selectRange(caretPosition - currentLine.length(), caretPosition);
+			}
+		}
 		textArea.replaceSelection(newText);
 	}
 
