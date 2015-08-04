@@ -42,6 +42,7 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ToolBar;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
@@ -82,6 +83,16 @@ class MainWindow
 			newWindow.setOnCloseRequest(e -> {
 				if (!fileEditorTabPane.closeAllEditors())
 					e.consume();
+			});
+
+			// workaround for a bug in JavaFX: unselect menubar if window looses focus
+			newWindow.focusedProperty().addListener((obs, oldFocused, newFocused) -> {
+				if (!newFocused) {
+					// send an ESC key event to the menubar
+					menuBar.fireEvent(new KeyEvent(KeyEvent.KEY_PRESSED,
+							KeyEvent.CHAR_UNDEFINED, "", KeyCode.ESCAPE,
+							false, false, false, false));
+				}
 			});
 		});
 	}
