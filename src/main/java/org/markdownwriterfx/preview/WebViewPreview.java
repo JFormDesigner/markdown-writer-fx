@@ -27,6 +27,7 @@
 
 package org.markdownwriterfx.preview;
 
+import java.nio.file.Path;
 import java.util.Collections;
 import javafx.scene.Node;
 import javafx.scene.web.WebView;
@@ -54,6 +55,8 @@ class WebViewPreview
 	}
 
 	static String toHtml(RootNode astRoot) {
+		if (astRoot == null)
+			return "";
 		return new ToHtmlSerializer(new LinkRenderer(),
 				Collections.<String, VerbatimSerializer>emptyMap(),
 				PegDownPlugins.NONE.getHtmlSerializerPlugins())
@@ -61,7 +64,7 @@ class WebViewPreview
 	}
 
 	@Override
-	public void update(RootNode astRoot) {
+	public void update(RootNode astRoot, Path path) {
 		if (!webView.getEngine().getLoadWorker().isRunning()) {
 			// get window.scrollX and window.scrollY from web engine,
 			// but only no worker is running (in this case the result would be zero)
@@ -71,16 +74,24 @@ class WebViewPreview
 			lastScrollY = (scrollYobj instanceof Number) ? ((Number)scrollYobj).intValue() : 0;
 		}
 
+		String base = (path != null)
+				? ("<base href=\"" + path.getParent().toUri().toString() + "\">\n")
+				: "";
 		String scrollScript = (lastScrollX > 0 || lastScrollY > 0)
 				? ("  onload='window.scrollTo("+lastScrollX+", "+lastScrollY+");'")
-				: null;
+				: "";
 
 		webView.getEngine().loadContent(
-			"<!DOCTYPE html><html><head><link rel=\"stylesheet\" href=\""
-			+ getClass().getResource("markdownpad-github.css")
-			+ "\"></head><body" + scrollScript + ">"
+			"<!DOCTYPE html>\n"
+			+ "<html>\n"
+			+ "<head>\n"
+			+ "<link rel=\"stylesheet\" href=\"" + getClass().getResource("markdownpad-github.css") + "\">\n"
+			+ base
+			+ "</head>\n"
+			+ "<body" + scrollScript + ">\n"
 			+ toHtml(astRoot)
-			+ "</body></html>");
+			+ "</body>\n"
+			+ "</html>");
 	}
 
 	@Override

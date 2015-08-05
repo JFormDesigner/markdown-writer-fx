@@ -157,6 +157,7 @@ class FileEditor
 		markdownEditorPane.getUndoManager().forgetHistory();
 
 		// bind preview to editor
+		markdownPreviewPane.pathProperty().bind(pathProperty());
 		markdownPreviewPane.markdownASTProperty().bind(markdownEditorPane.markdownASTProperty());
 		markdownPreviewPane.scrollYProperty().bind(markdownEditorPane.scrollYProperty());
 

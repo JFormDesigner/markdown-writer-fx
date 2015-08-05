@@ -27,6 +27,7 @@
 
 package org.markdownwriterfx.preview;
 
+import java.nio.file.Path;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.TextArea;
@@ -54,7 +55,7 @@ class HtmlSourcePreview
 	}
 
 	@Override
-	public void update(RootNode astRoot) {
+	public void update(RootNode astRoot, Path path) {
 		double scrollTop = textArea.getScrollTop();
 
 		textArea.setText(WebViewPreview.toHtml(astRoot));

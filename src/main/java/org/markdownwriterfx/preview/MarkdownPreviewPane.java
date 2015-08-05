@@ -27,6 +27,7 @@
 
 package org.markdownwriterfx.preview;
 
+import java.nio.file.Path;
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
@@ -54,7 +55,7 @@ public class MarkdownPreviewPane
 	private final ASTPreview astPreview = new ASTPreview();
 
 	interface Preview {
-		void update(RootNode astRoot);
+		void update(RootNode astRoot, Path path);
 		void scrollY(double value);
 	}
 
@@ -75,12 +76,16 @@ public class MarkdownPreviewPane
 		tabPane.getTabs().add(astTab);
 
 		tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
-			getActivePreview().update(getMarkdownAST());
+			update();
 			scrollY();
 		});
 
+		path.addListener((observable, oldValue, newValue) -> {
+			update();
+		});
+
 		markdownAST.addListener((observable, oldValue, newValue) -> {
-			getActivePreview().update(newValue);
+			update();
 		});
 
 		scrollY.addListener((observable, oldValue, newValue) -> {
@@ -96,6 +101,10 @@ public class MarkdownPreviewPane
 		return (Preview) tabPane.getSelectionModel().getSelectedItem().getUserData();
 	}
 
+	private void update() {
+		getActivePreview().update(getMarkdownAST(), getPath());
+	}
+
 	private boolean scrollYrunLaterPending;
 	private void scrollY() {
 		// avoid too many (and useless) runLater() invocations
@@ -108,6 +117,12 @@ public class MarkdownPreviewPane
 			getActivePreview().scrollY(getScrollY());
 		});
 	}
+
+	// 'path' property
+	private final ObjectProperty<Path> path = new SimpleObjectProperty<>();
+	public Path getPath() { return path.get(); }
+	public void setPath(Path path) { this.path.set(path); }
+	public ObjectProperty<Path> pathProperty() { return path; }
 
 	// 'markdownAST' property
 	private final ObjectProperty<RootNode> markdownAST = new SimpleObjectProperty<RootNode>();
