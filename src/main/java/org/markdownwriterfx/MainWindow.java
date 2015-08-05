@@ -146,6 +146,9 @@ class MainWindow
 		Action insertLinkAction = new Action("Link...", "Shortcut+L", LINK,
 				e -> getActiveEditor().insertLink(),
 				activeFileEditorIsNull);
+		Action insertImageAction = new Action("Image...", "Shortcut+G", PICTURE_ALT,
+				e -> getActiveEditor().insertImage(),
+				activeFileEditorIsNull);
 
 		Action insertHeader1Action = new Action("Header 1", "Shortcut+1", HEADER,
 				e -> getActiveEditor().surroundSelection("\n\n# ", "", "header 1"),
@@ -207,6 +210,7 @@ class MainWindow
 				insertFencedCodeBlockAction,
 				null,
 				insertLinkAction,
+				insertImageAction,
 				null,
 				insertHeader1Action,
 				insertHeader2Action,
@@ -242,6 +246,7 @@ class MainWindow
 				insertFencedCodeBlockAction,
 				null,
 				insertLinkAction,
+				insertImageAction,
 				null,
 				insertHeader1Action,
 				null,

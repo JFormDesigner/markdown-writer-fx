@@ -51,6 +51,7 @@ import javafx.scene.input.KeyEvent;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.undo.UndoManager;
 import org.fxmisc.wellbehaved.event.EventHandlerHelper;
+import org.markdownwriterfx.dialogs.ImageDialog;
 import org.markdownwriterfx.dialogs.LinkDialog;
 import org.markdownwriterfx.util.Utils;
 import org.pegdown.Extensions;
@@ -262,6 +263,13 @@ public class MarkdownEditorPane
 
 	public void insertLink() {
 		LinkDialog dialog = new LinkDialog(getNode().getScene().getWindow(), getPath().getParent());
+		dialog.showAndWait().ifPresent(result -> {
+			textArea.replaceSelection(result);
+		});
+	}
+
+	public void insertImage() {
+		ImageDialog dialog = new ImageDialog(getNode().getScene().getWindow(), getPath().getParent());
 		dialog.showAndWait().ifPresent(result -> {
 			textArea.replaceSelection(result);
 		});
