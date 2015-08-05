@@ -144,6 +144,7 @@ class FileEditor
 		markdownEditorPane = new MarkdownEditorPane();
 		markdownPreviewPane = new MarkdownPreviewPane();
 
+		markdownEditorPane.pathProperty().bind(path);
 		markdownEditorPane.installEditorShortcuts(mainWindow.getEditorShortcuts());
 		markdownEditorPane.installEditorShortcuts(EventHandlerHelper
 			.on(EventPattern.keyPressed(KeyCode.TAB, KeyCombination.CONTROL_DOWN)).act(e -> selectNextPreviousTab(1))

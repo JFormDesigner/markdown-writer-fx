@@ -143,6 +143,10 @@ class MainWindow
 				e -> getActiveEditor().surroundSelection("\n\n```\n", "\n```\n\n", "enter code here"),
 				activeFileEditorIsNull);
 
+		Action insertLinkAction = new Action("Link...", "Shortcut+L", LINK,
+				e -> getActiveEditor().insertLink(),
+				activeFileEditorIsNull);
+
 		Action insertHeader1Action = new Action("Header 1", "Shortcut+1", HEADER,
 				e -> getActiveEditor().surroundSelection("\n\n# ", "", "header 1"),
 				activeFileEditorIsNull);
@@ -202,6 +206,8 @@ class MainWindow
 				insertCodeAction,
 				insertFencedCodeBlockAction,
 				null,
+				insertLinkAction,
+				null,
 				insertHeader1Action,
 				insertHeader2Action,
 				insertHeader3Action,
@@ -234,6 +240,8 @@ class MainWindow
 				insertBlockquoteAction,
 				insertCodeAction,
 				insertFencedCodeBlockAction,
+				null,
+				insertLinkAction,
 				null,
 				insertHeader1Action,
 				null,

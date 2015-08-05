@@ -39,6 +39,10 @@ import javafx.scene.control.ScrollBar;
  */
 public class Utils
 {
+	public static boolean isNullOrEmpty(String s) {
+		return s == null || s.isEmpty();
+	}
+
 	public static String ltrim(String s) {
 		int i = 0;
 		while (i < s.length() && Character.isWhitespace(s.charAt(i)))

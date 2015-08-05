@@ -30,14 +30,17 @@ package org.markdownwriterfx.editor;
 import static javafx.scene.input.KeyCode.*;
 import static org.fxmisc.wellbehaved.event.EventPattern.keyPressed;
 
+import java.nio.file.Path;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
@@ -48,6 +51,7 @@ import javafx.scene.input.KeyEvent;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.undo.UndoManager;
 import org.fxmisc.wellbehaved.event.EventHandlerHelper;
+import org.markdownwriterfx.dialogs.LinkDialog;
 import org.markdownwriterfx.util.Utils;
 import org.pegdown.Extensions;
 import org.pegdown.PegDownProcessor;
@@ -135,6 +139,12 @@ public class MarkdownEditorPane
 	public double getScrollY() { return scrollY.get(); }
 	public ReadOnlyDoubleProperty scrollYProperty() { return scrollY.getReadOnlyProperty(); }
 
+	// 'path' property
+	private final ObjectProperty<Path> path = new SimpleObjectProperty<>();
+	public Path getPath() { return path.get(); }
+	public void setPath(Path path) { this.path.set(path); }
+	public ObjectProperty<Path> pathProperty() { return path; }
+
 	private RootNode parseMarkdown(String text) {
 		if(pegDownProcessor == null)
 			pegDownProcessor = new PegDownProcessor(Extensions.ALL);
@@ -217,6 +227,22 @@ public class MarkdownEditorPane
 		if (end == textArea.getLength())
 			trailing = Utils.rtrim(trailing);
 
+		// remove leading line separators from leading text
+		// if there are line separators before the selected text
+		for (int i = start - 1; i >= 0 && leading.startsWith("\n"); i--) {
+			if (!"\n".equals(textArea.getText(i, i + 1)))
+				break;
+			leading = leading.substring(1);
+		}
+
+		// remove trailing line separators from trailing text
+		// if there are line separators after the selected text
+		for (int i = end; i < textArea.getLength() && trailing.endsWith("\n"); i++) {
+			if (!"\n".equals(textArea.getText(i, i + 1)))
+				break;
+			trailing = trailing.substring(0, trailing.length() - 1);
+		}
+
 		int selStart = start + leading.length();
 		int selEnd = end + leading.length();
 
@@ -232,5 +258,12 @@ public class MarkdownEditorPane
 		// replace text and update selection
 		textArea.replaceText(start, end, leading + trimmedSelectedText + trailing);
 		textArea.selectRange(selStart, selEnd);
+	}
+
+	public void insertLink() {
+		LinkDialog dialog = new LinkDialog(getNode().getScene().getWindow(), getPath().getParent());
+		dialog.showAndWait().ifPresent(result -> {
+			textArea.replaceSelection(result);
+		});
 	}
 }

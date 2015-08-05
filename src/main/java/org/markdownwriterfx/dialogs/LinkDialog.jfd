@@ -1,0 +1,87 @@
+JFDML JFormDesigner: "9.9.9.9.9999" Java: "1.8.0_51" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/javafx"
+	root: new FormRoot {
+		add( new FormContainer( "org.tbee.javafx.scene.layout.fxml.MigPane", new FormLayoutManager( class org.tbee.javafx.scene.layout.fxml.MigPane ) {
+			"$layoutConstraints": ""
+			"$columnConstraints": "[shrink 0,fill][300,grow,fill][fill][fill]"
+			"$rowConstraints": "[][][][]"
+		} ) {
+			name: "pane"
+			add( new FormComponent( "javafx.scene.control.Label" ) {
+				name: "urlLabel"
+				"text": "Link URL:"
+				auxiliary() {
+					"JavaCodeGenerator.variableLocal": true
+				}
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 0"
+			} )
+			add( new FormComponent( "org.markdownwriterfx.controls.EscapeTextField" ) {
+				name: "urlField"
+				"escapeCharacters": "()"
+				"text": "http://yourlink.com"
+				"promptText": "http://yourlink.com"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 1 0"
+			} )
+			add( new FormComponent( "org.markdownwriterfx.controls.BrowseDirectoryButton" ) {
+				name: "linkBrowseDirectoyButton"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 2 0"
+			} )
+			add( new FormComponent( "org.markdownwriterfx.controls.BrowseFileButton" ) {
+				name: "linkBrowseFileButton"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 3 0"
+			} )
+			add( new FormComponent( "javafx.scene.control.Label" ) {
+				name: "textLabel"
+				"text": "Link Text:"
+				auxiliary() {
+					"JavaCodeGenerator.variableLocal": true
+				}
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 1"
+			} )
+			add( new FormComponent( "org.markdownwriterfx.controls.EscapeTextField" ) {
+				name: "textField"
+				"escapeCharacters": "[]"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 1 1 3 1"
+			} )
+			add( new FormComponent( "javafx.scene.control.Label" ) {
+				name: "titleLabel"
+				"text": "Title (tooltip):"
+				auxiliary() {
+					"JavaCodeGenerator.variableLocal": true
+				}
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 2"
+			} )
+			add( new FormComponent( "org.markdownwriterfx.controls.EscapeTextField" ) {
+				name: "titleField"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 1 2 3 1"
+			} )
+			add( new FormComponent( "javafx.scene.control.Label" ) {
+				name: "previewLabel"
+				"text": "Markdown Preview:"
+				auxiliary() {
+					"JavaCodeGenerator.variableLocal": true
+				}
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 3"
+			} )
+			add( new FormComponent( "javafx.scene.control.Label" ) {
+				name: "previewField"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 1 3 3 1"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new javafx.geometry.Point2D( 0.0, 0.0 )
+			"size": new javafx.geometry.Dimension2D( 500.0, 300.0 )
+		} )
+	}
+}
