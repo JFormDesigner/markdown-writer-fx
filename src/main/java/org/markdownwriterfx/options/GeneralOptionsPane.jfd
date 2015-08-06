@@ -6,12 +6,13 @@ new FormModel {
 		add( new FormContainer( "org.tbee.javafx.scene.layout.fxml.MigPane", new FormLayoutManager( class org.tbee.javafx.scene.layout.fxml.MigPane ) {
 			"$layoutConstraints": ""
 			"$columnConstraints": "[fill][fill][fill]"
-			"$rowConstraints": "[][]"
+			"$rowConstraints": "[][]para[]"
 		} ) {
 			name: "this"
 			add( new FormComponent( "javafx.scene.control.Label" ) {
 				name: "lineSeparatorLabel"
-				"text": "Line separator:"
+				"text": "_Line separator:"
+				"mnemonicParsing": true
 				auxiliary() {
 					"JavaCodeGenerator.variableLocal": true
 				}
@@ -37,7 +38,8 @@ new FormModel {
 			} )
 			add( new FormComponent( "javafx.scene.control.Label" ) {
 				name: "encodingLabel"
-				"text": "Encoding:"
+				"text": "En_coding:"
+				"mnemonicParsing": true
 				auxiliary() {
 					"JavaCodeGenerator.variableLocal": true
 				}
@@ -52,6 +54,12 @@ new FormModel {
 				}
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 1 1"
+			} )
+			add( new FormComponent( "javafx.scene.control.CheckBox" ) {
+				name: "showWhitespaceCheckBox"
+				"text": "Show _Whitespace Characters"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 2 3 1,growx 0,alignx left"
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new javafx.geometry.Point2D( 0.0, 0.0 )

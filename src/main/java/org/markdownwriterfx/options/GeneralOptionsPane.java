@@ -31,6 +31,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.SortedMap;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import org.markdownwriterfx.util.Item;
@@ -71,11 +72,15 @@ public class GeneralOptionsPane
 	void load() {
 		lineSeparatorField.setValue(new Item<String>(Options.getLineSeparator(), Options.getLineSeparator()));
 		encodingField.setValue(new Item<String>(Options.getEncoding(), Options.getEncoding()));
+
+		showWhitespaceCheckBox.setSelected(Options.isShowWhitespace());
 	}
 
 	void save() {
 		Options.setLineSeparator(lineSeparatorField.getValue().value);
 		Options.setEncoding(encodingField.getValue().value);
+
+		Options.setShowWhitespace(showWhitespaceCheckBox.isSelected());
 	}
 
 	private void initComponents() {
@@ -85,13 +90,15 @@ public class GeneralOptionsPane
 		Label lineSeparatorLabel2 = new Label();
 		Label encodingLabel = new Label();
 		encodingField = new ComboBox<>();
+		showWhitespaceCheckBox = new CheckBox();
 
 		//======== this ========
 		setCols("[fill][fill][fill]");
-		setRows("[][]");
+		setRows("[][]para[]");
 
 		//---- lineSeparatorLabel ----
-		lineSeparatorLabel.setText("Line separator:");
+		lineSeparatorLabel.setText("_Line separator:");
+		lineSeparatorLabel.setMnemonicParsing(true);
 		add(lineSeparatorLabel, "cell 0 0");
 		add(lineSeparatorField, "cell 1 0");
 
@@ -100,17 +107,27 @@ public class GeneralOptionsPane
 		add(lineSeparatorLabel2, "cell 2 0");
 
 		//---- encodingLabel ----
-		encodingLabel.setText("Encoding:");
+		encodingLabel.setText("En_coding:");
+		encodingLabel.setMnemonicParsing(true);
 		add(encodingLabel, "cell 0 1");
 
 		//---- encodingField ----
 		encodingField.setVisibleRowCount(20);
 		add(encodingField, "cell 1 1");
+
+		//---- showWhitespaceCheckBox ----
+		showWhitespaceCheckBox.setText("Show _Whitespace Characters");
+		add(showWhitespaceCheckBox, "cell 0 2 3 1,growx 0,alignx left");
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
+
+		// TODO set this in JFormDesigner as soon as it supports labelFor
+		lineSeparatorLabel.setLabelFor(lineSeparatorField);
+		encodingLabel.setLabelFor(encodingField);
 	}
 
 	// JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
 	private ComboBox<Item<String>> lineSeparatorField;
 	private ComboBox<Item<String>> encodingField;
+	private CheckBox showWhitespaceCheckBox;
 	// JFormDesigner - End of variables declaration  //GEN-END:variables
 }

@@ -28,7 +28,9 @@
 package org.markdownwriterfx.options;
 
 import java.util.prefs.Preferences;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -50,12 +52,14 @@ public class Options
 		setLineSeparator(options.get("lineSeparator", null));
 		setEncoding(options.get("encoding", null));
 		setMarkdownExtensions(options.getInt("markdownExtensions", Extensions.ALL));
+		setShowWhitespace(options.getBoolean("showWhitespace", false));
 	}
 
 	public static void save() {
 		Utils.putPrefs(options, "lineSeparator", getLineSeparator(), null);
 		Utils.putPrefs(options, "encoding", getEncoding(), null);
 		Utils.putPrefsInt(options, "markdownExtensions", getMarkdownExtensions(), Extensions.ALL);
+		Utils.putPrefsBoolean(options, "showWhitespace", isShowWhitespace(), false);
 	}
 
 	// 'lineSeparator' property
@@ -73,6 +77,12 @@ public class Options
 	// 'markdownExtensions' property
 	private static final IntegerProperty markdownExtensions = new SimpleIntegerProperty();
 	public static int getMarkdownExtensions() { return markdownExtensions.get(); }
-	public static void setMarkdownExtensions(int extensions) { markdownExtensions.set(extensions); }
+	public static void setMarkdownExtensions(int markdownExtensions) { Options.markdownExtensions.set(markdownExtensions); }
 	public static IntegerProperty markdownExtensionsProperty() { return markdownExtensions; }
+
+	// 'showWhitespace' property
+	private static final BooleanProperty showWhitespace = new SimpleBooleanProperty();
+	public static boolean isShowWhitespace() { return showWhitespace.get(); }
+	public static void setShowWhitespace(boolean showWhitespace) { Options.showWhitespace.set(showWhitespace); }
+	public static BooleanProperty showWhitespaceProperty() { return showWhitespace; }
 }

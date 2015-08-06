@@ -108,16 +108,23 @@ public class MarkdownEditorPane
 
 		overlayGraphicFactory = new ParagraphOverlayGraphicFactory(textArea);
 		textArea.setParagraphGraphicFactory(overlayGraphicFactory);
+		updateShowWhitespace();
 
-		// re-process markdown if markdown extensions option changes
+		// listen to option changes
 		optionsListener = e -> {
 			if (textArea.getScene() == null)
 				return; // editor closed but not yet GCed
 
-			pegDownProcessor = null;
-			textChanged(textArea.getText());
+			if (e == Options.markdownExtensionsProperty()) {
+				// re-process markdown if markdown extensions option changes
+				pegDownProcessor = null;
+				textChanged(textArea.getText());
+			} else if (e == Options.showWhitespaceProperty())
+				updateShowWhitespace();
 		};
-		Options.markdownExtensionsProperty().addListener(new WeakInvalidationListener(optionsListener));
+		WeakInvalidationListener weakOptionsListener = new WeakInvalidationListener(optionsListener);
+		Options.markdownExtensionsProperty().addListener(weakOptionsListener);
+		Options.showWhitespaceProperty().addListener(weakOptionsListener);
 	}
 
 	public void installEditorShortcuts(EventHandler<KeyEvent> editorShortcuts) {
@@ -227,10 +234,16 @@ public class MarkdownEditorPane
 	}
 
 	private void showWhitespace(KeyEvent e) {
-		if (whitespaceOverlayFactory == null) {
+		Options.setShowWhitespace(!Options.isShowWhitespace());
+		Options.save();
+	}
+
+	private void updateShowWhitespace() {
+		boolean showWhitespace = Options.isShowWhitespace();
+		if (showWhitespace && whitespaceOverlayFactory == null) {
 			whitespaceOverlayFactory = new WhitespaceOverlayFactory();
 			overlayGraphicFactory.addOverlayFactory(whitespaceOverlayFactory);
-		} else {
+		} else if (!showWhitespace && whitespaceOverlayFactory != null) {
 			overlayGraphicFactory.removeOverlayFactory(whitespaceOverlayFactory);
 			whitespaceOverlayFactory = null;
 		}
