@@ -76,6 +76,7 @@ public class MarkdownEditorPane
 	private WhitespaceOverlayFactory whitespaceOverlayFactory;
 	private PegDownProcessor pegDownProcessor;
 	private final InvalidationListener optionsListener;
+	private String lineSeparator = getLineSeparatorOrDefault();
 
 	public MarkdownEditorPane() {
 		textArea = new StyleClassedTextArea(false);
@@ -135,9 +136,37 @@ public class MarkdownEditorPane
 		Platform.runLater(() -> textArea.requestFocus());
 	}
 
+	private String getLineSeparatorOrDefault() {
+		String lineSeparator = Options.getLineSeparator();
+		return (lineSeparator != null) ? lineSeparator : System.getProperty( "line.separator", "\n" );
+	}
+
+	private String determineLineSeparator(String str) {
+		int strLength = str.length();
+		for (int i = 0; i < strLength; i++) {
+			char ch = str.charAt(i);
+			if (ch == '\n')
+				return (i > 0 && str.charAt(i - 1) == '\r') ? "\r\n" : "\n";
+		}
+		return getLineSeparatorOrDefault();
+	}
+
 	// 'markdown' property
-	public String getMarkdown() { return textArea.getText(); }
-	public void setMarkdown(String markdown) { textArea.replaceText(markdown); textArea.selectRange(0, 0); }
+	public String getMarkdown() {
+		String markdown = textArea.getText();
+		if (!lineSeparator.equals("\n"))
+			markdown = markdown.replace("\n", lineSeparator);
+		return markdown;
+	}
+	public void setMarkdown(String markdown) {
+		lineSeparator = determineLineSeparator(markdown);
+		// always replace CRLF line separators to LF because RichTextFX does
+		// not handle CRLF line separators well (e.g. need to press Backspace
+		// or Del key twice to delete a CRLF line separator)
+		markdown = markdown.replace("\r\n", "\n");
+		textArea.replaceText(markdown);
+		textArea.selectRange(0, 0);
+	}
 	public ObservableValue<String> markdownProperty() { return textArea.textProperty(); }
 
 	// 'markdownAST' property
