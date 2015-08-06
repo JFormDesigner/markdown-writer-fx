@@ -25,59 +25,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.markdownwriterfx;
+package org.markdownwriterfx.options;
 
 import java.util.prefs.Preferences;
-import javafx.application.Application;
-import javafx.stage.Stage;
-import org.markdownwriterfx.options.Options;
-import org.markdownwriterfx.util.StageState;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import org.pegdown.Extensions;
 
 /**
- * Markdown Writer FX application.
+ * Options
  *
  * @author Karl Tauber
  */
-public class MarkdownWriterFXApp
-	extends Application
+public class Options
 {
-	private static Application app;
+	private static Preferences options;
 
-	private MainWindow mainWindow;
-	@SuppressWarnings("unused")
-	private StageState stageState;
+	public static void load(Preferences options) {
+		Options.options = options;
 
-	public static void main(String[] args) {
-		launch(args);
+		setMarkdownExtensions(options.getInt("markdownExtensions", Extensions.ALL));
 	}
 
-	@Override
-	public void start(Stage primaryStage) throws Exception {
-		app = this;
-		Options.load(getOptions());
-
-		mainWindow = new MainWindow();
-
-		stageState = new StageState(primaryStage, getState());
-
-		primaryStage.setTitle("Markdown Writer FX");
-		primaryStage.setScene(mainWindow.getScene());
-		primaryStage.show();
+	public static void save() {
+		options.putInt("markdownExtensions", getMarkdownExtensions());
 	}
 
-	public static void showDocument(String uri) {
-		app.getHostServices().showDocument(uri);
-	}
-
-	static private Preferences getPrefsRoot() {
-		return Preferences.userRoot().node("markdownwriterfx");
-	}
-
-	static Preferences getOptions() {
-		return getPrefsRoot().node("options");
-	}
-
-	static Preferences getState() {
-		return getPrefsRoot().node("state");
-	}
+	// 'markdownExtensions' property
+	private static final IntegerProperty markdownExtensions = new SimpleIntegerProperty();
+	public static int getMarkdownExtensions() { return markdownExtensions.get(); }
+	public static void setMarkdownExtensions(int extensions) { markdownExtensions.set(extensions); }
+	public static IntegerProperty markdownExtensionsProperty() { return markdownExtensions; }
 }

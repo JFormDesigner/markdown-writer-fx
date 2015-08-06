@@ -52,6 +52,7 @@ import javafx.stage.WindowEvent;
 import org.fxmisc.wellbehaved.event.EventHandlerHelper;
 import org.fxmisc.wellbehaved.event.EventPattern;
 import org.markdownwriterfx.editor.MarkdownEditorPane;
+import org.markdownwriterfx.options.OptionsDialog;
 import org.markdownwriterfx.util.Action;
 import org.markdownwriterfx.util.ActionUtils;
 import static de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon.*;
@@ -179,6 +180,9 @@ class MainWindow
 				e -> getActiveEditor().surroundSelection("\n\n---\n\n", ""),
 				activeFileEditorIsNull);
 
+		// Tools actions
+		Action toolsOptionsAction = new Action("Options", "Shortcut+,", null, e -> toolsOptions());
+
 		// Help actions
 		Action helpAboutAction = new Action("About Markdown Writer FX", null, null, e -> helpAbout());
 
@@ -223,10 +227,13 @@ class MainWindow
 				insertOrderedListAction,
 				insertHorizontalRuleAction);
 
+		Menu toolsMenu = ActionUtils.createMenu("Tools",
+				toolsOptionsAction);
+
 		Menu helpMenu = ActionUtils.createMenu("Help",
 				helpAboutAction);
 
-		menuBar = new MenuBar(fileMenu, editMenu, insertMenu, helpMenu);
+		menuBar = new MenuBar(fileMenu, editMenu, insertMenu, toolsMenu, helpMenu);
 
 
 		//---- ToolBar ----
@@ -346,6 +353,13 @@ class MainWindow
 	private void fileExit() {
 		Window window = scene.getWindow();
 		Event.fireEvent(window, new WindowEvent(window, WindowEvent.WINDOW_CLOSE_REQUEST));
+	}
+
+	//---- Tools actions ------------------------------------------------------
+
+	private void toolsOptions() {
+		OptionsDialog dialog = new OptionsDialog(getScene().getWindow());
+		dialog.showAndWait();
 	}
 
 	//---- Help actions -------------------------------------------------------

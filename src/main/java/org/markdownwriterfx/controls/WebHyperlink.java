@@ -25,59 +25,33 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.markdownwriterfx;
+package org.markdownwriterfx.controls;
 
-import java.util.prefs.Preferences;
-import javafx.application.Application;
-import javafx.stage.Stage;
-import org.markdownwriterfx.options.Options;
-import org.markdownwriterfx.util.StageState;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+import javafx.scene.control.Hyperlink;
+import org.markdownwriterfx.MarkdownWriterFXApp;
 
 /**
- * Markdown Writer FX application.
+ * Hyperlink that opens a URL in the default web browser.
  *
  * @author Karl Tauber
  */
-public class MarkdownWriterFXApp
-	extends Application
+public class WebHyperlink
+	extends Hyperlink
 {
-	private static Application app;
-
-	private MainWindow mainWindow;
-	@SuppressWarnings("unused")
-	private StageState stageState;
-
-	public static void main(String[] args) {
-		launch(args);
+	public WebHyperlink() {
+		setStyle("-fx-padding: 0; -fx-border-width: 0");
 	}
 
 	@Override
-	public void start(Stage primaryStage) throws Exception {
-		app = this;
-		Options.load(getOptions());
-
-		mainWindow = new MainWindow();
-
-		stageState = new StageState(primaryStage, getState());
-
-		primaryStage.setTitle("Markdown Writer FX");
-		primaryStage.setScene(mainWindow.getScene());
-		primaryStage.show();
+	public void fire() {
+		MarkdownWriterFXApp.showDocument(getUri());
 	}
 
-	public static void showDocument(String uri) {
-		app.getHostServices().showDocument(uri);
-	}
-
-	static private Preferences getPrefsRoot() {
-		return Preferences.userRoot().node("markdownwriterfx");
-	}
-
-	static Preferences getOptions() {
-		return getPrefsRoot().node("options");
-	}
-
-	static Preferences getState() {
-		return getPrefsRoot().node("state");
-	}
+	// 'uri' property
+	private final StringProperty uri = new SimpleStringProperty();
+	public String getUri() { return uri.get(); }
+	public void setUri(String uri) { this.uri.set(uri); }
+	public StringProperty UriProperty() { return uri; }
 }

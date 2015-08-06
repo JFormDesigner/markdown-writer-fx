@@ -25,59 +25,42 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.markdownwriterfx;
+package org.markdownwriterfx.controls;
 
-import java.util.prefs.Preferences;
-import javafx.application.Application;
-import javafx.stage.Stage;
-import org.markdownwriterfx.options.Options;
-import org.markdownwriterfx.util.StageState;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.scene.control.CheckBox;
 
 /**
- * Markdown Writer FX application.
+ * CheckBox that toggles a bit in an integer.
  *
  * @author Karl Tauber
  */
-public class MarkdownWriterFXApp
-	extends Application
+public class FlagCheckBox
+	extends CheckBox
 {
-	private static Application app;
+	public FlagCheckBox() {
+		setOnAction(e -> {
+			if (isSelected())
+				setFlags(getFlags() | getFlag());
+			else
+				setFlags(getFlags() & ~getFlag());
+		});
 
-	private MainWindow mainWindow;
-	@SuppressWarnings("unused")
-	private StageState stageState;
-
-	public static void main(String[] args) {
-		launch(args);
+		flags.addListener((obs, oldFlags, newFlags) -> {
+			setSelected((newFlags.intValue() & getFlag()) != 0);
+		});
 	}
 
-	@Override
-	public void start(Stage primaryStage) throws Exception {
-		app = this;
-		Options.load(getOptions());
+	// 'flag' property
+	private final IntegerProperty flag = new SimpleIntegerProperty();
+	public int getFlag() { return flag.get(); }
+	public void setFlag(int flag) { this.flag.set(flag); }
+	public IntegerProperty flagProperty() { return flag; }
 
-		mainWindow = new MainWindow();
-
-		stageState = new StageState(primaryStage, getState());
-
-		primaryStage.setTitle("Markdown Writer FX");
-		primaryStage.setScene(mainWindow.getScene());
-		primaryStage.show();
-	}
-
-	public static void showDocument(String uri) {
-		app.getHostServices().showDocument(uri);
-	}
-
-	static private Preferences getPrefsRoot() {
-		return Preferences.userRoot().node("markdownwriterfx");
-	}
-
-	static Preferences getOptions() {
-		return getPrefsRoot().node("options");
-	}
-
-	static Preferences getState() {
-		return getPrefsRoot().node("state");
-	}
+	// 'flags' property
+	private final IntegerProperty flags = new SimpleIntegerProperty();
+	public int getFlags() { return flags.get(); }
+	public void setFlags(int flags) { this.flags.set(flags); }
+	public IntegerProperty flagsProperty() { return flags; }
 }

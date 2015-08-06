@@ -1,0 +1,21 @@
+JFDML JFormDesigner: "9.9.9.9.9999" Java: "1.8.0_51" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/javafx"
+	root: new FormRoot {
+		add( new FormContainer( "javafx.scene.control.TabPane", new FormLayoutManager( class javafx.scene.control.TabPane ) ) {
+			name: "tabPane"
+			"tabClosingPolicy": enum javafx.scene.control.TabPane$TabClosingPolicy UNAVAILABLE
+			add( new FormContainer( "javafx.scene.control.Tab", new FormLayoutManager( class javafx.scene.control.Tab ) ) {
+				name: "markdownTab"
+				"text": "Markdown"
+				add( new FormComponent( "org.markdownwriterfx.options.MarkdownOptionsPane" ) {
+					name: "markdownOptionsPane"
+				} )
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new javafx.geometry.Point2D( 0.0, 0.0 )
+			"size": new javafx.geometry.Dimension2D( 600.0, 560.0 )
+		} )
+	}
+}

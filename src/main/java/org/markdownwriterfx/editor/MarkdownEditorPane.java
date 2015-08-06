@@ -35,6 +35,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
+import javafx.beans.WeakInvalidationListener;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
@@ -53,8 +54,8 @@ import org.fxmisc.undo.UndoManager;
 import org.fxmisc.wellbehaved.event.EventHandlerHelper;
 import org.markdownwriterfx.dialogs.ImageDialog;
 import org.markdownwriterfx.dialogs.LinkDialog;
+import org.markdownwriterfx.options.Options;
 import org.markdownwriterfx.util.Utils;
-import org.pegdown.Extensions;
 import org.pegdown.PegDownProcessor;
 import org.pegdown.ast.RootNode;
 
@@ -74,6 +75,7 @@ public class MarkdownEditorPane
 	private final ParagraphOverlayGraphicFactory overlayGraphicFactory;
 	private WhitespaceOverlayFactory whitespaceOverlayFactory;
 	private PegDownProcessor pegDownProcessor;
+	private final InvalidationListener optionsListener;
 
 	public MarkdownEditorPane() {
 		textArea = new StyleClassedTextArea(false);
@@ -82,9 +84,7 @@ public class MarkdownEditorPane
 		textArea.getStylesheets().add("org/markdownwriterfx/editor/MarkdownEditor.css");
 
 		textArea.textProperty().addListener((observable, oldText, newText) -> {
-			RootNode astRoot = parseMarkdown(newText);
-			applyHighlighting(astRoot);
-			markdownAST.set(astRoot);
+			textChanged(newText);
 		});
 
 		EventHandlerHelper.install(textArea.onKeyPressedProperty(), EventHandlerHelper
@@ -107,6 +107,16 @@ public class MarkdownEditorPane
 
 		overlayGraphicFactory = new ParagraphOverlayGraphicFactory(textArea);
 		textArea.setParagraphGraphicFactory(overlayGraphicFactory);
+
+		// re-process markdown if markdown extensions option changes
+		optionsListener = e -> {
+			if (textArea.getScene() == null)
+				return; // editor closed but not yet GCed
+
+			pegDownProcessor = null;
+			textChanged(textArea.getText());
+		};
+		Options.markdownExtensionsProperty().addListener(new WeakInvalidationListener(optionsListener));
 	}
 
 	public void installEditorShortcuts(EventHandler<KeyEvent> editorShortcuts) {
@@ -146,9 +156,15 @@ public class MarkdownEditorPane
 	public void setPath(Path path) { this.path.set(path); }
 	public ObjectProperty<Path> pathProperty() { return path; }
 
+	private void textChanged(String newText) {
+		RootNode astRoot = parseMarkdown(newText);
+		applyHighlighting(astRoot);
+		markdownAST.set(astRoot);
+	}
+
 	private RootNode parseMarkdown(String text) {
 		if(pegDownProcessor == null)
-			pegDownProcessor = new PegDownProcessor(Extensions.ALL);
+			pegDownProcessor = new PegDownProcessor(Options.getMarkdownExtensions());
 		return pegDownProcessor.parseMarkdown(text.toCharArray());
 	}
 
