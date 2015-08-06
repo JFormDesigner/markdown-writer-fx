@@ -30,6 +30,9 @@ package org.markdownwriterfx.options;
 import java.util.prefs.Preferences;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+import org.markdownwriterfx.util.Utils;
 import org.pegdown.Extensions;
 
 /**
@@ -44,12 +47,28 @@ public class Options
 	public static void load(Preferences options) {
 		Options.options = options;
 
+		setLineSeparator(options.get("lineSeparator", null));
+		setEncoding(options.get("encoding", null));
 		setMarkdownExtensions(options.getInt("markdownExtensions", Extensions.ALL));
 	}
 
 	public static void save() {
-		options.putInt("markdownExtensions", getMarkdownExtensions());
+		Utils.putPrefs(options, "lineSeparator", getLineSeparator(), null);
+		Utils.putPrefs(options, "encoding", getEncoding(), null);
+		Utils.putPrefsInt(options, "markdownExtensions", getMarkdownExtensions(), Extensions.ALL);
 	}
+
+	// 'lineSeparator' property
+	private static final StringProperty lineSeparator = new SimpleStringProperty();
+	public static String getLineSeparator() { return lineSeparator.get(); }
+	public static void setLineSeparator(String lineSeparator) { Options.lineSeparator.set(lineSeparator); }
+	public static StringProperty lineSeparatorProperty() { return lineSeparator; }
+
+	// 'encoding' property
+	private static final StringProperty encoding = new SimpleStringProperty();
+	public static String getEncoding() { return encoding.get(); }
+	public static void setEncoding(String encoding) { Options.encoding.set(encoding); }
+	public static StringProperty encodingProperty() { return encoding; }
 
 	// 'markdownExtensions' property
 	private static final IntegerProperty markdownExtensions = new SimpleIntegerProperty();

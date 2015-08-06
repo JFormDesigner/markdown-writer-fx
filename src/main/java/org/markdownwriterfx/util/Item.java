@@ -25,59 +25,42 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.markdownwriterfx;
-
-import java.util.prefs.Preferences;
-import javafx.application.Application;
-import javafx.stage.Stage;
-import org.markdownwriterfx.options.Options;
-import org.markdownwriterfx.util.StageState;
+package org.markdownwriterfx.util;
 
 /**
- * Markdown Writer FX application.
+ * Simple item for a ChoiceBox, ComboBox or ListView.
+ * Consists of a string name and a value object.
+ * toString() returns the name.
+ * equals() compares the value and hashCode() returns the hash code of the value.
  *
  * @author Karl Tauber
  */
-public class MarkdownWriterFXApp
-	extends Application
+public class Item<V>
 {
-	private static Application app;
+	public final String name;
+	public final V value;
 
-	private MainWindow mainWindow;
-	@SuppressWarnings("unused")
-	private StageState stageState;
-
-	public static void main(String[] args) {
-		launch(args);
+	public Item(String name, V value) {
+		this.name = name;
+		this.value = value;
 	}
 
 	@Override
-	public void start(Stage primaryStage) throws Exception {
-		app = this;
-		Options.load(getOptions());
-
-		mainWindow = new MainWindow();
-
-		stageState = new StageState(primaryStage, getState());
-
-		primaryStage.setTitle("Markdown Writer FX");
-		primaryStage.setScene(mainWindow.getScene());
-		primaryStage.show();
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!(obj instanceof Item))
+			return false;
+		return Utils.safeEquals(value, ((Item<?>)obj).value);
 	}
 
-	public static void showDocument(String uri) {
-		app.getHostServices().showDocument(uri);
+	@Override
+	public int hashCode() {
+		return (value != null) ? value.hashCode() : 0;
 	}
 
-	static private Preferences getPrefsRoot() {
-		return Preferences.userRoot().node("markdownwriterfx");
-	}
-
-	static Preferences getOptions() {
-		return getPrefsRoot().node("options");
-	}
-
-	public static Preferences getState() {
-		return getPrefsRoot().node("state");
+	@Override
+	public String toString() {
+		return name;
 	}
 }

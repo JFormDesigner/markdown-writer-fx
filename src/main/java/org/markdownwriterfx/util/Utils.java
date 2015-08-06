@@ -39,6 +39,14 @@ import javafx.scene.control.ScrollBar;
  */
 public class Utils
 {
+	public static boolean safeEquals(Object o1, Object o2) {
+		if (o1 == o2)
+			return true;
+		if (o1 == null || o2 == null)
+			return false;
+		return o1.equals(o2);
+	}
+
 	public static boolean isNullOrEmpty(String s) {
 		return s == null || s.isEmpty();
 	}
@@ -55,6 +63,27 @@ public class Utils
 		while (i >= 0 && Character.isWhitespace(s.charAt(i)))
 			i--;
 		return s.substring(0, i + 1);
+	}
+
+	public static void putPrefs(Preferences prefs, String key, String value, String def) {
+		if (value != def && !value.equals(def))
+			prefs.put(key, value);
+		else
+			prefs.remove(key);
+	}
+
+	public static void putPrefsInt(Preferences prefs, String key, int value, int def) {
+		if (value != def)
+			prefs.putInt(key, value);
+		else
+			prefs.remove(key);
+	}
+
+	public static void putPrefsBoolean(Preferences prefs, String key, boolean value, boolean def) {
+		if (value != def)
+			prefs.putBoolean(key, value);
+		else
+			prefs.remove(key);
 	}
 
 	public static String[] getPrefsStrings(Preferences prefs, String key) {

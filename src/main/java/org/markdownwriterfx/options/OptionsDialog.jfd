@@ -7,6 +7,13 @@ new FormModel {
 			name: "tabPane"
 			"tabClosingPolicy": enum javafx.scene.control.TabPane$TabClosingPolicy UNAVAILABLE
 			add( new FormContainer( "javafx.scene.control.Tab", new FormLayoutManager( class javafx.scene.control.Tab ) ) {
+				name: "generalTab"
+				"text": "General"
+				add( new FormComponent( "org.markdownwriterfx.options.GeneralOptionsPane" ) {
+					name: "generalOptionsPane"
+				} )
+			} )
+			add( new FormContainer( "javafx.scene.control.Tab", new FormLayoutManager( class javafx.scene.control.Tab ) ) {
 				name: "markdownTab"
 				"text": "Markdown"
 				add( new FormComponent( "org.markdownwriterfx.options.MarkdownOptionsPane" ) {

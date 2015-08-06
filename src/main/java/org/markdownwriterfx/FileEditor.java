@@ -28,6 +28,7 @@
 package org.markdownwriterfx;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import javafx.application.Platform;
@@ -52,6 +53,7 @@ import org.fxmisc.undo.UndoManager;
 import org.fxmisc.wellbehaved.event.EventHandlerHelper;
 import org.fxmisc.wellbehaved.event.EventPattern;
 import org.markdownwriterfx.editor.MarkdownEditorPane;
+import org.markdownwriterfx.options.Options;
 import org.markdownwriterfx.preview.MarkdownPreviewPane;
 
 /**
@@ -179,7 +181,19 @@ class FileEditor
 			return;
 
 		try {
-			String markdown = new String(Files.readAllBytes(path));
+			byte[] bytes = Files.readAllBytes(path);
+
+			String markdown = null;
+			if (Options.getEncoding() != null) {
+				try {
+					markdown = new String(bytes, Options.getEncoding());
+				} catch (UnsupportedEncodingException ex) {
+					// fallback
+					markdown = new String(bytes);
+				}
+			} else
+				markdown = new String(bytes);
+
 			markdownEditorPane.setMarkdown(markdown);
 			markdownEditorPane.getUndoManager().mark();
 		} catch (IOException ex) {
@@ -191,8 +205,20 @@ class FileEditor
 
 	boolean save() {
 		String markdown = markdownEditorPane.getMarkdown();
+
+		byte[] bytes;
+		if (Options.getEncoding() != null) {
+			try {
+				bytes = markdown.getBytes(Options.getEncoding());
+			} catch (UnsupportedEncodingException ex) {
+				// fallback
+				bytes = markdown.getBytes();
+			}
+		} else
+			bytes = markdown.getBytes();
+
 		try {
-			Files.write(path.get(), markdown.getBytes());
+			Files.write(path.get(), bytes);
 			markdownEditorPane.getUndoManager().mark();
 			return true;
 		} catch (IOException ex) {

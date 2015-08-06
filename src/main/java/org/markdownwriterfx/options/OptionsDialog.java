@@ -34,6 +34,7 @@ import javafx.scene.control.DialogPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.stage.Window;
+import org.markdownwriterfx.MarkdownWriterFXApp;
 
 /**
  * Options dialog
@@ -55,19 +56,33 @@ public class OptionsDialog
 		dialogPane.setContent(tabPane);
 		dialogPane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 
+		// save options on OK clicked
 		dialogPane.lookupButton(ButtonType.OK).addEventHandler(ActionEvent.ACTION, e -> {
 			save();
 			e.consume();
 		});
 
+		// load options
 		load();
+
+		// select last tab
+		int tabIndex = MarkdownWriterFXApp.getState().getInt("lastOptionsTab", -1);
+		if (tabIndex > 0)
+			tabPane.getSelectionModel().select(tabIndex);
+
+		// remember last selected tab
+		setOnHidden(e -> {
+			MarkdownWriterFXApp.getState().putInt("lastOptionsTab", tabPane.getSelectionModel().getSelectedIndex());
+		});
 	}
 
 	private void load() {
+		generalOptionsPane.load();
 		markdownOptionsPane.load();
 	}
 
 	private void save() {
+		generalOptionsPane.save();
 		markdownOptionsPane.save();
 		Options.save();
 	}
@@ -75,6 +90,8 @@ public class OptionsDialog
 	private void initComponents() {
 		// JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
 		tabPane = new TabPane();
+		generalTab = new Tab();
+		generalOptionsPane = new GeneralOptionsPane();
 		markdownTab = new Tab();
 		markdownOptionsPane = new MarkdownOptionsPane();
 
@@ -82,19 +99,27 @@ public class OptionsDialog
 		{
 			tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
 
+			//======== generalTab ========
+			{
+				generalTab.setText("General");
+				generalTab.setContent(generalOptionsPane);
+			}
+
 			//======== markdownTab ========
 			{
 				markdownTab.setText("Markdown");
 				markdownTab.setContent(markdownOptionsPane);
 			}
 
-			tabPane.getTabs().addAll(markdownTab);
+			tabPane.getTabs().addAll(generalTab, markdownTab);
 		}
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 	}
 
 	// JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
 	private TabPane tabPane;
+	private Tab generalTab;
+	private GeneralOptionsPane generalOptionsPane;
 	private Tab markdownTab;
 	private MarkdownOptionsPane markdownOptionsPane;
 	// JFormDesigner - End of variables declaration  //GEN-END:variables
