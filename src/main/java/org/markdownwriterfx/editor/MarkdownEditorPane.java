@@ -192,6 +192,11 @@ public class MarkdownEditorPane
 	public void setPath(Path path) { this.path.set(path); }
 	public ObjectProperty<Path> pathProperty() { return path; }
 
+	private Path getParentPath() {
+		Path path = getPath();
+		return (path != null) ? path.getParent() : null;
+	}
+
 	private void textChanged(String newText) {
 		RootNode astRoot = parseMarkdown(newText);
 		applyHighlighting(astRoot);
@@ -330,14 +335,14 @@ public class MarkdownEditorPane
 	}
 
 	public void insertLink() {
-		LinkDialog dialog = new LinkDialog(getNode().getScene().getWindow(), getPath().getParent());
+		LinkDialog dialog = new LinkDialog(getNode().getScene().getWindow(), getParentPath());
 		dialog.showAndWait().ifPresent(result -> {
 			textArea.replaceSelection(result);
 		});
 	}
 
 	public void insertImage() {
-		ImageDialog dialog = new ImageDialog(getNode().getScene().getWindow(), getPath().getParent());
+		ImageDialog dialog = new ImageDialog(getNode().getScene().getWindow(), getParentPath());
 		dialog.showAndWait().ifPresent(result -> {
 			textArea.replaceSelection(result);
 		});
