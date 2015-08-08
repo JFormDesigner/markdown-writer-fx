@@ -134,7 +134,7 @@ class MainWindow
 		Action insertStrikethroughAction = new Action("Strikethrough", "Shortcut+T", STRIKETHROUGH,
 				e -> getActiveEditor().surroundSelection("~~", "~~"),
 				activeFileEditorIsNull);
-		Action insertBlockquoteAction = new Action("Blockquote", "Shortcut+Q", QUOTE_LEFT,
+		Action insertBlockquoteAction = new Action("Blockquote", "Ctrl+Q", QUOTE_LEFT, // not Shortcut+Q because of conflict on Mac
 				e -> getActiveEditor().surroundSelection("\n\n> ", ""),
 				activeFileEditorIsNull);
 		Action insertCodeAction = new Action("Inline Code", "Shortcut+K", CODE,
