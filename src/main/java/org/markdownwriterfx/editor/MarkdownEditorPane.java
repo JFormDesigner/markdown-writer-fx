@@ -288,18 +288,28 @@ public class MarkdownEditorPane
 
 		// remove leading line separators from leading text
 		// if there are line separators before the selected text
-		for (int i = start - 1; i >= 0 && leading.startsWith("\n"); i--) {
-			if (!"\n".equals(textArea.getText(i, i + 1)))
-				break;
-			leading = leading.substring(1);
+		if (leading.startsWith("\n")) {
+			for (int i = start - 1; i >= 0 && leading.startsWith("\n"); i--) {
+				if (!"\n".equals(textArea.getText(i, i + 1)))
+					break;
+				leading = leading.substring(1);
+			}
 		}
 
-		// remove trailing line separators from trailing text
+		// remove trailing line separators from trailing or leading text
 		// if there are line separators after the selected text
-		for (int i = end; i < textArea.getLength() && trailing.endsWith("\n"); i++) {
-			if (!"\n".equals(textArea.getText(i, i + 1)))
-				break;
-			trailing = trailing.substring(0, trailing.length() - 1);
+		boolean trailingIsEmpty = trailing.isEmpty();
+		String str = trailingIsEmpty ? leading : trailing;
+		if (str.endsWith("\n")) {
+			for (int i = end; i < textArea.getLength() && str.endsWith("\n"); i++) {
+				if (!"\n".equals(textArea.getText(i, i + 1)))
+					break;
+				str = str.substring(0, str.length() - 1);
+			}
+			if (trailingIsEmpty)
+				leading = str;
+			else
+				trailing = str;
 		}
 
 		int selStart = start + leading.length();
