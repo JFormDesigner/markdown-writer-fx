@@ -54,27 +54,27 @@ import org.fxmisc.richtext.StyleClassedTextArea;
  *
  * @author Karl Tauber
  */
-class ParagraphOverlayGraphicFactory
+public class ParagraphOverlayGraphicFactory
 	implements IntFunction<Node>
 {
 	private final StyleClassedTextArea textArea;
 	private final List<OverlayFactory> overlayFactories = new ArrayList<>();
 
-	ParagraphOverlayGraphicFactory(StyleClassedTextArea textArea) {
+	public ParagraphOverlayGraphicFactory(StyleClassedTextArea textArea) {
 		this.textArea = textArea;
 	}
 
-	void addOverlayFactory(OverlayFactory overlayFactory) {
+	public void addOverlayFactory(OverlayFactory overlayFactory) {
 		overlayFactories.add(overlayFactory);
 		update();
 	}
 
-	void removeOverlayFactory(OverlayFactory overlayFactory) {
+	public void removeOverlayFactory(OverlayFactory overlayFactory) {
 		overlayFactories.remove(overlayFactory);
 		update();
 	}
 
-	void update() {
+	public void update() {
 		// temporary remove paragraph graphic factory to update the view
 		IntFunction<? extends Node> factory = textArea.getParagraphGraphicFactory();
 		textArea.setParagraphGraphicFactory(null);
@@ -147,7 +147,7 @@ class ParagraphOverlayGraphicFactory
 
 	//---- class OverlayFactory -----------------------------------------------
 
-	static abstract class OverlayFactory
+	public static abstract class OverlayFactory
 	{
 		private StyleClassedTextArea textArea;
 		private Node paragraphTextNode;
@@ -157,7 +157,7 @@ class ParagraphOverlayGraphicFactory
 			this.paragraphTextNode = paragraphTextNode;
 		}
 
-		abstract Node[] createOverlayNodes(int paragraphIndex);
+		public abstract Node[] createOverlayNodes(int paragraphIndex);
 
 		protected StyleClassedTextArea getTextArea() {
 			return textArea;

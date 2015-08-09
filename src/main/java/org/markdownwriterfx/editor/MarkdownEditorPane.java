@@ -55,6 +55,7 @@ import org.fxmisc.wellbehaved.event.EventHandlerHelper;
 import org.markdownwriterfx.dialogs.ImageDialog;
 import org.markdownwriterfx.dialogs.LinkDialog;
 import org.markdownwriterfx.options.Options;
+import org.markdownwriterfx.spellchecker.SpellChecker;
 import org.markdownwriterfx.util.Utils;
 import org.pegdown.PegDownProcessor;
 import org.pegdown.ast.RootNode;
@@ -74,6 +75,8 @@ public class MarkdownEditorPane
 	private final StyleClassedTextArea textArea;
 	private final ParagraphOverlayGraphicFactory overlayGraphicFactory;
 	private WhitespaceOverlayFactory whitespaceOverlayFactory;
+	@SuppressWarnings("unused")
+	private final SpellChecker spellChecker;
 	private PegDownProcessor pegDownProcessor;
 	private final InvalidationListener optionsListener;
 	private String lineSeparator = getLineSeparatorOrDefault();
@@ -109,6 +112,8 @@ public class MarkdownEditorPane
 		overlayGraphicFactory = new ParagraphOverlayGraphicFactory(textArea);
 		textArea.setParagraphGraphicFactory(overlayGraphicFactory);
 		updateShowWhitespace();
+
+		spellChecker = new SpellChecker(textArea, overlayGraphicFactory);
 
 		// listen to option changes
 		optionsListener = e -> {

@@ -74,6 +74,7 @@ public class GeneralOptionsPane
 		encodingField.setValue(new Item<String>(Options.getEncoding(), Options.getEncoding()));
 
 		showWhitespaceCheckBox.setSelected(Options.isShowWhitespace());
+		spellCheckerCheckBox.setSelected(Options.isSpellChecker());
 	}
 
 	void save() {
@@ -81,6 +82,7 @@ public class GeneralOptionsPane
 		Options.setEncoding(encodingField.getValue().value);
 
 		Options.setShowWhitespace(showWhitespaceCheckBox.isSelected());
+		Options.setSpellChecker(spellCheckerCheckBox.isSelected());
 	}
 
 	private void initComponents() {
@@ -91,10 +93,11 @@ public class GeneralOptionsPane
 		Label encodingLabel = new Label();
 		encodingField = new ComboBox<>();
 		showWhitespaceCheckBox = new CheckBox();
+		spellCheckerCheckBox = new CheckBox();
 
 		//======== this ========
 		setCols("[fill][fill][fill]");
-		setRows("[][]para[]");
+		setRows("[][]para[][]");
 
 		//---- lineSeparatorLabel ----
 		lineSeparatorLabel.setText("_Line separator:");
@@ -118,6 +121,10 @@ public class GeneralOptionsPane
 		//---- showWhitespaceCheckBox ----
 		showWhitespaceCheckBox.setText("Show _Whitespace Characters");
 		add(showWhitespaceCheckBox, "cell 0 2 3 1,growx 0,alignx left");
+
+		//---- spellCheckerCheckBox ----
+		spellCheckerCheckBox.setText("Spell Checking");
+		add(spellCheckerCheckBox, "cell 0 3 3 1,growx 0,alignx left");
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 
 		// TODO set this in JFormDesigner as soon as it supports labelFor
@@ -129,5 +136,6 @@ public class GeneralOptionsPane
 	private ComboBox<Item<String>> lineSeparatorField;
 	private ComboBox<Item<String>> encodingField;
 	private CheckBox showWhitespaceCheckBox;
+	private CheckBox spellCheckerCheckBox;
 	// JFormDesigner - End of variables declaration  //GEN-END:variables
 }

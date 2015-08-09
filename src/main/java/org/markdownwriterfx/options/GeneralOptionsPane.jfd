@@ -6,7 +6,7 @@ new FormModel {
 		add( new FormContainer( "org.tbee.javafx.scene.layout.fxml.MigPane", new FormLayoutManager( class org.tbee.javafx.scene.layout.fxml.MigPane ) {
 			"$layoutConstraints": ""
 			"$columnConstraints": "[fill][fill][fill]"
-			"$rowConstraints": "[][]para[]"
+			"$rowConstraints": "[][]para[][]"
 		} ) {
 			name: "this"
 			add( new FormComponent( "javafx.scene.control.Label" ) {
@@ -60,6 +60,12 @@ new FormModel {
 				"text": "Show _Whitespace Characters"
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 0 2 3 1,growx 0,alignx left"
+			} )
+			add( new FormComponent( "javafx.scene.control.CheckBox" ) {
+				name: "spellCheckerCheckBox"
+				"text": "Spell Checking"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 3 3 1,growx 0,alignx left"
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new javafx.geometry.Point2D( 0.0, 0.0 )

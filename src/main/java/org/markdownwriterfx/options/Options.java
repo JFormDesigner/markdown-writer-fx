@@ -53,6 +53,7 @@ public class Options
 		setEncoding(options.get("encoding", null));
 		setMarkdownExtensions(options.getInt("markdownExtensions", Extensions.ALL));
 		setShowWhitespace(options.getBoolean("showWhitespace", false));
+		setSpellChecker(options.getBoolean("spellChecker", true));
 	}
 
 	public static void save() {
@@ -60,6 +61,7 @@ public class Options
 		Utils.putPrefs(options, "encoding", getEncoding(), null);
 		Utils.putPrefsInt(options, "markdownExtensions", getMarkdownExtensions(), Extensions.ALL);
 		Utils.putPrefsBoolean(options, "showWhitespace", isShowWhitespace(), false);
+		Utils.putPrefsBoolean(options, "spellChecker", isSpellChecker(), true);
 	}
 
 	// 'lineSeparator' property
@@ -85,4 +87,10 @@ public class Options
 	public static boolean isShowWhitespace() { return showWhitespace.get(); }
 	public static void setShowWhitespace(boolean showWhitespace) { Options.showWhitespace.set(showWhitespace); }
 	public static BooleanProperty showWhitespaceProperty() { return showWhitespace; }
+
+	// 'spellChecker' property
+	private static final BooleanProperty spellChecker = new SimpleBooleanProperty();
+	public static boolean isSpellChecker() { return spellChecker.get(); }
+	public static void setSpellChecker(boolean spellChecker) { Options.spellChecker.set(spellChecker); }
+	public static BooleanProperty spellCheckerProperty() { return spellChecker; }
 }
