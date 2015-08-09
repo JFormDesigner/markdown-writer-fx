@@ -34,6 +34,7 @@ import javafx.scene.Node;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Path;
 import javafx.scene.shape.PathElement;
+import org.fxmisc.richtext.StyleClassedTextArea;
 import org.languagetool.rules.ITSIssueType;
 import org.languagetool.rules.RuleMatch;
 import org.markdownwriterfx.editor.ParagraphOverlayGraphicFactory.OverlayFactory;
@@ -55,22 +56,26 @@ class SpellCheckerOverlayFactory
 	@Override
 	public Node[] createOverlayNodes(int paragraphIndex) {
 		List<RuleMatch> spellMatches = this.spellMatchesSupplier.get();
-		if (spellMatches == null)
+		if (spellMatches == null || spellMatches.isEmpty())
 			return null;
+
+		StyleClassedTextArea textArea = getTextArea();
+		int parStart = textArea.position(paragraphIndex, 0).toOffset();
+		int parLength = textArea.getParagraph(paragraphIndex).fullLength();
+		int parEnd = parStart + parLength;
 
 		ArrayList<Node> nodes = new ArrayList<>();
 		for (RuleMatch match : spellMatches) {
-			if (match.getLine() != paragraphIndex)
-				continue;
+			if (match.getFromPos() >= parEnd || match.getToPos() < parStart)
+				continue; // not in this paragraph
 
-			int start = match.getColumn() - 1;
-			int end = match.getEndColumn() - 1;
+			int start = Math.max(match.getFromPos() - parStart, 0);
+			int end = Math.min(match.getToPos() - parStart, parLength);
 			boolean spellError = (match.getRule().getLocQualityIssueType() == ITSIssueType.Misspelling);
 
 			PathElement[] shape = getShape(start, end);
 
 			Path path = new Path(shape);
-			path.setManaged(false);
 			path.setFill(spellError ? Color.RED : Color.ORANGE);
 			path.setStrokeWidth(0);
 			path.setOpacity(0.3);
