@@ -29,13 +29,12 @@ package org.markdownwriterfx.spellchecker;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javafx.beans.InvalidationListener;
 import javafx.beans.WeakInvalidationListener;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Task;
 import org.fxmisc.richtext.PlainTextChange;
 import org.fxmisc.richtext.StyleClassedTextArea;
@@ -58,7 +57,7 @@ public class SpellChecker
 	private final StyleClassedTextArea textArea;
 	private final ParagraphOverlayGraphicFactory overlayGraphicFactory;
 	private final InvalidationListener optionsListener;
-	private final ObjectProperty<List<RuleMatch>> ruleMatches = new SimpleObjectProperty<>();
+	private List<SpellMatch> spellMatches;
 
 	private Subscription textChangesSubscribtion;
 	private SpellCheckerOverlayFactory spellCheckerOverlayFactory;
@@ -100,12 +99,13 @@ public class SpellChecker
 
 	        EventStream<PlainTextChange> textChanges = textArea.plainTextChanges();
 			textChangesSubscribtion = textChanges
+				.hook(this::updateSpellMatchesOffsets)
 				.successionEnds(Duration.ofMillis(500))
 				.supplyTask(this::checkAsync)
 				.awaitLatest(textChanges)
 				.subscribe(this::checkFinished);
 
-	        spellCheckerOverlayFactory = new SpellCheckerOverlayFactory(() -> ruleMatches.get());
+	        spellCheckerOverlayFactory = new SpellCheckerOverlayFactory(() -> spellMatches);
 			overlayGraphicFactory.addOverlayFactory(spellCheckerOverlayFactory);
 
 			//TODO check current text
@@ -125,11 +125,11 @@ public class SpellChecker
 		}
 	}
 
-	private Task<List<RuleMatch>> checkAsync() {
+	private Task<List<SpellMatch>> checkAsync() {
         String text = textArea.getText();
-        Task<List<RuleMatch>> task = new Task<List<RuleMatch>>() {
+        Task<List<SpellMatch>> task = new Task<List<SpellMatch>>() {
             @Override
-            protected List<RuleMatch> call() throws Exception {
+            protected List<SpellMatch> call() throws Exception {
                 return check(text);
             }
         };
@@ -137,12 +137,12 @@ public class SpellChecker
         return task;
     }
 
-	private void checkFinished(Try<List<RuleMatch>> result) {
+	private void checkFinished(Try<List<SpellMatch>> result) {
 		if (overlayGraphicFactory == null)
 			return; // ignore result; user turned spell checking off
 
 		if (result.isSuccess()) {
-			ruleMatches.set(result.get());
+			spellMatches = result.get();
 			overlayGraphicFactory.update();
 		} else {
 			//TODO
@@ -150,9 +150,30 @@ public class SpellChecker
 		}
 	}
 
-	private List<RuleMatch> check(String text) throws IOException {
+	private List<SpellMatch> check(String text) throws IOException {
 		if (languageTool == null)
 			languageTool = new JLanguageTool(new AmericanEnglish());
-		return languageTool.check(text);
+
+		// check spelling
+		List<RuleMatch> ruleMatches = languageTool.check(text);
+
+		// convert RuleMatch to SpellMatch
+		ArrayList<SpellMatch> spellMatches = new ArrayList<>(ruleMatches.size());
+		for (RuleMatch ruleMatch : ruleMatches)
+			spellMatches.add(new SpellRuleMatch(ruleMatch));
+
+		return spellMatches;
+	}
+
+	private void updateSpellMatchesOffsets(PlainTextChange e) {
+		if (spellMatches == null)
+			return;
+
+		int position = e.getPosition();
+		int inserted = e.getInserted().length();
+		int removed = e.getRemoved().length();
+
+		for (SpellMatch match : spellMatches)
+			match.updateOffsets(position, inserted, removed);
 	}
 }

@@ -35,8 +35,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Path;
 import javafx.scene.shape.PathElement;
 import org.fxmisc.richtext.StyleClassedTextArea;
-import org.languagetool.rules.ITSIssueType;
-import org.languagetool.rules.RuleMatch;
 import org.markdownwriterfx.editor.ParagraphOverlayGraphicFactory.OverlayFactory;
 
 /**
@@ -47,15 +45,15 @@ import org.markdownwriterfx.editor.ParagraphOverlayGraphicFactory.OverlayFactory
 class SpellCheckerOverlayFactory
 	extends OverlayFactory
 {
-	private final Supplier<List<RuleMatch>> spellMatchesSupplier;
+	private final Supplier<List<SpellMatch>> spellMatchesSupplier;
 
-	SpellCheckerOverlayFactory(Supplier<List<RuleMatch>> spellMatchesSupplier) {
+	SpellCheckerOverlayFactory(Supplier<List<SpellMatch>> spellMatchesSupplier) {
 		this.spellMatchesSupplier = spellMatchesSupplier;
 	}
 
 	@Override
 	public Node[] createOverlayNodes(int paragraphIndex) {
-		List<RuleMatch> spellMatches = this.spellMatchesSupplier.get();
+		List<SpellMatch> spellMatches = this.spellMatchesSupplier.get();
 		if (spellMatches == null || spellMatches.isEmpty())
 			return null;
 
@@ -65,13 +63,13 @@ class SpellCheckerOverlayFactory
 		int parEnd = parStart + parLength;
 
 		ArrayList<Node> nodes = new ArrayList<>();
-		for (RuleMatch match : spellMatches) {
-			if (match.getFromPos() >= parEnd || match.getToPos() < parStart)
+		for (SpellMatch match : spellMatches) {
+			if (!match.isValid() || match.getFromPos() >= parEnd || match.getToPos() < parStart)
 				continue; // not in this paragraph
 
 			int start = Math.max(match.getFromPos() - parStart, 0);
 			int end = Math.min(match.getToPos() - parStart, parLength);
-			boolean spellError = (match.getRule().getLocQualityIssueType() == ITSIssueType.Misspelling);
+			boolean spellError = match.isError();
 
 			PathElement[] shape = getShape(start, end);
 
