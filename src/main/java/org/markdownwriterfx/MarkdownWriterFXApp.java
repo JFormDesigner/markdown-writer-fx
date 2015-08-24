@@ -29,6 +29,7 @@ package org.markdownwriterfx;
 
 import java.util.prefs.Preferences;
 import javafx.application.Application;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import org.markdownwriterfx.options.Options;
 import org.markdownwriterfx.util.StageState;
@@ -60,6 +61,12 @@ public class MarkdownWriterFXApp
 
 		stageState = new StageState(primaryStage, getState());
 
+		primaryStage.getIcons().addAll(
+				new Image("org/markdownwriterfx/markdownwriterfx16.png"),
+				new Image("org/markdownwriterfx/markdownwriterfx32.png"),
+				new Image("org/markdownwriterfx/markdownwriterfx128.png"),
+				new Image("org/markdownwriterfx/markdownwriterfx256.png"),
+				new Image("org/markdownwriterfx/markdownwriterfx512.png"));
 		primaryStage.setTitle("Markdown Writer FX");
 		primaryStage.setScene(mainWindow.getScene());
 		primaryStage.show();

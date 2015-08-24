@@ -1,3 +1,5 @@
+![Markdown Writer FX](src/main/resources/org/markdownwriterfx/markdownwriterfx128.png)
+
 Markdown Writer FX
 ==================
 
