@@ -1,7 +1,11 @@
+![Markdown Writer FX](images/logo.png)
+
 Markdown Writer FX
 ==================
 
 An open source [Markdown] editor written in JavaFX 8.
+
+![Markdown Writer FX Screenshot](images/screenshot.png)
 
 For Markdown processing it uses [pegdown], which is nearly 100% compatible with the original [Markdown] specification and also supports parts of [Markdown Extra], [MultiMarkdown] and [Github-flavoured-Markdown].
 
@@ -36,7 +40,9 @@ Java 8u40 or later is required.
 Installation
 ------------
 
-Download markdown-writer-fx.zip and extract it to any folder.
+Download
+[markdown-writer-fx-0.1.zip](https://github.com/JFormDesigner/markdown-writer-fx/releases/download/0.1/markdown-writer-fx-0.1.zip)
+and extract it to any folder.
 
 Double-click `markdown-writer-fx.jar` to start *Markdown Writer FX*.
 
@@ -76,4 +82,3 @@ License
    [Flowless]: https://github.com/TomasMikula/Flowless
    [UndoFX]: https://github.com/TomasMikula/UndoFX
    [FontAwesomeFX]: https://bitbucket.org/Jerady/fontawesomefx
- 
