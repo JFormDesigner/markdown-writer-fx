@@ -1,9 +1,11 @@
-![Markdown Writer FX](src/main/resources/org/markdownwriterfx/markdownwriterfx128.png)
+![Markdown Writer FX](images/logo.png)
 
 Markdown Writer FX
 ==================
 
 An open source [Markdown] editor written in JavaFX 8.
+
+![Markdown Writer FX Screenshot](images/screenshot.png)
 
 For Markdown processing it uses [pegdown], which is nearly 100% compatible with the original [Markdown] specification and also supports parts of [Markdown Extra], [MultiMarkdown] and [Github-flavoured-Markdown].
 
@@ -79,3 +81,4 @@ License
    [UndoFX]: https://github.com/TomasMikula/UndoFX
    [FontAwesomeFX]: https://bitbucket.org/Jerady/fontawesomefx
  
+ <img src="http://piwik.formdev.com/piwik.php?idsite=3&rec=1" style="border:0" alt="">
