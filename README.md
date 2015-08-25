@@ -40,7 +40,9 @@ Java 8u40 or later is required.
 Installation
 ------------
 
-Download markdown-writer-fx.zip and extract it to any folder.
+Download
+[markdown-writer-fx-0.1.zip](https://github.com/JFormDesigner/markdown-writer-fx/releases/download/0.1/markdown-writer-fx-0.1.zip)
+and extract it to any folder.
 
 Double-click `markdown-writer-fx.jar` to start *Markdown Writer FX*.
 
