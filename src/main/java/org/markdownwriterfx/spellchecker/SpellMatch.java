@@ -65,7 +65,38 @@ abstract class SpellMatch
 	abstract String getMessage();
 
 	void updateOffsets(int position, int inserted, int removed) {
-		//TODO
+		if (position > toPos)
+			return; // changed area is after this match
+
+		int diff = inserted - removed;
+
+		if (position + removed <= fromPos) {
+			// changed area is before this match
+			fromPos += diff;
+			toPos += diff;
+		} else if (position >= fromPos) {
+			// changed area starts within this match
+			if( position + removed <= toPos ) {
+				// changed area is within this match
+				toPos += diff;
+			} else {
+				// changed area starts within this match and ends after it
+				// --> the new text does not belong to this match
+				toPos = position;
+			}
+		} else { // position < fromPos
+			// changed area starts before this match
+			if( position + removed <= toPos ) {
+				// changed area starts before this match and ends within it
+				// --> the new text does not belong to this match
+				fromPos = position + inserted;
+				toPos += diff;
+			} else {
+				// changed area fully replaces the position
+				// --> make position invalid
+				valid = false;
+			}
+		}
 	}
 
 	@Override
