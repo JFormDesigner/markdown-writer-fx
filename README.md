@@ -80,5 +80,3 @@ License
    [Flowless]: https://github.com/TomasMikula/Flowless
    [UndoFX]: https://github.com/TomasMikula/UndoFX
    [FontAwesomeFX]: https://bitbucket.org/Jerady/fontawesomefx
- 
- <img src="http://piwik.formdev.com/piwik.php?idsite=3&rec=1" style="border:0" alt="">
