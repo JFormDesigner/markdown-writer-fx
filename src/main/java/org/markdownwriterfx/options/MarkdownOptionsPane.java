@@ -61,6 +61,11 @@ class MarkdownOptionsPane
 		anchorlinksExtCheckBox.setFlag(Extensions.ANCHORLINKS);
 		suppressHtmlBlocksExtCheckBox.setFlag(Extensions.SUPPRESS_HTML_BLOCKS);
 		suppressInlineHtmlExtCheckBox.setFlag(Extensions.SUPPRESS_INLINE_HTML);
+		atxHeaderSpaceExtCheckBox.setFlag(Extensions.ATXHEADERSPACE);
+		forceListItemParaExtCheckBox.setFlag(Extensions.FORCELISTITEMPARA);
+		relaxedHrRulesExtCheckBox.setFlag(Extensions.RELAXEDHRULES);
+		taskListItemsExtCheckBox.setFlag(Extensions.TASKLISTITEMS);
+		extAnchorLinksExtCheckBox.setFlag(Extensions.EXTANCHORLINKS);
 
 		extensions.bindBidirectional(smartsExtCheckBox.flagsProperty());
 		extensions.bindBidirectional(quotesExtCheckBox.flagsProperty());
@@ -75,6 +80,11 @@ class MarkdownOptionsPane
 		extensions.bindBidirectional(anchorlinksExtCheckBox.flagsProperty());
 		extensions.bindBidirectional(suppressHtmlBlocksExtCheckBox.flagsProperty());
 		extensions.bindBidirectional(suppressInlineHtmlExtCheckBox.flagsProperty());
+		extensions.bindBidirectional(atxHeaderSpaceExtCheckBox.flagsProperty());
+		extensions.bindBidirectional(forceListItemParaExtCheckBox.flagsProperty());
+		extensions.bindBidirectional(relaxedHrRulesExtCheckBox.flagsProperty());
+		extensions.bindBidirectional(taskListItemsExtCheckBox.flagsProperty());
+		extensions.bindBidirectional(extAnchorLinksExtCheckBox.flagsProperty());
 	}
 
 	void load() {
@@ -111,10 +121,15 @@ class MarkdownOptionsPane
 		anchorlinksExtCheckBox = new FlagCheckBox();
 		suppressHtmlBlocksExtCheckBox = new FlagCheckBox();
 		suppressInlineHtmlExtCheckBox = new FlagCheckBox();
+		atxHeaderSpaceExtCheckBox = new FlagCheckBox();
+		forceListItemParaExtCheckBox = new FlagCheckBox();
+		relaxedHrRulesExtCheckBox = new FlagCheckBox();
+		taskListItemsExtCheckBox = new FlagCheckBox();
+		extAnchorLinksExtCheckBox = new FlagCheckBox();
 
 		//======== this ========
 		setCols("[][fill]");
-		setRows("[][][][][][][][][][][][][]");
+		setRows("[][][][][][][][][][][][][][][][][][]");
 
 		//---- smartsExtCheckBox ----
 		smartsExtCheckBox.setText("Beautify apostrophes, _ellipses (\"...\" and \". . .\") and dashes (\"--\" and \"---\")");
@@ -219,6 +234,26 @@ class MarkdownOptionsPane
 		//---- suppressInlineHtmlExtCheckBox ----
 		suppressInlineHtmlExtCheckBox.setText("Suppress the o_utput of inline HTML elements");
 		add(suppressInlineHtmlExtCheckBox, "cell 0 12");
+
+		//---- atxHeaderSpaceExtCheckBox ----
+		atxHeaderSpaceExtCheckBox.setText("Requires a space char after Atx # header prefixes, so that #dasdsdaf is not a header");
+		add(atxHeaderSpaceExtCheckBox, "cell 0 13");
+
+		//---- forceListItemParaExtCheckBox ----
+		forceListItemParaExtCheckBox.setText("Force List and Definition Paragraph wrapping if it includes more than just a single paragraph");
+		add(forceListItemParaExtCheckBox, "cell 0 14");
+
+		//---- relaxedHrRulesExtCheckBox ----
+		relaxedHrRulesExtCheckBox.setText("Allow horizontal rules without a blank line following them");
+		add(relaxedHrRulesExtCheckBox, "cell 0 15");
+
+		//---- taskListItemsExtCheckBox ----
+		taskListItemsExtCheckBox.setText("GitHub style task list items");
+		add(taskListItemsExtCheckBox, "cell 0 16");
+
+		//---- extAnchorLinksExtCheckBox ----
+		extAnchorLinksExtCheckBox.setText("Generate anchor links for headers using complete contents of the header");
+		add(extAnchorLinksExtCheckBox, "cell 0 17");
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 	}
 
@@ -236,5 +271,10 @@ class MarkdownOptionsPane
 	private FlagCheckBox anchorlinksExtCheckBox;
 	private FlagCheckBox suppressHtmlBlocksExtCheckBox;
 	private FlagCheckBox suppressInlineHtmlExtCheckBox;
+	private FlagCheckBox atxHeaderSpaceExtCheckBox;
+	private FlagCheckBox forceListItemParaExtCheckBox;
+	private FlagCheckBox relaxedHrRulesExtCheckBox;
+	private FlagCheckBox taskListItemsExtCheckBox;
+	private FlagCheckBox extAnchorLinksExtCheckBox;
 	// JFormDesigner - End of variables declaration  //GEN-END:variables
 }
