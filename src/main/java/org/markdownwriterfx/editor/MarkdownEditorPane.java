@@ -43,7 +43,6 @@ import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
-import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.IndexRange;
 import javafx.scene.control.ScrollBar;
@@ -125,10 +124,6 @@ public class MarkdownEditorPane
 		WeakInvalidationListener weakOptionsListener = new WeakInvalidationListener(optionsListener);
 		Options.markdownExtensionsProperty().addListener(weakOptionsListener);
 		Options.showWhitespaceProperty().addListener(weakOptionsListener);
-	}
-
-	public void installEditorShortcuts(EventHandler<KeyEvent> editorShortcuts) {
-		EventHandlerHelper.install(textArea.onKeyPressedProperty(), editorShortcuts);
 	}
 
 	public Node getNode() {

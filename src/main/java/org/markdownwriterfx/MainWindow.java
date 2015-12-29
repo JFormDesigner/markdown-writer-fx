@@ -33,7 +33,6 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ObservableBooleanValue;
 import javafx.event.Event;
-import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -42,23 +41,18 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.ToolBar;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
-import org.fxmisc.wellbehaved.event.EventHandlerHelper;
-import org.fxmisc.wellbehaved.event.EventPattern;
 import org.markdownwriterfx.editor.MarkdownEditorPane;
 import org.markdownwriterfx.options.OptionsDialog;
 import org.markdownwriterfx.util.Action;
 import org.markdownwriterfx.util.ActionUtils;
 import static de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon.*;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -297,33 +291,6 @@ class MainWindow
 		alert.setContentText(String.format(contentTextFormat, contentTextArgs));
 		alert.initOwner(getScene().getWindow());
 		return alert;
-	}
-
-	/**
-	 * When the editor control (RichTextFX) is focused, it consumes all key events
-	 * and the menu accelerators do not work. Looks like a bug to me...
-	 * Workaround: install keyboard shortcuts into the editor component.
-	 */
-	private EventHandler<KeyEvent> editorShortcuts;
-	EventHandler<KeyEvent> getEditorShortcuts() {
-		if (editorShortcuts != null)
-			return editorShortcuts;
-
-		EventHandlerHelper.Builder<KeyEvent> builder = null;
-		for (Menu menu : menuBar.getMenus()) {
-			for (MenuItem menuItem : menu.getItems()) {
-				KeyCombination accelerator = menuItem.getAccelerator();
-				if (accelerator != null) {
-					Consumer<? super KeyEvent> action = e -> menuItem.getOnAction().handle(null);
-					if (builder != null)
-						builder = builder.on(EventPattern.keyPressed(accelerator)).act(action);
-					else
-						builder = EventHandlerHelper.on(EventPattern.keyPressed(accelerator)).act(action);
-				}
-			}
-		}
-		editorShortcuts = builder.create();
-		return editorShortcuts;
 	}
 
 	//---- File actions -------------------------------------------------------
