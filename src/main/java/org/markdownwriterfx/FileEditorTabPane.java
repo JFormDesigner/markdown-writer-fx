@@ -153,7 +153,7 @@ class FileEditorTabPane
 		if (tabPane.getTabs().size() == 1) {
 			FileEditor fileEditor = (FileEditor) tabPane.getTabs().get(0).getUserData();
 			if (fileEditor.getPath() == null && !fileEditor.isModified())
-				closeEditor(fileEditor);
+				closeEditor(fileEditor, false);
 		}
 
 		FileEditor[] fileEditors = new FileEditor[files.size()];
@@ -213,7 +213,7 @@ class FileEditorTabPane
 			return true;
 
 		Alert alert = mainWindow.createAlert(AlertType.CONFIRMATION, "Close",
-			"'%s' has been modified. Save changes?", fileEditor.getTab().getText());
+			"''{0}'' has been modified. Save changes?", fileEditor.getTab().getText());
 		alert.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO, ButtonType.CANCEL);
 
 		ButtonType result = alert.showAndWait().get();
@@ -223,16 +223,18 @@ class FileEditorTabPane
 		return saveEditor(fileEditor);
 	}
 
-	boolean closeEditor(FileEditor fileEditor) {
+	boolean closeEditor(FileEditor fileEditor, boolean save) {
 		if (fileEditor == null)
 			return true;
 
 		Tab tab = fileEditor.getTab();
 
-		Event event = new Event(tab,tab,Tab.TAB_CLOSE_REQUEST_EVENT);
-		Event.fireEvent(tab, event);
-		if (event.isConsumed())
-			return false;
+		if (save) {
+			Event event = new Event(tab,tab,Tab.TAB_CLOSE_REQUEST_EVENT);
+			Event.fireEvent(tab, event);
+			if (event.isConsumed())
+				return false;
+		}
 
 		tabPane.getTabs().remove(tab);
 		if (tab.getOnClosed() != null)
@@ -245,21 +247,29 @@ class FileEditorTabPane
 		FileEditor[] allEditors = getAllEditors();
 		FileEditor activeEditor = activeFileEditor.get();
 
-		// try to close active tab first because in case user decides to cancel,
-		// then the other tabs stay open
-		if (activeEditor != null && !closeEditor(activeEditor))
+		// try to save active tab first because in case the user decides to cancel,
+		// then it stays active
+		if (activeEditor != null && !canCloseEditor(activeEditor))
 			return false;
 
-		// select first tab
-		if (!tabPane.getTabs().isEmpty())
-			tabPane.getSelectionModel().select(0);
-
-		// try to close all tabs
-		for (FileEditor fileEditor : allEditors) {
+		// save modified tabs
+		for (int i = 0; i < allEditors.length; i++) {
+			FileEditor fileEditor = allEditors[i];
 			if (fileEditor == activeEditor)
 				continue;
 
-			if (!closeEditor(fileEditor))
+			if (fileEditor.isModified()) {
+				// activate the modified tab to make its modified content visible to the user
+				tabPane.getSelectionModel().select(i);
+
+				if (!canCloseEditor(fileEditor))
+					return false;
+			}
+		}
+
+		// close all tabs
+		for (FileEditor fileEditor : allEditors) {
+			if (!closeEditor(fileEditor, false))
 				return false;
 		}
 

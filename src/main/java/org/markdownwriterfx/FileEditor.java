@@ -174,7 +174,7 @@ class FileEditor
 			markdownEditorPane.getUndoManager().mark();
 		} catch (IOException ex) {
 			Alert alert = mainWindow.createAlert(AlertType.ERROR, "Load",
-				"Failed to load '%s'.\n\nReason: %s", path, ex.getMessage());
+				"Failed to load ''{0}''.\n\nReason: {1}", path, ex.getMessage());
 			alert.showAndWait();
 		}
 	}
@@ -199,7 +199,7 @@ class FileEditor
 			return true;
 		} catch (IOException ex) {
 			Alert alert = mainWindow.createAlert(AlertType.ERROR, "Save",
-				"Failed to save '%s'.\n\nReason: %s", path.get(), ex.getMessage());
+				"Failed to save ''{0}''.\n\nReason: {1}", path.get(), ex.getMessage());
 			alert.showAndWait();
 			return false;
 		}

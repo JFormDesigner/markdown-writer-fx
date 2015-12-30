@@ -27,6 +27,8 @@
 
 package org.markdownwriterfx;
 
+import java.text.MessageFormat;
+import java.util.function.Function;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
@@ -53,7 +55,6 @@ import org.markdownwriterfx.options.OptionsDialog;
 import org.markdownwriterfx.util.Action;
 import org.markdownwriterfx.util.ActionUtils;
 import static de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon.*;
-import java.util.function.Function;
 
 /**
  * Main window containing a tab pane in the center for file editors.
@@ -288,7 +289,7 @@ class MainWindow
 		Alert alert = new Alert(alertType);
 		alert.setTitle(title);
 		alert.setHeaderText(null);
-		alert.setContentText(String.format(contentTextFormat, contentTextArgs));
+		alert.setContentText(MessageFormat.format(contentTextFormat, contentTextArgs));
 		alert.initOwner(getScene().getWindow());
 		return alert;
 	}
@@ -304,7 +305,7 @@ class MainWindow
 	}
 
 	private void fileClose() {
-		fileEditorTabPane.closeEditor(fileEditorTabPane.getActiveFileEditor());
+		fileEditorTabPane.closeEditor(fileEditorTabPane.getActiveFileEditor(), true);
 	}
 
 	private void fileCloseAll() {
