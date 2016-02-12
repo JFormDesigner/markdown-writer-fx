@@ -30,6 +30,7 @@ package org.markdownwriterfx.options;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.scene.control.Label;
+import org.markdownwriterfx.Messages;
 import org.markdownwriterfx.controls.FlagCheckBox;
 import org.markdownwriterfx.controls.WebHyperlink;
 import org.pegdown.Extensions;
@@ -132,127 +133,127 @@ class MarkdownOptionsPane
 		setRows("[][][][][][][][][][][][][][][][][][]");
 
 		//---- smartsExtCheckBox ----
-		smartsExtCheckBox.setText("Beautify apostrophes, _ellipses (\"...\" and \". . .\") and dashes (\"--\" and \"---\")");
+		smartsExtCheckBox.setText(Messages.get("MarkdownOptionsPane.smartsExtCheckBox.text"));
 		add(smartsExtCheckBox, "cell 0 0");
 
 		//---- quotesExtCheckBox ----
-		quotesExtCheckBox.setText("Beautify single _quotes, double quotes and double angle quotes (\u00ab and \u00bb)");
+		quotesExtCheckBox.setText(Messages.get("MarkdownOptionsPane.quotesExtCheckBox.text"));
 		add(quotesExtCheckBox, "cell 0 1");
 
 		//---- abbreviationsExtCheckBox ----
-		abbreviationsExtCheckBox.setText("A_bbreviations in the way of");
+		abbreviationsExtCheckBox.setText(Messages.get("MarkdownOptionsPane.abbreviationsExtCheckBox.text"));
 		add(abbreviationsExtCheckBox, "cell 0 2");
 
 		//---- abbreviationsExtLink ----
-		abbreviationsExtLink.setText("Markdown Extra");
+		abbreviationsExtLink.setText(Messages.get("MarkdownOptionsPane.abbreviationsExtLink.text"));
 		abbreviationsExtLink.setUri("http://michelf.com/projects/php-markdown/extra/#abbr");
 		add(abbreviationsExtLink, "cell 0 2,gapx 0");
 
 		//---- hardwrapsExtCheckBox ----
-		hardwrapsExtCheckBox.setText("_Newlines in paragraph-like content as real line breaks, see");
+		hardwrapsExtCheckBox.setText(Messages.get("MarkdownOptionsPane.hardwrapsExtCheckBox.text"));
 		add(hardwrapsExtCheckBox, "cell 0 3");
 
 		//---- hardwrapsExtLink ----
-		hardwrapsExtLink.setText("Github-flavoured-Markdown");
+		hardwrapsExtLink.setText(Messages.get("MarkdownOptionsPane.hardwrapsExtLink.text"));
 		hardwrapsExtLink.setUri("https://help.github.com/articles/writing-on-github/#markup");
 		add(hardwrapsExtLink, "cell 0 3,gapx 0");
 
 		//---- autolinksExtCheckBox ----
-		autolinksExtCheckBox.setText("_Plain (undelimited) autolinks in the way of");
+		autolinksExtCheckBox.setText(Messages.get("MarkdownOptionsPane.autolinksExtCheckBox.text"));
 		add(autolinksExtCheckBox, "cell 0 4");
 
 		//---- autolinksExtLink ----
-		autolinksExtLink.setText("Github-flavoured-Markdown");
+		autolinksExtLink.setText(Messages.get("MarkdownOptionsPane.autolinksExtLink.text"));
 		autolinksExtLink.setUri("https://help.github.com/articles/github-flavored-markdown/#url-autolinking");
 		add(autolinksExtLink, "cell 0 4,gapx 0");
 
 		//---- tablesExtCheckBox ----
-		tablesExtCheckBox.setText("_Tables similar to");
+		tablesExtCheckBox.setText(Messages.get("MarkdownOptionsPane.tablesExtCheckBox.text"));
 		add(tablesExtCheckBox, "cell 0 5");
 
 		//---- tablesExtLink ----
-		tablesExtLink.setText("MultiMarkdown");
+		tablesExtLink.setText(Messages.get("MarkdownOptionsPane.tablesExtLink.text"));
 		tablesExtLink.setUri("http://fletcher.github.io/MultiMarkdown-4/syntax.html#tables");
 		add(tablesExtLink, "cell 0 5,gapx 0");
 
 		//---- tablesExtLabel ----
-		tablesExtLabel.setText("(like");
+		tablesExtLabel.setText(Messages.get("MarkdownOptionsPane.tablesExtLabel.text"));
 		add(tablesExtLabel, "cell 0 5,gapx 3");
 
 		//---- tablesExtLink2 ----
-		tablesExtLink2.setText("Markdown Extra");
+		tablesExtLink2.setText(Messages.get("MarkdownOptionsPane.tablesExtLink2.text"));
 		tablesExtLink2.setUri("https://michelf.ca/projects/php-markdown/extra/#table");
 		add(tablesExtLink2, "cell 0 5,gapx 3 3");
 
 		//---- tablesExtLabel2 ----
-		tablesExtLabel2.setText(" tables, but with colspan support)");
+		tablesExtLabel2.setText(Messages.get("MarkdownOptionsPane.tablesExtLabel2.text"));
 		add(tablesExtLabel2, "cell 0 5,gapx 0");
 
 		//---- definitionListsExtCheckBox ----
-		definitionListsExtCheckBox.setText("_Definition lists in the way of");
+		definitionListsExtCheckBox.setText(Messages.get("MarkdownOptionsPane.definitionListsExtCheckBox.text"));
 		add(definitionListsExtCheckBox, "cell 0 6");
 
 		//---- definitionListsExtLink ----
-		definitionListsExtLink.setText("Markdown Extra");
+		definitionListsExtLink.setText(Messages.get("MarkdownOptionsPane.definitionListsExtLink.text"));
 		definitionListsExtLink.setUri("https://michelf.ca/projects/php-markdown/extra/#def-list");
 		add(definitionListsExtLink, "cell 0 6,gapx 0");
 
 		//---- fencedCodeBlocksExtCheckBox ----
-		fencedCodeBlocksExtCheckBox.setText("_Fenced Code Blocks in the way of");
+		fencedCodeBlocksExtCheckBox.setText(Messages.get("MarkdownOptionsPane.fencedCodeBlocksExtCheckBox.text"));
 		add(fencedCodeBlocksExtCheckBox, "cell 0 7");
 
 		//---- fencedCodeBlocksExtLink ----
-		fencedCodeBlocksExtLink.setText("Markdown Extra");
+		fencedCodeBlocksExtLink.setText(Messages.get("MarkdownOptionsPane.fencedCodeBlocksExtLink.text"));
 		fencedCodeBlocksExtLink.setUri("http://michelf.com/projects/php-markdown/extra/#fenced-code-blocks");
 		add(fencedCodeBlocksExtLink, "cell 0 7,gapx 0");
 
 		//---- fencedCodeBlocksExtLabel ----
-		fencedCodeBlocksExtLabel.setText("or");
+		fencedCodeBlocksExtLabel.setText(Messages.get("MarkdownOptionsPane.fencedCodeBlocksExtLabel.text"));
 		add(fencedCodeBlocksExtLabel, "cell 0 7,gapx 3");
 
 		//---- fencedCodeBlocksExtLink2 ----
-		fencedCodeBlocksExtLink2.setText("Github-flavoured-Markdown");
+		fencedCodeBlocksExtLink2.setText(Messages.get("MarkdownOptionsPane.fencedCodeBlocksExtLink2.text"));
 		fencedCodeBlocksExtLink2.setUri("https://help.github.com/articles/github-flavored-markdown/#fenced-code-blocks");
 		add(fencedCodeBlocksExtLink2, "cell 0 7,gapx 3");
 
 		//---- wikilinksExtCheckBox ----
-		wikilinksExtCheckBox.setText("_Wiki-style links (\"[[wiki link]]\")");
+		wikilinksExtCheckBox.setText(Messages.get("MarkdownOptionsPane.wikilinksExtCheckBox.text"));
 		add(wikilinksExtCheckBox, "cell 0 8");
 
 		//---- strikethroughExtCheckBox ----
-		strikethroughExtCheckBox.setText("_Strikethrough");
+		strikethroughExtCheckBox.setText(Messages.get("MarkdownOptionsPane.strikethroughExtCheckBox.text"));
 		add(strikethroughExtCheckBox, "cell 0 9");
 
 		//---- anchorlinksExtCheckBox ----
-		anchorlinksExtCheckBox.setText("_Anchor links in headers");
+		anchorlinksExtCheckBox.setText(Messages.get("MarkdownOptionsPane.anchorlinksExtCheckBox.text"));
 		add(anchorlinksExtCheckBox, "cell 0 10");
 
 		//---- suppressHtmlBlocksExtCheckBox ----
-		suppressHtmlBlocksExtCheckBox.setText("Suppress the _output of HTML blocks");
+		suppressHtmlBlocksExtCheckBox.setText(Messages.get("MarkdownOptionsPane.suppressHtmlBlocksExtCheckBox.text"));
 		add(suppressHtmlBlocksExtCheckBox, "cell 0 11");
 
 		//---- suppressInlineHtmlExtCheckBox ----
-		suppressInlineHtmlExtCheckBox.setText("Suppress the o_utput of inline HTML elements");
+		suppressInlineHtmlExtCheckBox.setText(Messages.get("MarkdownOptionsPane.suppressInlineHtmlExtCheckBox.text"));
 		add(suppressInlineHtmlExtCheckBox, "cell 0 12");
 
 		//---- atxHeaderSpaceExtCheckBox ----
-		atxHeaderSpaceExtCheckBox.setText("Requires a space char after Atx # header prefixes, so that #dasdsdaf is not a header");
+		atxHeaderSpaceExtCheckBox.setText(Messages.get("MarkdownOptionsPane.atxHeaderSpaceExtCheckBox.text"));
 		add(atxHeaderSpaceExtCheckBox, "cell 0 13");
 
 		//---- forceListItemParaExtCheckBox ----
-		forceListItemParaExtCheckBox.setText("Force List and Definition Paragraph wrapping if it includes more than just a single paragraph");
+		forceListItemParaExtCheckBox.setText(Messages.get("MarkdownOptionsPane.forceListItemParaExtCheckBox.text"));
 		add(forceListItemParaExtCheckBox, "cell 0 14");
 
 		//---- relaxedHrRulesExtCheckBox ----
-		relaxedHrRulesExtCheckBox.setText("Allow horizontal rules without a blank line following them");
+		relaxedHrRulesExtCheckBox.setText(Messages.get("MarkdownOptionsPane.relaxedHrRulesExtCheckBox.text"));
 		add(relaxedHrRulesExtCheckBox, "cell 0 15");
 
 		//---- taskListItemsExtCheckBox ----
-		taskListItemsExtCheckBox.setText("GitHub style task list items");
+		taskListItemsExtCheckBox.setText(Messages.get("MarkdownOptionsPane.taskListItemsExtCheckBox.text"));
 		add(taskListItemsExtCheckBox, "cell 0 16");
 
 		//---- extAnchorLinksExtCheckBox ----
-		extAnchorLinksExtCheckBox.setText("Generate anchor links for headers using complete contents of the header");
+		extAnchorLinksExtCheckBox.setText(Messages.get("MarkdownOptionsPane.extAnchorLinksExtCheckBox.text"));
 		add(extAnchorLinksExtCheckBox, "cell 0 17");
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 	}

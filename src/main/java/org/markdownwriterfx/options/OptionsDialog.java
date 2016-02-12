@@ -35,6 +35,7 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.stage.Window;
 import org.markdownwriterfx.MarkdownWriterFXApp;
+import org.markdownwriterfx.Messages;
 
 /**
  * Options dialog
@@ -45,7 +46,7 @@ public class OptionsDialog
 	extends Dialog<Void>
 {
 	public OptionsDialog(Window owner) {
-		setTitle("Options");
+		setTitle(Messages.get("OptionsDialog.title"));
 		initOwner(owner);
 
 		initComponents();
@@ -101,13 +102,13 @@ public class OptionsDialog
 
 			//======== generalTab ========
 			{
-				generalTab.setText("General");
+				generalTab.setText(Messages.get("OptionsDialog.generalTab.text"));
 				generalTab.setContent(generalOptionsPane);
 			}
 
 			//======== markdownTab ========
 			{
-				markdownTab.setText("Markdown");
+				markdownTab.setText(Messages.get("OptionsDialog.markdownTab.text"));
 				markdownTab.setContent(markdownOptionsPane);
 			}
 

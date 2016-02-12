@@ -38,6 +38,7 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.stage.Window;
+import org.markdownwriterfx.Messages;
 import org.markdownwriterfx.controls.BrowseDirectoryButton;
 import org.markdownwriterfx.controls.BrowseFileButton;
 import org.markdownwriterfx.controls.EscapeTextField;
@@ -54,7 +55,7 @@ public class LinkDialog
 	private final StringProperty link = new SimpleStringProperty();
 
 	public LinkDialog(Window owner, Path basePath) {
-		setTitle("Link");
+		setTitle(Messages.get("LinkDialog.title"));
 		initOwner(owner);
 		setResizable(true);
 
@@ -113,7 +114,7 @@ public class LinkDialog
 			pane.setRows("[][][][]");
 
 			//---- urlLabel ----
-			urlLabel.setText("Link URL:");
+			urlLabel.setText(Messages.get("LinkDialog.urlLabel.text"));
 			pane.add(urlLabel, "cell 0 0");
 
 			//---- urlField ----
@@ -125,7 +126,7 @@ public class LinkDialog
 			pane.add(linkBrowseFileButton, "cell 3 0");
 
 			//---- textLabel ----
-			textLabel.setText("Link Text:");
+			textLabel.setText(Messages.get("LinkDialog.textLabel.text"));
 			pane.add(textLabel, "cell 0 1");
 
 			//---- textField ----
@@ -133,12 +134,12 @@ public class LinkDialog
 			pane.add(textField, "cell 1 1 3 1");
 
 			//---- titleLabel ----
-			titleLabel.setText("Title (tooltip):");
+			titleLabel.setText(Messages.get("LinkDialog.titleLabel.text"));
 			pane.add(titleLabel, "cell 0 2");
 			pane.add(titleField, "cell 1 2 3 1");
 
 			//---- previewLabel ----
-			previewLabel.setText("Markdown Preview:");
+			previewLabel.setText(Messages.get("LinkDialog.previewLabel.text"));
 			pane.add(previewLabel, "cell 0 3");
 			pane.add(previewField, "cell 1 3 3 1");
 		}

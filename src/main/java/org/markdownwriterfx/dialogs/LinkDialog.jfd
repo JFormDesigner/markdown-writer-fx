@@ -1,6 +1,10 @@
-JFDML JFormDesigner: "9.9.9.9.9999" Java: "1.8.0_51" encoding: "UTF-8"
+JFDML JFormDesigner: "9.9.9.9.9999" Java: "1.8.0_66" encoding: "UTF-8"
 
 new FormModel {
+	"i18n.bundlePackage": "org.markdownwriterfx"
+	"i18n.bundleName": "messages"
+	"i18n.autoExternalize": true
+	"i18n.keyPrefix": "LinkDialog"
 	contentType: "form/javafx"
 	root: new FormRoot {
 		add( new FormContainer( "org.tbee.javafx.scene.layout.fxml.MigPane", new FormLayoutManager( class org.tbee.javafx.scene.layout.fxml.MigPane ) {
@@ -11,7 +15,7 @@ new FormModel {
 			name: "pane"
 			add( new FormComponent( "javafx.scene.control.Label" ) {
 				name: "urlLabel"
-				"text": "Link URL:"
+				"text": new FormMessage( null, "LinkDialog.urlLabel.text" )
 				auxiliary() {
 					"JavaCodeGenerator.variableLocal": true
 				}
@@ -38,7 +42,7 @@ new FormModel {
 			} )
 			add( new FormComponent( "javafx.scene.control.Label" ) {
 				name: "textLabel"
-				"text": "Link Text:"
+				"text": new FormMessage( null, "LinkDialog.textLabel.text" )
 				auxiliary() {
 					"JavaCodeGenerator.variableLocal": true
 				}
@@ -53,7 +57,7 @@ new FormModel {
 			} )
 			add( new FormComponent( "javafx.scene.control.Label" ) {
 				name: "titleLabel"
-				"text": "Title (tooltip):"
+				"text": new FormMessage( null, "LinkDialog.titleLabel.text" )
 				auxiliary() {
 					"JavaCodeGenerator.variableLocal": true
 				}
@@ -67,7 +71,7 @@ new FormModel {
 			} )
 			add( new FormComponent( "javafx.scene.control.Label" ) {
 				name: "previewLabel"
-				"text": "Markdown Preview:"
+				"text": new FormMessage( null, "LinkDialog.previewLabel.text" )
 				auxiliary() {
 					"JavaCodeGenerator.variableLocal": true
 				}

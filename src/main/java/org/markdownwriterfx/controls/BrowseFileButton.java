@@ -40,6 +40,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
+import org.markdownwriterfx.Messages;
 import de.jensd.fx.glyphs.GlyphsDude;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 
@@ -55,7 +56,7 @@ public class BrowseFileButton
 
 	public BrowseFileButton() {
 		setGraphic(GlyphsDude.createIcon(FontAwesomeIcon.FILE_ALT, "1.2em"));
-		setTooltip(new Tooltip("Browse for local file"));
+		setTooltip(new Tooltip(Messages.get("BrowseFileButton.tooltip")));
 		setOnAction(this::browse);
 
 		disableProperty().bind(basePath.isNull());
@@ -87,9 +88,9 @@ public class BrowseFileButton
 
 	protected void browse(ActionEvent e) {
 		FileChooser fileChooser = new FileChooser();
-		fileChooser.setTitle("Browse for local file");
+		fileChooser.setTitle(Messages.get("BrowseFileButton.chooser.title"));
 		fileChooser.getExtensionFilters().addAll(extensionFilters);
-		fileChooser.getExtensionFilters().add(new ExtensionFilter("All Files", "*.*"));
+		fileChooser.getExtensionFilters().add(new ExtensionFilter(Messages.get("BrowseFileButton.chooser.allFilesFilter"), "*.*"));
 		fileChooser.setInitialDirectory(getInitialDirectory());
 		File result = fileChooser.showOpenDialog(getScene().getWindow());
 		if (result != null)

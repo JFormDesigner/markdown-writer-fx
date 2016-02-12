@@ -108,7 +108,7 @@ class FileEditor
 
 	private void updateTab() {
 		Path path = this.path.get();
-		tab.setText((path != null) ? path.getFileName().toString() : "Untitled");
+		tab.setText((path != null) ? path.getFileName().toString() : Messages.get("FileEditor.untitled"));
 		tab.setTooltip((path != null) ? new Tooltip(path.toString()) : null);
 		tab.setGraphic(isModified() ? new Text("*") : null);
 	}
@@ -173,8 +173,9 @@ class FileEditor
 			markdownEditorPane.setMarkdown(markdown);
 			markdownEditorPane.getUndoManager().mark();
 		} catch (IOException ex) {
-			Alert alert = mainWindow.createAlert(AlertType.ERROR, "Load",
-				"Failed to load ''{0}''.\n\nReason: {1}", path, ex.getMessage());
+			Alert alert = mainWindow.createAlert(AlertType.ERROR,
+				Messages.get("FileEditor.loadFailed.title"),
+				Messages.get("FileEditor.loadFailed.message"), path, ex.getMessage());
 			alert.showAndWait();
 		}
 	}
@@ -198,8 +199,9 @@ class FileEditor
 			markdownEditorPane.getUndoManager().mark();
 			return true;
 		} catch (IOException ex) {
-			Alert alert = mainWindow.createAlert(AlertType.ERROR, "Save",
-				"Failed to save ''{0}''.\n\nReason: {1}", path.get(), ex.getMessage());
+			Alert alert = mainWindow.createAlert(AlertType.ERROR,
+				Messages.get("FileEditor.saveFailed.title"),
+				Messages.get("FileEditor.saveFailed.message"), path.get(), ex.getMessage());
 			alert.showAndWait();
 			return false;
 		}
