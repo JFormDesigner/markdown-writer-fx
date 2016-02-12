@@ -59,7 +59,7 @@ class SpellCheckerOverlayFactory
 
 		StyleClassedTextArea textArea = getTextArea();
 		int parStart = textArea.position(paragraphIndex, 0).toOffset();
-		int parLength = textArea.getParagraph(paragraphIndex).fullLength();
+		int parLength = textArea.getParagraph(paragraphIndex).length() + 1;
 		int parEnd = parStart + parLength;
 
 		ArrayList<Node> nodes = new ArrayList<>();
