@@ -41,7 +41,7 @@ Installation
 ------------
 
 Download
-[markdown-writer-fx-0.1.zip](https://github.com/JFormDesigner/markdown-writer-fx/releases/download/0.1/markdown-writer-fx-0.1.zip)
+[markdown-writer-fx-0.2.zip](https://github.com/JFormDesigner/markdown-writer-fx/releases/download/0.2/markdown-writer-fx-0.2.zip)
 and extract it to any folder.
 
 Double-click `markdown-writer-fx.jar` to start *Markdown Writer FX*.
