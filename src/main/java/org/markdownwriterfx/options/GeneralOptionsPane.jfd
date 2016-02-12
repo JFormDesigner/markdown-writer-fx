@@ -67,7 +67,7 @@ new FormModel {
 			} )
 			add( new FormComponent( "javafx.scene.control.CheckBox" ) {
 				name: "spellCheckerCheckBox"
-				"text": "Spell Checking"
+				"text": new FormMessage( null, "GeneralOptionsPane.spellCheckerCheckBox.text" )
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 0 3 3 1,growx 0,alignx left"
 			} )

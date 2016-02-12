@@ -124,7 +124,7 @@ public class GeneralOptionsPane
 		add(showWhitespaceCheckBox, "cell 0 2 3 1,growx 0,alignx left");
 
 		//---- spellCheckerCheckBox ----
-		spellCheckerCheckBox.setText("Spell Checking");
+		spellCheckerCheckBox.setText(Messages.get("GeneralOptionsPane.spellCheckerCheckBox.text"));
 		add(spellCheckerCheckBox, "cell 0 3 3 1,growx 0,alignx left");
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 
