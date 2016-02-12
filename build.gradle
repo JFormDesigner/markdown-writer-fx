@@ -32,6 +32,9 @@ distributions {
 		baseName = 'markdown-writer-fx'
 		contents {
 			from { ['LICENSE', 'README.md'] }
+			into( 'images' ) {
+				from { 'images' }
+			}
 		}
 	}
 }
