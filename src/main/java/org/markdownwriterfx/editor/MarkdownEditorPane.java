@@ -43,7 +43,6 @@ import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
-import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.IndexRange;
 import javafx.scene.control.ScrollBar;
@@ -132,10 +131,6 @@ public class MarkdownEditorPane
 		Options.showWhitespaceProperty().addListener(weakOptionsListener);
 	}
 
-	public void installEditorShortcuts(EventHandler<KeyEvent> editorShortcuts) {
-		EventHandlerHelper.install(textArea.onKeyPressedProperty(), editorShortcuts);
-	}
-
 	public Node getNode() {
 		return textArea;
 	}
@@ -172,10 +167,6 @@ public class MarkdownEditorPane
 	}
 	public void setMarkdown(String markdown) {
 		lineSeparator = determineLineSeparator(markdown);
-		// always replace CRLF line separators to LF because RichTextFX does
-		// not handle CRLF line separators well (e.g. need to press Backspace
-		// or Del key twice to delete a CRLF line separator)
-		markdown = markdown.replace("\r\n", "\n");
 		textArea.replaceText(markdown);
 		textArea.selectRange(0, 0);
 	}
@@ -239,7 +230,7 @@ public class MarkdownEditorPane
 
 	private void deleteLine(KeyEvent e) {
 		int start = textArea.getCaretPosition() - textArea.getCaretColumn();
-		int end = start + textArea.getParagraph(textArea.getCurrentParagraph()).fullLength();
+		int end = start + textArea.getParagraph(textArea.getCurrentParagraph()).length() + 1;
 		textArea.deleteText(start, end);
 	}
 

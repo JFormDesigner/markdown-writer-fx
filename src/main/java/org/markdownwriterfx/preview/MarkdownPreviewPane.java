@@ -38,6 +38,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabClosingPolicy;
+import org.markdownwriterfx.Messages;
 import org.pegdown.ast.RootNode;
 
 /**
@@ -63,15 +64,15 @@ public class MarkdownPreviewPane
 		tabPane.setSide(Side.BOTTOM);
 		tabPane.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
 
-		Tab webViewTab = new Tab("Preview", webViewPreview.getNode());
+		Tab webViewTab = new Tab(Messages.get("MarkdownPreviewPane.webViewTab"), webViewPreview.getNode());
 		webViewTab.setUserData(webViewPreview);
 		tabPane.getTabs().add(webViewTab);
 
-		Tab htmlSourceTab = new Tab("HTML Source", htmlSourcePreview.getNode());
+		Tab htmlSourceTab = new Tab(Messages.get("MarkdownPreviewPane.htmlSourceTab"), htmlSourcePreview.getNode());
 		htmlSourceTab.setUserData(htmlSourcePreview);
 		tabPane.getTabs().add(htmlSourceTab);
 
-		Tab astTab = new Tab("Markdown AST", astPreview.getNode());
+		Tab astTab = new Tab(Messages.get("MarkdownPreviewPane.astTab"), astPreview.getNode());
 		astTab.setUserData(astPreview);
 		tabPane.getTabs().add(astTab);
 

@@ -41,17 +41,11 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.SingleSelectionModel;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCombination;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
 import javafx.scene.control.Tooltip;
 import javafx.scene.text.Text;
 import org.fxmisc.undo.UndoManager;
-import org.fxmisc.wellbehaved.event.EventHandlerHelper;
-import org.fxmisc.wellbehaved.event.EventPattern;
 import org.markdownwriterfx.editor.MarkdownEditorPane;
 import org.markdownwriterfx.options.Options;
 import org.markdownwriterfx.preview.MarkdownPreviewPane;
@@ -114,22 +108,9 @@ class FileEditor
 
 	private void updateTab() {
 		Path path = this.path.get();
-		tab.setText((path != null) ? path.getFileName().toString() : "Untitled");
+		tab.setText((path != null) ? path.getFileName().toString() : Messages.get("FileEditor.untitled"));
 		tab.setTooltip((path != null) ? new Tooltip(path.toString()) : null);
 		tab.setGraphic(isModified() ? new Text("*") : null);
-	}
-
-	private void selectNextPreviousTab(int offset) {
-		TabPane tabPane = tab.getTabPane();
-		SingleSelectionModel<Tab> selectionModel = tabPane.getSelectionModel();
-
-		int selectIndex = selectionModel.getSelectedIndex() + offset;
-		if (selectIndex < 0)
-			selectionModel.selectLast();
-		else if(selectIndex >= tabPane.getTabs().size())
-			selectionModel.selectFirst();
-		else
-			selectionModel.select(selectIndex);
 	}
 
 	private void activated() {
@@ -147,11 +128,6 @@ class FileEditor
 		markdownPreviewPane = new MarkdownPreviewPane();
 
 		markdownEditorPane.pathProperty().bind(path);
-		markdownEditorPane.installEditorShortcuts(mainWindow.getEditorShortcuts());
-		markdownEditorPane.installEditorShortcuts(EventHandlerHelper
-			.on(EventPattern.keyPressed(KeyCode.TAB, KeyCombination.CONTROL_DOWN)).act(e -> selectNextPreviousTab(1))
-			.on(EventPattern.keyPressed(KeyCode.TAB, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN)).act(e -> selectNextPreviousTab(-1))
-			.create());
 
 		load();
 
@@ -197,8 +173,9 @@ class FileEditor
 			markdownEditorPane.setMarkdown(markdown);
 			markdownEditorPane.getUndoManager().mark();
 		} catch (IOException ex) {
-			Alert alert = mainWindow.createAlert(AlertType.ERROR, "Load",
-				"Failed to load '%s'.\n\nReason: %s", path, ex.getMessage());
+			Alert alert = mainWindow.createAlert(AlertType.ERROR,
+				Messages.get("FileEditor.loadFailed.title"),
+				Messages.get("FileEditor.loadFailed.message"), path, ex.getMessage());
 			alert.showAndWait();
 		}
 	}
@@ -222,8 +199,9 @@ class FileEditor
 			markdownEditorPane.getUndoManager().mark();
 			return true;
 		} catch (IOException ex) {
-			Alert alert = mainWindow.createAlert(AlertType.ERROR, "Save",
-				"Failed to save '%s'.\n\nReason: %s", path.get(), ex.getMessage());
+			Alert alert = mainWindow.createAlert(AlertType.ERROR,
+				Messages.get("FileEditor.saveFailed.title"),
+				Messages.get("FileEditor.saveFailed.message"), path.get(), ex.getMessage());
 			alert.showAndWait();
 			return false;
 		}

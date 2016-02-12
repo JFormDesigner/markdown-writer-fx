@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+  <entry key="classpath1" value="bin" />
+  <entry key="classpath2" value="lib/fontawesomefx-8.9.jar" />
+  <entry key="sourcefolders1" value="src/main/java" />
+  <entry key="sourcefolders2" value="src/main/resources" />
+  <node name="designer">
+    <entry key="_i18nJavaSettingsEnabled" value="true" />
+    <entry key="_i18nSettingsEnabled" value="true" />
+    <entry key="i18n.externalizeexcludes1" value="org.markdownwriterfx.controls.EscapeTextField#escapeCharacters" />
+    <entry key="i18n.externalizeexcludes2" value="org.markdownwriterfx.controls.WebHyperlink#uri" />
+    <entry key="i18n.javagetstringformat" value="Messages.get(${key})" />
+  </node>
+  <node name="javacodegenerator">
+    <entry key="_codeStyleSettingsEnabled" value="true" />
+    <entry key="_generalSettingsEnabled" value="true" />
+    <entry key="explicitimports" value="true" />
+    <entry key="lineseparator" value="\n" />
+  </node>
+</project>
+

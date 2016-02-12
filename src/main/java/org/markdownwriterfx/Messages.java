@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2015 Karl Tauber <karl at jformdesigner dot com>
+ * Copyright (c) 2016 Karl Tauber <karl at jformdesigner dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- *  o Redistributions of source code must retain the above copyright
+ *  * Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  *
- *  o Redistributions in binary form must reproduce the above copyright
+ *  * Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
@@ -25,36 +25,31 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.markdownwriterfx.controls;
+package org.markdownwriterfx;
 
-import java.io.File;
-import javafx.event.ActionEvent;
-import javafx.scene.control.Tooltip;
-import javafx.stage.DirectoryChooser;
-import org.markdownwriterfx.Messages;
-import de.jensd.fx.glyphs.GlyphsDude;
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
+import java.text.MessageFormat;
+import java.util.ResourceBundle;
 
 /**
- * Button that opens a directory chooser to select a local directory for a URL in markdown.
- *
  * @author Karl Tauber
  */
-public class BrowseDirectoryButton
-	extends BrowseFileButton
+public class Messages
 {
-	public BrowseDirectoryButton() {
-		setGraphic(GlyphsDude.createIcon(FontAwesomeIcon.FOLDER_ALT, "1.2em"));
-		setTooltip(new Tooltip(Messages.get("BrowseDirectoryButton.tooltip")));
+	private static final String BUNDLE_NAME = "org.markdownwriterfx.messages";
+	private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(BUNDLE_NAME);
+
+	private Messages() {
 	}
 
-	@Override
-	protected void browse(ActionEvent e) {
-		DirectoryChooser directoryChooser = new DirectoryChooser();
-		directoryChooser.setTitle(Messages.get("BrowseDirectoryButton.chooser.title"));
-		directoryChooser.setInitialDirectory(getInitialDirectory());
-		File result = directoryChooser.showDialog(getScene().getWindow());
-		if (result != null)
-			updateUrl(result);
+	public static String get(String key) {
+//		try {
+			return RESOURCE_BUNDLE.getString(key);
+//		} catch (MissingResourceException e) {
+//			return '!' + key + '!';
+//		}
+	}
+
+	public static String get(String key, Object... args) {
+		return MessageFormat.format(get(key), args);
 	}
 }

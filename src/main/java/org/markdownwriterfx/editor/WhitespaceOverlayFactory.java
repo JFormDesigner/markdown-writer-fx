@@ -29,12 +29,11 @@ package org.markdownwriterfx.editor;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Optional;
+import javafx.collections.ObservableList;
 import javafx.geometry.Rectangle2D;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.text.Text;
-import org.fxmisc.richtext.LineTerminator;
 import org.fxmisc.richtext.Paragraph;
 import org.fxmisc.richtext.StyledText;
 import org.markdownwriterfx.editor.ParagraphOverlayGraphicFactory.OverlayFactory;
@@ -49,7 +48,8 @@ class WhitespaceOverlayFactory
 {
 	@Override
 	public Node[] createOverlayNodes(int paragraphIndex) {
-		Paragraph<Collection<String>> par = getTextArea().getParagraph(paragraphIndex);
+		ObservableList<Paragraph<Collection<String>>> paragraphs = getTextArea().getParagraphs();
+		Paragraph<Collection<String>> par = paragraphs.get(paragraphIndex);
 
 		ArrayList<Node> nodes = new ArrayList<>();
 		int segmentStart = 0;
@@ -73,18 +73,11 @@ class WhitespaceOverlayFactory
 			segmentStart += textLength;
 		}
 
-		Optional<LineTerminator> lineTerminator = par.getLineTerminator();
-		if (lineTerminator.isPresent()) {
-			String text;
-			switch (lineTerminator.get()) {
-				default:
-				case LF:	text = "\u00B6"; break;
-				case CR:	text = "\u00A4"; break;
-				case CRLF:	text = "\u00A4\u00B6"; break;
-			}
+		if (paragraphIndex < paragraphs.size() - 1) {
+			// all paragraphs except last one have line separators
 			Rectangle2D bounds = getBounds(segmentStart - 1, segmentStart);
 
-			nodes.add(createTextNode(text,
+			nodes.add(createTextNode("\u00B6",
 					par.getStyleAtPosition(segmentStart),
 					bounds.getMaxX(),
 					bounds.getMinY()));

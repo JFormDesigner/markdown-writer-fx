@@ -1,6 +1,10 @@
-JFDML JFormDesigner: "9.9.9.9.9999" Java: "1.8.0_51" encoding: "UTF-8"
+JFDML JFormDesigner: "9.9.9.9.9999" Java: "1.8.0_66" encoding: "UTF-8"
 
 new FormModel {
+	"i18n.bundlePackage": "org.markdownwriterfx"
+	"i18n.bundleName": "messages"
+	"i18n.keyPrefix": "OptionsDialog"
+	"i18n.autoExternalize": true
 	contentType: "form/javafx"
 	root: new FormRoot {
 		add( new FormContainer( "javafx.scene.control.TabPane", new FormLayoutManager( class javafx.scene.control.TabPane ) ) {
@@ -8,14 +12,14 @@ new FormModel {
 			"tabClosingPolicy": enum javafx.scene.control.TabPane$TabClosingPolicy UNAVAILABLE
 			add( new FormContainer( "javafx.scene.control.Tab", new FormLayoutManager( class javafx.scene.control.Tab ) ) {
 				name: "generalTab"
-				"text": "General"
+				"text": new FormMessage( null, "OptionsDialog.generalTab.text" )
 				add( new FormComponent( "org.markdownwriterfx.options.GeneralOptionsPane" ) {
 					name: "generalOptionsPane"
 				} )
 			} )
 			add( new FormContainer( "javafx.scene.control.Tab", new FormLayoutManager( class javafx.scene.control.Tab ) ) {
 				name: "markdownTab"
-				"text": "Markdown"
+				"text": new FormMessage( null, "OptionsDialog.markdownTab.text" )
 				add( new FormComponent( "org.markdownwriterfx.options.MarkdownOptionsPane" ) {
 					name: "markdownOptionsPane"
 				} )
