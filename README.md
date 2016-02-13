@@ -60,7 +60,7 @@ See [Change Log](CHANGES.md)
 Credits
 -------
 
-  * Tomas Mikula for [RichTextFX], [ReactFX], [WellBehavedFX], [Flowless] and [UndoFX]
+  * Tomas Mikula for [RichTextFX], [ReactFX], [WellBehavedFX], [Flowless], [UndoFX] and [LiveDirsFX]
   * Mikael Grev for [MigLayout] and Tom Eugelink for MigPane
   * sirthias for [pegdown] Markdown parser
   * Jens Deters for [FontAwesomeFX]
@@ -81,4 +81,5 @@ License
    [WellBehavedFX]: https://github.com/TomasMikula/WellBehavedFX
    [Flowless]: https://github.com/TomasMikula/Flowless
    [UndoFX]: https://github.com/TomasMikula/UndoFX
+   [LiveDirsFX]: https://github.com/TomasMikula/LiveDirsFX
    [FontAwesomeFX]: https://bitbucket.org/Jerady/fontawesomefx
