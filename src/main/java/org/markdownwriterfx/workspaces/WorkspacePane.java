@@ -28,6 +28,7 @@
 package org.markdownwriterfx.workspaces;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import javafx.scene.Node;
@@ -117,7 +118,16 @@ public class WorkspacePane
 		protected void updateItem(Path item, boolean empty) {
 			super.updateItem(item, empty);
 
-			setText(!empty ? item.getFileName().toString() : null);
+			String text = null;
+			Node graphic = null;
+			if (!empty) {
+				text = item.getFileName().toString();
+				graphic = GlyphsDude.createIcon(Files.isDirectory(item)
+					? FontAwesomeIcon.FOLDER_ALT
+					: FontAwesomeIcon.FILE_ALT);
+			}
+			setText(text);
+			setGraphic(graphic);
 		}
 	}
 }
