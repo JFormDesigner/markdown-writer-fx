@@ -28,14 +28,9 @@
 package org.markdownwriterfx.preview;
 
 import java.nio.file.Path;
-import java.util.Collections;
-import javafx.scene.Node;
 import javafx.scene.web.WebView;
-import org.pegdown.LinkRenderer;
-import org.pegdown.ToHtmlSerializer;
-import org.pegdown.VerbatimSerializer;
-import org.pegdown.ast.RootNode;
-import org.pegdown.plugins.PegDownPlugins;
+import org.commonmark.html.HtmlRenderer;
+import org.commonmark.node.Node;
 
 /**
  * WebView preview.
@@ -50,21 +45,19 @@ class WebViewPreview
 	private int lastScrollX;
 	private int lastScrollY;
 
-	Node getNode() {
+	javafx.scene.Node getNode() {
 		return webView;
 	}
 
-	static String toHtml(RootNode astRoot) {
+	static String toHtml(Node astRoot) {
 		if (astRoot == null)
 			return "";
-		return new ToHtmlSerializer(new LinkRenderer(),
-				Collections.<String, VerbatimSerializer>emptyMap(),
-				PegDownPlugins.NONE.getHtmlSerializerPlugins())
-			.toHtml(astRoot);
+		HtmlRenderer renderer = HtmlRenderer.builder().escapeHtml(false).build();
+		return renderer.render(astRoot);
 	}
 
 	@Override
-	public void update(RootNode astRoot, Path path) {
+	public void update(Node astRoot, Path path) {
 		if (!webView.getEngine().getLoadWorker().isRunning()) {
 			// get window.scrollX and window.scrollY from web engine,
 			// but only no worker is running (in this case the result would be zero)

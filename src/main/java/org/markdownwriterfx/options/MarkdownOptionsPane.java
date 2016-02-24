@@ -33,7 +33,6 @@ import javafx.scene.control.Label;
 import org.markdownwriterfx.Messages;
 import org.markdownwriterfx.controls.FlagCheckBox;
 import org.markdownwriterfx.controls.WebHyperlink;
-import org.pegdown.Extensions;
 import org.tbee.javafx.scene.layout.fxml.MigPane;
 
 /**
@@ -49,6 +48,7 @@ class MarkdownOptionsPane
 	MarkdownOptionsPane() {
 		initComponents();
 
+/*
 		smartsExtCheckBox.setFlag(Extensions.SMARTS);
 		quotesExtCheckBox.setFlag(Extensions.QUOTES);
 		abbreviationsExtCheckBox.setFlag(Extensions.ABBREVIATIONS);
@@ -67,6 +67,7 @@ class MarkdownOptionsPane
 		relaxedHrRulesExtCheckBox.setFlag(Extensions.RELAXEDHRULES);
 		taskListItemsExtCheckBox.setFlag(Extensions.TASKLISTITEMS);
 		extAnchorLinksExtCheckBox.setFlag(Extensions.EXTANCHORLINKS);
+		*/
 
 		extensions.bindBidirectional(smartsExtCheckBox.flagsProperty());
 		extensions.bindBidirectional(quotesExtCheckBox.flagsProperty());

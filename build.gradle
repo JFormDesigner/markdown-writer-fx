@@ -11,7 +11,7 @@ dependencies {
 	compile group: 'org.fxmisc.richtext', name: 'richtextfx', version: '0.7-M2'
 	compile group: 'com.miglayout', name: 'miglayout-javafx', version: '5.0'
 	compile group: 'de.jensd', name: 'fontawesomefx-fontawesome', version: '4.5.0'
-	compile group: 'org.pegdown', name: 'pegdown', version: '1.6.0'
+	compile group: 'com.atlassian.commonmark', name: 'commonmark', version: '0.4.1'
 }
 
 sourceCompatibility = 1.8

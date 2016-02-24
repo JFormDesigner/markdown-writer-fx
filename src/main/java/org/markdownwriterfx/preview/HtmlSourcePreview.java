@@ -28,11 +28,10 @@
 package org.markdownwriterfx.preview;
 
 import java.nio.file.Path;
-import javafx.scene.Node;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.TextArea;
+import org.commonmark.node.Node;
 import org.markdownwriterfx.util.Utils;
-import org.pegdown.ast.RootNode;
 
 /**
  * HTML source preview.
@@ -50,12 +49,12 @@ class HtmlSourcePreview
 		textArea.setWrapText(true);
 	}
 
-	Node getNode() {
+	javafx.scene.Node getNode() {
 		return textArea;
 	}
 
 	@Override
-	public void update(RootNode astRoot, Path path) {
+	public void update(Node astRoot, Path path) {
 		double scrollTop = textArea.getScrollTop();
 
 		textArea.setText(WebViewPreview.toHtml(astRoot));

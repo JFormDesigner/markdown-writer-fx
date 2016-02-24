@@ -46,9 +46,10 @@ import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.scene.Node;
 import javafx.scene.control.IndexRange;
 import javafx.scene.input.KeyEvent;
+import org.commonmark.node.Node;
+import org.commonmark.parser.Parser;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.undo.UndoManager;
@@ -57,13 +58,11 @@ import org.markdownwriterfx.dialogs.ImageDialog;
 import org.markdownwriterfx.dialogs.LinkDialog;
 import org.markdownwriterfx.options.Options;
 import org.markdownwriterfx.util.Utils;
-import org.pegdown.PegDownProcessor;
-import org.pegdown.ast.RootNode;
 
 /**
  * Markdown editor pane.
  *
- * Uses pegdown (https://github.com/sirthias/pegdown) for parsing markdown.
+ * Uses commonmark-java (https://github.com/atlassian/commonmark-java) for parsing markdown.
  *
  * @author Karl Tauber
  */
@@ -76,7 +75,7 @@ public class MarkdownEditorPane
 	private final StyleClassedTextArea textArea;
 	private final ParagraphOverlayGraphicFactory overlayGraphicFactory;
 	private WhitespaceOverlayFactory whitespaceOverlayFactory;
-	private PegDownProcessor pegDownProcessor;
+	private Parser parser;
 	private final InvalidationListener optionsListener;
 	private String lineSeparator = getLineSeparatorOrDefault();
 
@@ -119,7 +118,7 @@ public class MarkdownEditorPane
 
 			if (e == Options.markdownExtensionsProperty()) {
 				// re-process markdown if markdown extensions option changes
-				pegDownProcessor = null;
+				parser = null;
 				textChanged(textArea.getText());
 			} else if (e == Options.showWhitespaceProperty())
 				updateShowWhitespace();
@@ -129,7 +128,7 @@ public class MarkdownEditorPane
 		Options.showWhitespaceProperty().addListener(weakOptionsListener);
 	}
 
-	public Node getNode() {
+	public javafx.scene.Node getNode() {
 		return scrollPane;
 	}
 
@@ -171,9 +170,9 @@ public class MarkdownEditorPane
 	public ObservableValue<String> markdownProperty() { return textArea.textProperty(); }
 
 	// 'markdownAST' property
-	private final ReadOnlyObjectWrapper<RootNode> markdownAST = new ReadOnlyObjectWrapper<>();
-	public RootNode getMarkdownAST() { return markdownAST.get(); }
-	public ReadOnlyObjectProperty<RootNode> markdownASTProperty() { return markdownAST.getReadOnlyProperty(); }
+	private final ReadOnlyObjectWrapper<Node> markdownAST = new ReadOnlyObjectWrapper<>();
+	public Node getMarkdownAST() { return markdownAST.get(); }
+	public ReadOnlyObjectProperty<Node> markdownASTProperty() { return markdownAST.getReadOnlyProperty(); }
 
 	// 'scrollY' property
 	private final ReadOnlyDoubleWrapper scrollY = new ReadOnlyDoubleWrapper();
@@ -192,18 +191,18 @@ public class MarkdownEditorPane
 	}
 
 	private void textChanged(String newText) {
-		RootNode astRoot = parseMarkdown(newText);
+		Node astRoot = parseMarkdown(newText);
 		applyHighlighting(astRoot);
 		markdownAST.set(astRoot);
 	}
 
-	private RootNode parseMarkdown(String text) {
-		if(pegDownProcessor == null)
-			pegDownProcessor = new PegDownProcessor(Options.getMarkdownExtensions());
-		return pegDownProcessor.parseMarkdown(text.toCharArray());
+	private Node parseMarkdown(String text) {
+		if (parser == null)
+			parser = Parser.builder().build();
+		return parser.parse(text);
 	}
 
-	private void applyHighlighting(RootNode astRoot) {
+	private void applyHighlighting(Node astRoot) {
 		MarkdownSyntaxHighlighter.highlight(textArea, astRoot);
 	}
 

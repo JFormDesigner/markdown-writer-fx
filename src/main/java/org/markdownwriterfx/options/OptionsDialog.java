@@ -68,7 +68,7 @@ public class OptionsDialog
 
 		// select last tab
 		int tabIndex = MarkdownWriterFXApp.getState().getInt("lastOptionsTab", -1);
-		if (tabIndex > 0)
+		if (tabIndex > 0 && tabIndex < tabPane.getTabs().size())
 			tabPane.getSelectionModel().select(tabIndex);
 
 		// remember last selected tab
@@ -112,7 +112,7 @@ public class OptionsDialog
 				markdownTab.setContent(markdownOptionsPane);
 			}
 
-			tabPane.getTabs().addAll(generalTab, markdownTab);
+			tabPane.getTabs().addAll(generalTab/*, markdownTab*/);
 		}
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 	}

@@ -34,17 +34,16 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Side;
-import javafx.scene.Node;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabClosingPolicy;
+import org.commonmark.node.Node;
 import org.markdownwriterfx.Messages;
-import org.pegdown.ast.RootNode;
 
 /**
  * Markdown preview pane.
  *
- * Uses pegdown AST.
+ * Uses commonmark-java AST.
  *
  * @author Karl Tauber
  */
@@ -56,7 +55,7 @@ public class MarkdownPreviewPane
 	private final ASTPreview astPreview = new ASTPreview();
 
 	interface Preview {
-		void update(RootNode astRoot, Path path);
+		void update(Node astRoot, Path path);
 		void scrollY(double value);
 	}
 
@@ -94,7 +93,7 @@ public class MarkdownPreviewPane
 		});
 	}
 
-	public Node getNode() {
+	public javafx.scene.Node getNode() {
 		return tabPane;
 	}
 
@@ -126,10 +125,10 @@ public class MarkdownPreviewPane
 	public ObjectProperty<Path> pathProperty() { return path; }
 
 	// 'markdownAST' property
-	private final ObjectProperty<RootNode> markdownAST = new SimpleObjectProperty<RootNode>();
-	public RootNode getMarkdownAST() { return markdownAST.get(); }
-	public void setMarkdownAST(RootNode astRoot) { markdownAST.set(astRoot); }
-	public ObjectProperty<RootNode> markdownASTProperty() { return markdownAST; }
+	private final ObjectProperty<Node> markdownAST = new SimpleObjectProperty<Node>();
+	public Node getMarkdownAST() { return markdownAST.get(); }
+	public void setMarkdownAST(Node astRoot) { markdownAST.set(astRoot); }
+	public ObjectProperty<Node> markdownASTProperty() { return markdownAST; }
 
 	// 'scrollY' property
 	private final DoubleProperty scrollY = new SimpleDoubleProperty();

@@ -35,7 +35,6 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import org.markdownwriterfx.util.Utils;
-import org.pegdown.Extensions;
 
 /**
  * Options
@@ -51,14 +50,14 @@ public class Options
 
 		setLineSeparator(options.get("lineSeparator", null));
 		setEncoding(options.get("encoding", null));
-		setMarkdownExtensions(options.getInt("markdownExtensions", Extensions.ALL));
+//		setMarkdownExtensions(options.getInt("markdownExtensions", Extensions.ALL));
 		setShowWhitespace(options.getBoolean("showWhitespace", false));
 	}
 
 	public static void save() {
 		Utils.putPrefs(options, "lineSeparator", getLineSeparator(), null);
 		Utils.putPrefs(options, "encoding", getEncoding(), null);
-		Utils.putPrefsInt(options, "markdownExtensions", getMarkdownExtensions(), Extensions.ALL);
+//		Utils.putPrefsInt(options, "markdownExtensions", getMarkdownExtensions(), Extensions.ALL);
 		Utils.putPrefsBoolean(options, "showWhitespace", isShowWhitespace(), false);
 	}
 

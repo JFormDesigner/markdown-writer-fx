@@ -31,20 +31,20 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import javafx.application.Platform;
+import org.commonmark.node.*;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
-import org.pegdown.ast.*;
 
 /**
  * Markdown syntax highlighter.
  *
- * Uses pegdown AST.
+ * Uses commonmark-java AST.
  *
  * @author Karl Tauber
  */
 class MarkdownSyntaxHighlighter
-	implements Visitor
+	extends AbstractVisitor
 {
 	private enum StyleClass {
 		// headers
@@ -96,7 +96,7 @@ class MarkdownSyntaxHighlighter
 	private int[] styleClassBits;
 	private boolean inTableHeader;
 
-	static void highlight(StyleClassedTextArea textArea, RootNode astRoot) {
+	static void highlight(StyleClassedTextArea textArea, Node astRoot) {
 		assert StyleClass.values().length <= 32;
 		assert Platform.isFxApplicationThread();
 
@@ -107,7 +107,7 @@ class MarkdownSyntaxHighlighter
 	private MarkdownSyntaxHighlighter() {
 	}
 
-	private StyleSpans<Collection<String>> computeHighlighting(RootNode astRoot, int textLength) {
+	private StyleSpans<Collection<String>> computeHighlighting(Node astRoot, int textLength) {
 		styleClassBits = new int[textLength];
 
 		// visit all nodes
@@ -147,6 +147,10 @@ class MarkdownSyntaxHighlighter
 		return styleClasses;
 	}
 
+	/* TODO
+	 * can not implement syntax highlighting because
+	 * commonmark-java does not yet provide source positions in its AST
+	 *
 	@Override
 	public void visit(AbbreviationNode node) {
 		// noting to do here
@@ -399,4 +403,5 @@ class MarkdownSyntaxHighlighter
 		for (int i = start; i < end; i++)
 			styleClassBits[i] |= styleBit;
 	}
+	*/
 }

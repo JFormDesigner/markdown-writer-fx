@@ -28,16 +28,13 @@
 package org.markdownwriterfx.preview;
 
 import java.nio.file.Path;
-import javafx.scene.Node;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.TextArea;
+import org.commonmark.node.Node;
 import org.markdownwriterfx.util.Utils;
-import org.parboiled.support.ToStringFormatter;
-import org.parboiled.trees.GraphUtils;
-import org.pegdown.ast.RootNode;
 
 /**
- * Pegdown AST preview.
+ * commonmark-java AST preview.
  * Prints the AST tree to a text area.
  *
  * @author Karl Tauber
@@ -52,16 +49,16 @@ class ASTPreview
 		textArea.setEditable(false);
 	}
 
-	Node getNode() {
+	javafx.scene.Node getNode() {
 		return textArea;
 	}
 
 	@Override
-	public void update(RootNode astRoot, Path path) {
+	public void update(Node astRoot, Path path) {
 		double scrollTop = textArea.getScrollTop();
 		double scrollLeft = textArea.getScrollLeft();
 
-		textArea.setText(GraphUtils.printTree(astRoot, new ToStringFormatter<>()));
+		textArea.setText(printTree(astRoot));
 
 		textArea.setScrollTop(scrollTop);
 		textArea.setScrollLeft(scrollLeft);
@@ -76,5 +73,18 @@ class ASTPreview
 
 		double maxValue = vScrollBar.maxProperty().get();
 		vScrollBar.setValue(maxValue * value);
+	}
+
+	private String printTree(Node astRoot) {
+		StringBuilder buf = new StringBuilder(100);
+		printNode(buf, "", astRoot);
+		return buf.toString();
+	}
+
+	private void printNode(StringBuilder buf, String indent, Node node) {
+		buf.append(indent).append(node).append('\n');
+		indent += "    ";
+		for (Node child = node.getFirstChild(); child != null; child = child.getNext())
+			printNode(buf, indent, child);
 	}
 }

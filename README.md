@@ -7,7 +7,7 @@ An open source [Markdown] editor written in JavaFX 8.
 
 ![Markdown Writer FX Screenshot](images/screenshot.png)
 
-For Markdown processing it uses [pegdown], which is nearly 100% compatible with the original [Markdown] specification and also supports parts of [Markdown Extra], [MultiMarkdown] and [Github-flavoured-Markdown].
+For Markdown processing it uses [commonmark-java], a Java implementation of [CommonMark].
 
 Features
 --------
@@ -62,7 +62,7 @@ Credits
 
   * Tomas Mikula for [RichTextFX], [ReactFX], [WellBehavedFX], [Flowless] and [UndoFX]
   * Mikael Grev for [MigLayout] and Tom Eugelink for MigPane
-  * sirthias for [pegdown] Markdown parser
+  * Atlassian for [commonmark-java] Markdown parser
   * Jens Deters for [FontAwesomeFX]
 
 License
@@ -71,7 +71,8 @@ License
 *Markdown Writer FX* is open source licensed under the [BSD 2-Clause License](LICENSE)
 
    [Markdown]: http://daringfireball.net/projects/markdown/
-   [pegdown]: https://github.com/sirthias/pegdown
+   [CommonMark]: http://commonmark.org/
+   [commonmark-java]: https://github.com/atlassian/commonmark-java
    [Markdown Extra]: https://michelf.ca/projects/php-markdown/extra/
    [MultiMarkdown]: http://fletcherpenney.net/multimarkdown/
    [Github-flavoured-Markdown]: https://help.github.com/articles/github-flavored-markdown/
