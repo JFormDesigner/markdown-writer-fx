@@ -31,6 +31,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import javafx.application.Platform;
+import org.commonmark.ext.gfm.strikethrough.Strikethrough;
+import org.commonmark.ext.gfm.tables.TableBlock;
+import org.commonmark.ext.gfm.tables.TableBody;
+import org.commonmark.ext.gfm.tables.TableCell;
+import org.commonmark.ext.gfm.tables.TableHead;
+import org.commonmark.ext.gfm.tables.TableRow;
 import org.commonmark.node.*;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.richtext.model.StyleSpans;
@@ -79,7 +85,6 @@ class MarkdownSyntaxHighlighter
 		table,
 		thead,
 		tbody,
-		caption,
 		th,
 		tr,
 		td,
@@ -94,21 +99,26 @@ class MarkdownSyntaxHighlighter
 	 * simplifies implementation of overlapping styles
 	 */
 	private int[] styleClassBits;
-	private boolean inTableHeader;
+
+	private int lineCount;
+	private int[] linePositions;
 
 	static void highlight(StyleClassedTextArea textArea, Node astRoot) {
 		assert StyleClass.values().length <= 32;
 		assert Platform.isFxApplicationThread();
 
+		assert textArea.getText().length() == textArea.getLength();
 		textArea.setStyleSpans(0, new MarkdownSyntaxHighlighter()
-				.computeHighlighting(astRoot, textArea.getLength()));
+				.computeHighlighting(astRoot, textArea.getText()));
 	}
 
 	private MarkdownSyntaxHighlighter() {
 	}
 
-	private StyleSpans<Collection<String>> computeHighlighting(Node astRoot, int textLength) {
-		styleClassBits = new int[textLength];
+	private StyleSpans<Collection<String>> computeHighlighting(Node astRoot, String text) {
+		initLinePositions(text);
+
+		styleClassBits = new int[text.length()];
 
 		// visit all nodes
 		astRoot.accept(this);
@@ -135,6 +145,39 @@ class MarkdownSyntaxHighlighter
 		return spansBuilder.create();
 	}
 
+	private void initLinePositions(String text) {
+		lineCount = 1;
+		linePositions = new int[Math.max(text.length() / 20, 10)];
+
+		int newlineIndex = 0;
+		while((newlineIndex = text.indexOf('\n', newlineIndex)) >= 0) {
+			if (lineCount >= linePositions.length) {
+				// grow line positions array
+				int[] linePositions2 = new int[linePositions.length + (linePositions.length >> 1)];
+				System.arraycopy(linePositions, 0, linePositions2, 0, linePositions.length);
+				linePositions = linePositions2;
+			}
+
+			linePositions[lineCount++] = ++newlineIndex;
+		}
+	}
+
+	private int startPosition(SourceSpan sourceSpan) {
+		return linePosition(sourceSpan) + sourceSpan.getFirstColumn() - 1;
+	}
+
+	private int endPosition(SourceSpan sourceSpan) {
+		return linePosition(sourceSpan) + sourceSpan.getLastColumn();
+	}
+
+	private int linePosition(SourceSpan sourceSpan) {
+		int lineNumber = sourceSpan.getLineNumber();
+		assert lineNumber >= 1;
+		assert lineNumber <= lineCount;
+
+		return linePositions[lineNumber - 1];
+	}
+
 	private Collection<String> toStyleClasses(int bits) {
 		if (bits == 0)
 			return Collections.emptyList();
@@ -147,74 +190,26 @@ class MarkdownSyntaxHighlighter
 		return styleClasses;
 	}
 
-	/* TODO
-	 * can not implement syntax highlighting because
-	 * commonmark-java does not yet provide source positions in its AST
-	 *
 	@Override
-	public void visit(AbbreviationNode node) {
-		// noting to do here
-	}
-
-	@Override
-	public void visit(AnchorLinkNode node) {
-		// noting to do here
-	}
-
-	@Override
-	public void visit(AutoLinkNode node) {
-		setStyleClass(node, StyleClass.a);
-	}
-
-	@Override
-	public void visit(BlockQuoteNode node) {
+	public void visit(BlockQuote node) {
 		setStyleClass(node, StyleClass.blockquote);
-		visitChildren(node);
+		super.visit(node);
 	}
 
 	@Override
-	public void visit(BulletListNode node) {
+	public void visit(BulletList node) {
 		setStyleClass(node, StyleClass.ul);
-		visitChildren(node);
+		super.visit(node);
 	}
 
 	@Override
-	public void visit(CodeNode node) {
+	public void visit(Code node) {
 		setStyleClass(node, StyleClass.code);
+		super.visit(node);
 	}
 
 	@Override
-	public void visit(DefinitionListNode node) {
-		setStyleClass(node, StyleClass.dl);
-		visitChildren(node);
-	}
-
-	@Override
-	public void visit(DefinitionNode node) {
-		setStyleClass(node, StyleClass.dd);
-		visitChildren(node);
-	}
-
-	@Override
-	public void visit(DefinitionTermNode node) {
-		setStyleClass(node, StyleClass.dt);
-		visitChildren(node);
-	}
-
-	@Override
-	public void visit(ExpImageNode node) {
-		setStyleClass(node, StyleClass.img);
-		visitChildren(node);
-	}
-
-	@Override
-	public void visit(ExpLinkNode node) {
-		setStyleClass(node, StyleClass.a);
-		visitChildren(node);
-	}
-
-	@Override
-	public void visit(HeaderNode node) {
+	public void visit(Heading node) {
 		StyleClass styleClass;
 		switch (node.getLevel()) {
 			case 1: styleClass = StyleClass.h1; break;
@@ -228,180 +223,104 @@ class MarkdownSyntaxHighlighter
 		setStyleClass(node, styleClass);
 
 		// use monospace font for underlined headers
-		if (!node.getChildren().isEmpty() &&
-				node.getChildren().get(0).getStartIndex() == node.getStartIndex())
+		if (node.getSourceSpans().size() > 1)
 			setStyleClass(node, StyleClass.monospace);
 
-		visitChildren(node);
+		super.visit(node);
 	}
 
 	@Override
-	public void visit(HtmlBlockNode node) {
+	public void visit(HtmlBlock node) {
 		setStyleClass(node, StyleClass.html);
+		super.visit(node);
 	}
 
 	@Override
-	public void visit(InlineHtmlNode node) {
+	public void visit(HtmlInline node) {
 		setStyleClass(node, StyleClass.html);
+		super.visit(node);
 	}
 
 	@Override
-	public void visit(ListItemNode node) {
+	public void visit(ListItem node) {
 		setStyleClass(node, StyleClass.li);
-		visitChildren(node);
+		super.visit(node);
 	}
 
 	@Override
-	public void visit(MailLinkNode node) {
-		setStyleClass(node, StyleClass.a);
-	}
-
-	@Override
-	public void visit(OrderedListNode node) {
+	public void visit(OrderedList node) {
 		setStyleClass(node, StyleClass.ol);
-		visitChildren(node);
+		super.visit(node);
 	}
 
 	@Override
-	public void visit(ParaNode node) {
-		visitChildren(node);
-	}
-
-	@Override
-	public void visit(QuotedNode node) {
-		// noting to do here
-	}
-
-	@Override
-	public void visit(ReferenceNode node) {
-		// noting to do here
-	}
-
-	@Override
-	public void visit(RefImageNode node) {
+	public void visit(Image node) {
 		setStyleClass(node, StyleClass.img);
-		visitChildren(node);
+		super.visit(node);
 	}
 
 	@Override
-	public void visit(RefLinkNode node) {
+	public void visit(Link node) {
 		setStyleClass(node, StyleClass.a);
-		visitChildren(node);
+		super.visit(node);
 	}
 
 	@Override
-	public void visit(RootNode node) {
-		visitChildren(node);
+	public void visit(Emphasis node) {
+		setStyleClass(node, StyleClass.em);
+		super.visit(node);
 	}
 
 	@Override
-	public void visit(SimpleNode node) {
-		// noting to do here
+	public void visit(StrongEmphasis node) {
+		setStyleClass(node, StyleClass.strong);
+		super.visit(node);
 	}
 
 	@Override
-	public void visit(SpecialTextNode node) {
-		// noting to do here
-	}
-
-	@Override
-	public void visit(StrikeNode node) {
-		setStyleClass(node, StyleClass.del);
-		visitChildren(node);
-	}
-
-	@Override
-	public void visit(StrongEmphSuperNode node) {
-		if (node.isClosed())
-			setStyleClass(node, node.isStrong() ? StyleClass.strong : StyleClass.em);
-		// else sequence was not closed, treat open chars as ordinary chars
-
-		visitChildren(node);
-	}
-
-	@Override
-	public void visit(TableBodyNode node) {
-		setStyleClass(node, StyleClass.tbody);
-		visitChildren(node);
-	}
-
-	@Override
-	public void visit(TableCaptionNode node) {
-		setStyleClass(node, StyleClass.caption);
-		visitChildren(node);
-	}
-
-	@Override
-	public void visit(TableCellNode node) {
-		setStyleClass(node, inTableHeader ? StyleClass.th : StyleClass.td);
-		visitChildren(node);
-	}
-
-	@Override
-	public void visit(TableColumnNode node) {
-		// noting to do here
-	}
-
-	@Override
-	public void visit(TableHeaderNode node) {
-		setStyleClass(node, StyleClass.thead);
-
-		inTableHeader = true;
-		visitChildren(node);
-		inTableHeader = false;
-	}
-
-	@Override
-	public void visit(TableNode node) {
-		setStyleClass(node, StyleClass.table);
-		visitChildren(node);
-	}
-
-	@Override
-	public void visit(TableRowNode node) {
-		setStyleClass(node, StyleClass.tr);
-		visitChildren(node);
-	}
-
-	@Override
-	public void visit(VerbatimNode node) {
+	public void visit(FencedCodeBlock node) {
 		setStyleClass(node, StyleClass.pre);
+		super.visit(node);
 	}
 
 	@Override
-	public void visit(WikiLinkNode node) {
-		setStyleClass(node, StyleClass.a);
+	public void visit(IndentedCodeBlock node) {
+		setStyleClass(node, StyleClass.pre);
+		super.visit(node);
 	}
 
 	@Override
-	public void visit(TextNode node) {
-		// noting to do here
+	public void visit(CustomBlock node) {
+		if (node instanceof TableBlock)
+			setStyleClass(node, StyleClass.table);
+
+		super.visit(node);
 	}
 
 	@Override
-	public void visit(SuperNode node) {
-		visitChildren(node);
-	}
+	public void visit(CustomNode node) {
+		if (node instanceof Strikethrough)
+			setStyleClass(node, StyleClass.del);
+		else if (node instanceof TableHead)
+			setStyleClass(node, StyleClass.thead);
+		else if (node instanceof TableBody)
+			setStyleClass(node, StyleClass.tbody);
+		else if (node instanceof TableRow)
+			setStyleClass(node, StyleClass.tr);
+		else if (node instanceof TableCell)
+			setStyleClass(node, ((TableCell)node).isHeader() ?  StyleClass.th : StyleClass.td);
 
-	@Override
-	public void visit(Node node) {
-		// ignore custom Node implementations
-	}
-
-	private void visitChildren(SuperNode node) {
-		for (Node child : node.getChildren())
-			child.accept(this);
+		super.visit(node);
 	}
 
 	private void setStyleClass(Node node, StyleClass styleClass) {
-		// because PegDownProcessor.prepareSource() adds two trailing newlines
-		// to the text before parsing, we need to limit the end index
-		int start = node.getStartIndex();
-		int end = Math.min(node.getEndIndex(), styleClassBits.length);
-		int styleBit = 1 << styleClass.ordinal();
+		for (SourceSpan sourceSpan : node.getSourceSpans()) {
+			int start = startPosition(sourceSpan);
+			int end = endPosition(sourceSpan);
+			int styleBit = 1 << styleClass.ordinal();
 
-		for (int i = start; i < end; i++)
-			styleClassBits[i] |= styleBit;
+			for (int i = start; i < end; i++)
+				styleClassBits[i] |= styleBit;
+		}
 	}
-	*/
 }
