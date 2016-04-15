@@ -41,8 +41,8 @@ import javafx.scene.input.KeyEvent;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import org.markdownwriterfx.Messages;
-import de.jensd.fx.glyphs.GlyphsDude;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
+import de.jensd.fx.glyphs.fontawesome.utils.FontAwesomeIconFactory;
 
 /**
  * Button that opens a file chooser to select a local file for a URL in markdown.
@@ -55,7 +55,7 @@ public class BrowseFileButton
 	private final List<ExtensionFilter> extensionFilters = new ArrayList<>();
 
 	public BrowseFileButton() {
-		setGraphic(GlyphsDude.createIcon(FontAwesomeIcon.FILE_ALT, "1.2em"));
+		setGraphic(FontAwesomeIconFactory.get().createIcon(FontAwesomeIcon.FILE_ALT, "1.2em"));
 		setTooltip(new Tooltip(Messages.get("BrowseFileButton.tooltip")));
 		setOnAction(this::browse);
 
