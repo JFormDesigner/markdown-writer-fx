@@ -44,6 +44,7 @@ import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
 import javafx.scene.control.IndexRange;
@@ -96,7 +97,7 @@ public class MarkdownEditorPane
 		));
 
 		// add listener to update 'scrollY' property
-		InvalidationListener scrollYListener = e -> {
+		ChangeListener<Double> scrollYListener = (observable, oldValue, newValue) -> {
 			double value = textArea.estimatedScrollYProperty().getValue().doubleValue();
 			double maxValue = textArea.totalHeightEstimateProperty().getOrElse(0.).doubleValue();
 			scrollY.set((maxValue != 0) ? Math.min(Math.max(value / maxValue, 0), 1) : 0);
