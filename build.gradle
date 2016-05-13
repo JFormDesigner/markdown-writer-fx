@@ -8,13 +8,10 @@ repositories {
 }
 
 dependencies {
-	compile group: 'org.fxmisc.richtext', name: 'richtextfx', version: '0.6.10'
+	compile group: 'org.fxmisc.richtext', name: 'richtextfx', version: '0.7-M1'
 	compile group: 'com.miglayout', name: 'miglayout-javafx', version: '5.0'
 	compile group: 'de.jensd', name: 'fontawesomefx-fontawesome', version: '4.5.0'
 	compile group: 'org.pegdown', name: 'pegdown', version: '1.6.0'
-
-	// newer versions of dependencies
-	compile group: 'org.fxmisc.flowless', name: 'flowless', version: '0.4.4'
 }
 
 sourceCompatibility = 1.8

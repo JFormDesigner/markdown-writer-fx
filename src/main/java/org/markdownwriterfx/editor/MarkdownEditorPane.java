@@ -28,7 +28,9 @@
 package org.markdownwriterfx.editor;
 
 import static javafx.scene.input.KeyCode.*;
+import static javafx.scene.input.KeyCombination.*;
 import static org.fxmisc.wellbehaved.event.EventPattern.keyPressed;
+import static org.fxmisc.wellbehaved.event.InputMap.*;
 
 import java.nio.file.Path;
 import java.util.regex.Matcher;
@@ -45,12 +47,11 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
 import javafx.scene.control.IndexRange;
-import javafx.scene.control.ScrollBar;
-import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
+import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.undo.UndoManager;
-import org.fxmisc.wellbehaved.event.EventHandlerHelper;
+import org.fxmisc.wellbehaved.event.Nodes;
 import org.markdownwriterfx.dialogs.ImageDialog;
 import org.markdownwriterfx.dialogs.LinkDialog;
 import org.markdownwriterfx.options.Options;
@@ -70,6 +71,7 @@ public class MarkdownEditorPane
 	private static final Pattern AUTO_INDENT_PATTERN = Pattern.compile(
 			"(\\s*[*+-]\\s+|\\s*[0-9]+\\.\\s+|\\s+)(.*)");
 
+	private final VirtualizedScrollPane<StyleClassedTextArea> scrollPane;
 	private final StyleClassedTextArea textArea;
 	private final ParagraphOverlayGraphicFactory overlayGraphicFactory;
 	private WhitespaceOverlayFactory whitespaceOverlayFactory;
@@ -87,23 +89,23 @@ public class MarkdownEditorPane
 			textChanged(newText);
 		});
 
-		EventHandlerHelper.install(textArea.onKeyPressedProperty(), EventHandlerHelper
-				.on(keyPressed(ENTER)).act(this::enterPressed)
-				.on(keyPressed(D, KeyCombination.SHORTCUT_DOWN)).act(this::deleteLine)
-				.on(keyPressed(W, KeyCombination.ALT_DOWN)).act(this::showWhitespace)
-				.create());
+		Nodes.addInputMap(textArea, sequence(
+			consume(keyPressed(ENTER),				this::enterPressed),
+			consume(keyPressed(D, SHORTCUT_DOWN),	this::deleteLine),
+			consume(keyPressed(W, ALT_DOWN),		this::showWhitespace)
+		));
 
-		// search for vertical scrollbar and add change listener to update 'scrollY' property
-		textArea.getChildrenUnmodifiable().addListener((InvalidationListener) e -> {
-			ScrollBar vScrollBar = Utils.findVScrollBar(textArea);
-			if (vScrollBar != null) {
-				vScrollBar.valueProperty().addListener((observable, oldValue, newValue) -> {
-					double value = newValue.doubleValue();
-					double maxValue = vScrollBar.maxProperty().get();
-					scrollY.set((maxValue != 0) ? Math.min(Math.max(value / maxValue, 0), 1) : 0);
-				});
-			}
-		});
+		// add listener to update 'scrollY' property
+		InvalidationListener scrollYListener = e -> {
+			double value = textArea.estimatedScrollYProperty().getValue().doubleValue();
+			double maxValue = textArea.totalHeightEstimateProperty().getOrElse(0.).doubleValue();
+			scrollY.set((maxValue != 0) ? Math.min(Math.max(value / maxValue, 0), 1) : 0);
+		};
+		textArea.estimatedScrollYProperty().addListener(scrollYListener);
+		textArea.totalHeightEstimateProperty().addListener(scrollYListener);
+
+		// create scroll pane
+		scrollPane = new VirtualizedScrollPane<StyleClassedTextArea>(textArea);
 
 		overlayGraphicFactory = new ParagraphOverlayGraphicFactory(textArea);
 		textArea.setParagraphGraphicFactory(overlayGraphicFactory);
@@ -127,7 +129,7 @@ public class MarkdownEditorPane
 	}
 
 	public Node getNode() {
-		return textArea;
+		return scrollPane;
 	}
 
 	public UndoManager getUndoManager() {
