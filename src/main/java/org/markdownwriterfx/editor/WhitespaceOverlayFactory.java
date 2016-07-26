@@ -33,8 +33,8 @@ import javafx.geometry.Rectangle2D;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.text.Text;
-import org.fxmisc.richtext.Paragraph;
-import org.fxmisc.richtext.StyledText;
+import org.fxmisc.richtext.model.Paragraph;
+import org.fxmisc.richtext.model.StyledText;
 import org.markdownwriterfx.editor.ParagraphOverlayGraphicFactory.OverlayFactory;
 import org.reactfx.collection.LiveList;
 
