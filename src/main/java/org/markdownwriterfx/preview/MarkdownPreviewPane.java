@@ -37,13 +37,13 @@ import javafx.geometry.Side;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabClosingPolicy;
-import org.commonmark.node.Node;
+import com.vladsch.flexmark.node.Node;
 import org.markdownwriterfx.Messages;
 
 /**
  * Markdown preview pane.
  *
- * Uses commonmark-java AST.
+ * Uses flexmark-java AST.
  *
  * @author Karl Tauber
  */

@@ -31,13 +31,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import javafx.application.Platform;
-import org.commonmark.ext.gfm.strikethrough.Strikethrough;
-import org.commonmark.ext.gfm.tables.TableBlock;
-import org.commonmark.ext.gfm.tables.TableBody;
-import org.commonmark.ext.gfm.tables.TableCell;
-import org.commonmark.ext.gfm.tables.TableHead;
-import org.commonmark.ext.gfm.tables.TableRow;
-import org.commonmark.node.*;
+import com.vladsch.flexmark.internal.util.ast.NodeVisitor;
+import com.vladsch.flexmark.internal.util.ast.VisitHandler;
+import com.vladsch.flexmark.node.*;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
@@ -45,12 +41,11 @@ import org.fxmisc.richtext.model.StyleSpansBuilder;
 /**
  * Markdown syntax highlighter.
  *
- * Uses commonmark-java AST.
+ * Uses flexmark-java AST.
  *
  * @author Karl Tauber
  */
 class MarkdownSyntaxHighlighter
-	extends AbstractVisitor
 {
 	private enum StyleClass {
 		// headers
@@ -121,7 +116,22 @@ class MarkdownSyntaxHighlighter
 		styleClassBits = new int[text.length()];
 
 		// visit all nodes
-		astRoot.accept(this);
+		NodeVisitor visitor = new NodeVisitor(
+			new VisitHandler<>(BlockQuote.class, this::visit),
+			new VisitHandler<>(BulletList.class, this::visit),
+			new VisitHandler<>(Code.class, this::visit),
+			new VisitHandler<>(Heading.class, this::visit),
+			new VisitHandler<>(HtmlBlock.class, this::visit),
+			new VisitHandler<>(HtmlInline.class, this::visit),
+			new VisitHandler<>(ListItem.class, this::visit),
+			new VisitHandler<>(OrderedList.class, this::visit),
+			new VisitHandler<>(Image.class, this::visit),
+			new VisitHandler<>(Link.class, this::visit),
+			new VisitHandler<>(Emphasis.class, this::visit),
+			new VisitHandler<>(StrongEmphasis.class, this::visit),
+			new VisitHandler<>(FencedCodeBlock.class, this::visit),
+			new VisitHandler<>(IndentedCodeBlock.class, this::visit));
+		visitor.visit(astRoot);
 
 		// build style spans
 		StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
@@ -162,22 +172,6 @@ class MarkdownSyntaxHighlighter
 		}
 	}
 
-	private int startPosition(SourceSpan sourceSpan) {
-		return linePosition(sourceSpan) + sourceSpan.getFirstColumn() - 1;
-	}
-
-	private int endPosition(SourceSpan sourceSpan) {
-		return linePosition(sourceSpan) + sourceSpan.getLastColumn();
-	}
-
-	private int linePosition(SourceSpan sourceSpan) {
-		int lineNumber = sourceSpan.getLineNumber();
-		assert lineNumber >= 1;
-		assert lineNumber <= lineCount;
-
-		return linePositions[lineNumber - 1];
-	}
-
 	private Collection<String> toStyleClasses(int bits) {
 		if (bits == 0)
 			return Collections.emptyList();
@@ -190,26 +184,19 @@ class MarkdownSyntaxHighlighter
 		return styleClasses;
 	}
 
-	@Override
-	public void visit(BlockQuote node) {
+	private void visit(BlockQuote node) {
 		setStyleClass(node, StyleClass.blockquote);
-		super.visit(node);
 	}
 
-	@Override
-	public void visit(BulletList node) {
+	private void visit(BulletList node) {
 		setStyleClass(node, StyleClass.ul);
-		super.visit(node);
 	}
 
-	@Override
-	public void visit(Code node) {
+	private void visit(Code node) {
 		setStyleClass(node, StyleClass.code);
-		super.visit(node);
 	}
 
-	@Override
-	public void visit(Heading node) {
+	private void visit(Heading node) {
 		StyleClass styleClass;
 		switch (node.getLevel()) {
 			case 1: styleClass = StyleClass.h1; break;
@@ -223,72 +210,51 @@ class MarkdownSyntaxHighlighter
 		setStyleClass(node, styleClass);
 
 		// use monospace font for underlined headers
-		if (node.getSourceSpans().size() > 1)
+		if (node.isSetextHeading())
 			setStyleClass(node, StyleClass.monospace);
-
-		super.visit(node);
 	}
 
-	@Override
-	public void visit(HtmlBlock node) {
+	private void visit(HtmlBlock node) {
 		setStyleClass(node, StyleClass.html);
-		super.visit(node);
 	}
 
-	@Override
-	public void visit(HtmlInline node) {
+	private void visit(HtmlInline node) {
 		setStyleClass(node, StyleClass.html);
-		super.visit(node);
 	}
 
-	@Override
-	public void visit(ListItem node) {
+	private void visit(ListItem node) {
 		setStyleClass(node, StyleClass.li);
-		super.visit(node);
 	}
 
-	@Override
-	public void visit(OrderedList node) {
+	private void visit(OrderedList node) {
 		setStyleClass(node, StyleClass.ol);
-		super.visit(node);
 	}
 
-	@Override
-	public void visit(Image node) {
+	private void visit(Image node) {
 		setStyleClass(node, StyleClass.img);
-		super.visit(node);
 	}
 
-	@Override
-	public void visit(Link node) {
+	private void visit(Link node) {
 		setStyleClass(node, StyleClass.a);
-		super.visit(node);
 	}
 
-	@Override
-	public void visit(Emphasis node) {
+	private void visit(Emphasis node) {
 		setStyleClass(node, StyleClass.em);
-		super.visit(node);
 	}
 
-	@Override
-	public void visit(StrongEmphasis node) {
+	private void visit(StrongEmphasis node) {
 		setStyleClass(node, StyleClass.strong);
-		super.visit(node);
 	}
 
-	@Override
-	public void visit(FencedCodeBlock node) {
+	private void visit(FencedCodeBlock node) {
 		setStyleClass(node, StyleClass.pre);
-		super.visit(node);
 	}
 
-	@Override
-	public void visit(IndentedCodeBlock node) {
+	private void visit(IndentedCodeBlock node) {
 		setStyleClass(node, StyleClass.pre);
-		super.visit(node);
 	}
 
+/*TODO
 	@Override
 	public void visit(CustomBlock node) {
 		if (node instanceof TableBlock)
@@ -312,15 +278,14 @@ class MarkdownSyntaxHighlighter
 
 		super.visit(node);
 	}
+*/
 
 	private void setStyleClass(Node node, StyleClass styleClass) {
-		for (SourceSpan sourceSpan : node.getSourceSpans()) {
-			int start = startPosition(sourceSpan);
-			int end = endPosition(sourceSpan);
-			int styleBit = 1 << styleClass.ordinal();
+		int start = node.getStartOffset();
+		int end = node.getEndOffset();
+		int styleBit = 1 << styleClass.ordinal();
 
-			for (int i = start; i < end; i++)
-				styleClassBits[i] |= styleBit;
-		}
+		for (int i = start; i < end; i++)
+			styleClassBits[i] |= styleBit;
 	}
 }

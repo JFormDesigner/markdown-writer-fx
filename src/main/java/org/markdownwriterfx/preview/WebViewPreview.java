@@ -29,8 +29,8 @@ package org.markdownwriterfx.preview;
 
 import java.nio.file.Path;
 import javafx.scene.web.WebView;
-import org.commonmark.html.HtmlRenderer;
-import org.commonmark.node.Node;
+import com.vladsch.flexmark.html.HtmlRenderer;
+import com.vladsch.flexmark.node.Node;
 
 /**
  * WebView preview.

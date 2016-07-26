@@ -30,11 +30,11 @@ package org.markdownwriterfx.preview;
 import java.nio.file.Path;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.TextArea;
-import org.commonmark.node.Node;
+import com.vladsch.flexmark.node.Node;
 import org.markdownwriterfx.util.Utils;
 
 /**
- * commonmark-java AST preview.
+ * flexmark-java AST preview.
  * Prints the AST tree to a text area.
  *
  * @author Karl Tauber
@@ -78,11 +78,14 @@ class ASTPreview
 	private String printTree(Node astRoot) {
 		StringBuilder buf = new StringBuilder(100);
 		printNode(buf, "", astRoot);
-		return buf.toString();
+		return buf.toString().replace(Node.SPLICE, "...");
 	}
 
 	private void printNode(StringBuilder buf, String indent, Node node) {
-		buf.append(indent).append(node).append('\n');
+		buf.append(indent);
+		node.astString(buf, true);
+		buf.append('\n');
+
 		indent += "    ";
 		for (Node child = node.getFirstChild(); child != null; child = child.getNext())
 			printNode(buf, indent, child);

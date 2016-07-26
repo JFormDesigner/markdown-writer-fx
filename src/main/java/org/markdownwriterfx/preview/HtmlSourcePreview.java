@@ -30,7 +30,7 @@ package org.markdownwriterfx.preview;
 import java.nio.file.Path;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.TextArea;
-import org.commonmark.node.Node;
+import com.vladsch.flexmark.node.Node;
 import org.markdownwriterfx.util.Utils;
 
 /**

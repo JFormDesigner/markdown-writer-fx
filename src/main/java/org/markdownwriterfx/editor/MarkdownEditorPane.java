@@ -48,8 +48,8 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.IndexRange;
 import javafx.scene.input.KeyEvent;
-import org.commonmark.node.Node;
-import org.commonmark.parser.Parser;
+import com.vladsch.flexmark.node.Node;
+import com.vladsch.flexmark.parser.Parser;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.undo.UndoManager;
@@ -62,7 +62,7 @@ import org.markdownwriterfx.util.Utils;
 /**
  * Markdown editor pane.
  *
- * Uses commonmark-java (https://github.com/atlassian/commonmark-java) for parsing markdown.
+ * Uses flexmark-java (https://github.com/vsch/flexmark-java) for parsing markdown.
  *
  * @author Karl Tauber
  */

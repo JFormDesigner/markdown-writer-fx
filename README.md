@@ -7,7 +7,7 @@ An open source [Markdown] editor written in JavaFX 8.
 
 ![Markdown Writer FX Screenshot](images/screenshot.png)
 
-For Markdown processing it uses [commonmark-java], a Java implementation of [CommonMark].
+For Markdown processing it uses [flexmark-java], a Java implementation of [CommonMark].
 
 Features
 --------
@@ -62,6 +62,7 @@ Credits
 
   * Tomas Mikula for [RichTextFX], [ReactFX], [WellBehavedFX], [Flowless] and [UndoFX]
   * Mikael Grev for [MigLayout] and Tom Eugelink for MigPane
+  * Vladimir Schneider for [flexmark-java] Markdown parser
   * Atlassian for [commonmark-java] Markdown parser
   * Jens Deters for [FontAwesomeFX]
 
@@ -73,6 +74,7 @@ License
    [Markdown]: http://daringfireball.net/projects/markdown/
    [CommonMark]: http://commonmark.org/
    [commonmark-java]: https://github.com/atlassian/commonmark-java
+   [flexmark-java]: https://github.com/vsch/flexmark-java
    [Markdown Extra]: https://michelf.ca/projects/php-markdown/extra/
    [MultiMarkdown]: http://fletcherpenney.net/multimarkdown/
    [Github-flavoured-Markdown]: https://help.github.com/articles/github-flavored-markdown/
