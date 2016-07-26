@@ -99,8 +99,8 @@ public class MarkdownEditorPane
 		// add listener to update 'scrollY' property
 		ChangeListener<Double> scrollYListener = (observable, oldValue, newValue) -> {
 			double value = textArea.estimatedScrollYProperty().getValue().doubleValue();
-			double maxValue = textArea.totalHeightEstimateProperty().getOrElse(0.).doubleValue();
-			scrollY.set((maxValue != 0) ? Math.min(Math.max(value / maxValue, 0), 1) : 0);
+			double maxValue = textArea.totalHeightEstimateProperty().getOrElse(0.).doubleValue() - textArea.getHeight();
+			scrollY.set((maxValue > 0) ? Math.min(Math.max(value / maxValue, 0), 1) : 0);
 		};
 		textArea.estimatedScrollYProperty().addListener(scrollYListener);
 		textArea.totalHeightEstimateProperty().addListener(scrollYListener);
