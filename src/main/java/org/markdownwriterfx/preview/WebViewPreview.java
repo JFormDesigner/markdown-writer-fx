@@ -29,6 +29,7 @@ package org.markdownwriterfx.preview;
 
 import java.nio.file.Path;
 import javafx.scene.web.WebView;
+import org.markdownwriterfx.util.FlexmarkUtils;
 import com.vladsch.flexmark.html.HtmlRenderer;
 import com.vladsch.flexmark.node.Node;
 
@@ -52,7 +53,9 @@ class WebViewPreview
 	static String toHtml(Node astRoot) {
 		if (astRoot == null)
 			return "";
-		HtmlRenderer renderer = HtmlRenderer.builder().escapeHtml(false).build();
+		HtmlRenderer renderer = HtmlRenderer.builder()
+				.extensions(FlexmarkUtils.getExtensions())
+				.build();
 		return renderer.render(astRoot);
 	}
 

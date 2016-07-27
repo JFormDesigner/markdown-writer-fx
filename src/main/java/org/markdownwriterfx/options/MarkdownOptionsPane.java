@@ -27,13 +27,26 @@
 
 package org.markdownwriterfx.options;
 
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.ListProperty;
+import javafx.beans.property.SimpleListProperty;
+import javafx.collections.FXCollections;
 import javafx.scene.control.Label;
 import org.markdownwriterfx.Messages;
+import org.markdownwriterfx.controls.ExtensionCheckBox;
 import org.markdownwriterfx.controls.FlagCheckBox;
 import org.markdownwriterfx.controls.WebHyperlink;
 import org.tbee.javafx.scene.layout.fxml.MigPane;
+import com.vladsch.flexmark.ext.abbreviation.AbbreviationExtension;
+import com.vladsch.flexmark.ext.anchorlink.AnchorLinkExtension;
+import com.vladsch.flexmark.ext.autolink.AutolinkExtension;
+import com.vladsch.flexmark.ext.emoji.EmojiExtension;
+import com.vladsch.flexmark.ext.footnotes.FootnoteExtension;
+import com.vladsch.flexmark.ext.front.matter.YamlFrontMatterExtension;
+import com.vladsch.flexmark.ext.gfm.strikethrough.StrikethroughExtension;
+import com.vladsch.flexmark.ext.gfm.tables.TablesExtension;
+import com.vladsch.flexmark.ext.gfm.tasklist.TaskListExtension;
+import com.vladsch.flexmark.ext.toc.TocExtension;
+import com.vladsch.flexmark.ext.wikilink.WikiLinkExtension;
 
 /**
  * Markdown options pane
@@ -43,240 +56,210 @@ import org.tbee.javafx.scene.layout.fxml.MigPane;
 class MarkdownOptionsPane
 	extends MigPane
 {
-	private final IntegerProperty extensions = new SimpleIntegerProperty();
+	private final ListProperty<String> extensions = new SimpleListProperty<>();
 
 	MarkdownOptionsPane() {
 		initComponents();
 
+		autolinksExtCheckBox.setExtensionClass(AutolinkExtension.class);
+		abbreviationsExtCheckBox.setExtensionClass(AbbreviationExtension.class);
+		anchorlinksExtCheckBox.setExtensionClass(AnchorLinkExtension.class);
+		emojiExtCheckBox.setExtensionClass(EmojiExtension.class);
+		footnotesExtCheckBox.setExtensionClass(FootnoteExtension.class);
+		strikethroughExtCheckBox.setExtensionClass(StrikethroughExtension.class);
+		tablesExtCheckBox.setExtensionClass(TablesExtension.class);
+		tocExtCheckBox.setExtensionClass(TocExtension.class);
+		taskListsExtCheckBox.setExtensionClass(TaskListExtension.class);
+		wikiLinksExtCheckBox.setExtensionClass(WikiLinkExtension.class);
+		yamlFrontMatterExtCheckBox.setExtensionClass(YamlFrontMatterExtension.class);
+
 /*
-		smartsExtCheckBox.setFlag(Extensions.SMARTS);
-		quotesExtCheckBox.setFlag(Extensions.QUOTES);
-		abbreviationsExtCheckBox.setFlag(Extensions.ABBREVIATIONS);
 		hardwrapsExtCheckBox.setFlag(Extensions.HARDWRAPS);
-		autolinksExtCheckBox.setFlag(Extensions.AUTOLINKS);
-		tablesExtCheckBox.setFlag(Extensions.TABLES);
 		definitionListsExtCheckBox.setFlag(Extensions.DEFINITIONS);
 		fencedCodeBlocksExtCheckBox.setFlag(Extensions.FENCED_CODE_BLOCKS);
-		wikilinksExtCheckBox.setFlag(Extensions.WIKILINKS);
-		strikethroughExtCheckBox.setFlag(Extensions.STRIKETHROUGH);
-		anchorlinksExtCheckBox.setFlag(Extensions.ANCHORLINKS);
 		suppressHtmlBlocksExtCheckBox.setFlag(Extensions.SUPPRESS_HTML_BLOCKS);
 		suppressInlineHtmlExtCheckBox.setFlag(Extensions.SUPPRESS_INLINE_HTML);
-		atxHeaderSpaceExtCheckBox.setFlag(Extensions.ATXHEADERSPACE);
-		forceListItemParaExtCheckBox.setFlag(Extensions.FORCELISTITEMPARA);
-		relaxedHrRulesExtCheckBox.setFlag(Extensions.RELAXEDHRULES);
-		taskListItemsExtCheckBox.setFlag(Extensions.TASKLISTITEMS);
-		extAnchorLinksExtCheckBox.setFlag(Extensions.EXTANCHORLINKS);
-		*/
+*/
 
-		extensions.bindBidirectional(smartsExtCheckBox.flagsProperty());
-		extensions.bindBidirectional(quotesExtCheckBox.flagsProperty());
-		extensions.bindBidirectional(abbreviationsExtCheckBox.flagsProperty());
+		extensions.bindBidirectional(autolinksExtCheckBox.extensionsProperty());
+		extensions.bindBidirectional(abbreviationsExtCheckBox.extensionsProperty());
+		extensions.bindBidirectional(anchorlinksExtCheckBox.extensionsProperty());
+		extensions.bindBidirectional(emojiExtCheckBox.extensionsProperty());
+		extensions.bindBidirectional(footnotesExtCheckBox.extensionsProperty());
+		extensions.bindBidirectional(strikethroughExtCheckBox.extensionsProperty());
+		extensions.bindBidirectional(tablesExtCheckBox.extensionsProperty());
+		extensions.bindBidirectional(tocExtCheckBox.extensionsProperty());
+		extensions.bindBidirectional(taskListsExtCheckBox.extensionsProperty());
+		extensions.bindBidirectional(wikiLinksExtCheckBox.extensionsProperty());
+		extensions.bindBidirectional(yamlFrontMatterExtCheckBox.extensionsProperty());
+
+/*
 		extensions.bindBidirectional(hardwrapsExtCheckBox.flagsProperty());
-		extensions.bindBidirectional(autolinksExtCheckBox.flagsProperty());
-		extensions.bindBidirectional(tablesExtCheckBox.flagsProperty());
 		extensions.bindBidirectional(definitionListsExtCheckBox.flagsProperty());
 		extensions.bindBidirectional(fencedCodeBlocksExtCheckBox.flagsProperty());
-		extensions.bindBidirectional(wikilinksExtCheckBox.flagsProperty());
-		extensions.bindBidirectional(strikethroughExtCheckBox.flagsProperty());
-		extensions.bindBidirectional(anchorlinksExtCheckBox.flagsProperty());
 		extensions.bindBidirectional(suppressHtmlBlocksExtCheckBox.flagsProperty());
 		extensions.bindBidirectional(suppressInlineHtmlExtCheckBox.flagsProperty());
-		extensions.bindBidirectional(atxHeaderSpaceExtCheckBox.flagsProperty());
-		extensions.bindBidirectional(forceListItemParaExtCheckBox.flagsProperty());
-		extensions.bindBidirectional(relaxedHrRulesExtCheckBox.flagsProperty());
-		extensions.bindBidirectional(taskListItemsExtCheckBox.flagsProperty());
-		extensions.bindBidirectional(extAnchorLinksExtCheckBox.flagsProperty());
+*/
 	}
 
 	void load() {
-		extensions.set(Options.getMarkdownExtensions());
+		extensions.set(FXCollections.observableArrayList(Options.getMarkdownExtensions()));
 	}
 
 	void save() {
-		Options.setMarkdownExtensions(extensions.get());
+		Options.setMarkdownExtensions(extensions.get().sorted().toArray(new String[0]));
 	}
 
 	private void initComponents() {
 		// JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-		smartsExtCheckBox = new FlagCheckBox();
-		quotesExtCheckBox = new FlagCheckBox();
-		abbreviationsExtCheckBox = new FlagCheckBox();
-		WebHyperlink abbreviationsExtLink = new WebHyperlink();
-		hardwrapsExtCheckBox = new FlagCheckBox();
-		WebHyperlink hardwrapsExtLink = new WebHyperlink();
-		autolinksExtCheckBox = new FlagCheckBox();
-		WebHyperlink autolinksExtLink = new WebHyperlink();
-		tablesExtCheckBox = new FlagCheckBox();
-		WebHyperlink tablesExtLink = new WebHyperlink();
-		Label tablesExtLabel = new Label();
-		WebHyperlink tablesExtLink2 = new WebHyperlink();
-		Label tablesExtLabel2 = new Label();
-		definitionListsExtCheckBox = new FlagCheckBox();
+		abbreviationsExtCheckBox = new ExtensionCheckBox();
+		anchorlinksExtCheckBox = new ExtensionCheckBox();
+		autolinksExtCheckBox = new ExtensionCheckBox();
+		emojiExtCheckBox = new ExtensionCheckBox();
+		WebHyperlink emojiExtLink = new WebHyperlink();
+		footnotesExtCheckBox = new ExtensionCheckBox();
+		strikethroughExtCheckBox = new ExtensionCheckBox();
+		tablesExtCheckBox = new ExtensionCheckBox();
+		tocExtCheckBox = new ExtensionCheckBox();
+		taskListsExtCheckBox = new ExtensionCheckBox();
+		wikiLinksExtCheckBox = new ExtensionCheckBox();
+		yamlFrontMatterExtCheckBox = new ExtensionCheckBox();
+		definitionListsExtCheckBox = new ExtensionCheckBox();
 		WebHyperlink definitionListsExtLink = new WebHyperlink();
 		fencedCodeBlocksExtCheckBox = new FlagCheckBox();
 		WebHyperlink fencedCodeBlocksExtLink = new WebHyperlink();
 		Label fencedCodeBlocksExtLabel = new Label();
 		WebHyperlink fencedCodeBlocksExtLink2 = new WebHyperlink();
-		wikilinksExtCheckBox = new FlagCheckBox();
-		strikethroughExtCheckBox = new FlagCheckBox();
-		anchorlinksExtCheckBox = new FlagCheckBox();
+		hardwrapsExtCheckBox = new FlagCheckBox();
+		WebHyperlink hardwrapsExtLink = new WebHyperlink();
 		suppressHtmlBlocksExtCheckBox = new FlagCheckBox();
 		suppressInlineHtmlExtCheckBox = new FlagCheckBox();
-		atxHeaderSpaceExtCheckBox = new FlagCheckBox();
-		forceListItemParaExtCheckBox = new FlagCheckBox();
-		relaxedHrRulesExtCheckBox = new FlagCheckBox();
-		taskListItemsExtCheckBox = new FlagCheckBox();
-		extAnchorLinksExtCheckBox = new FlagCheckBox();
 
 		//======== this ========
-		setCols("[][fill]");
-		setRows("[][][][][][][][][][][][][][][][][][]");
-
-		//---- smartsExtCheckBox ----
-		smartsExtCheckBox.setText(Messages.get("MarkdownOptionsPane.smartsExtCheckBox.text"));
-		add(smartsExtCheckBox, "cell 0 0");
-
-		//---- quotesExtCheckBox ----
-		quotesExtCheckBox.setText(Messages.get("MarkdownOptionsPane.quotesExtCheckBox.text"));
-		add(quotesExtCheckBox, "cell 0 1");
+		setCols("[]");
+		setRows("[][][][][][][][][][][][][][][][][]");
 
 		//---- abbreviationsExtCheckBox ----
 		abbreviationsExtCheckBox.setText(Messages.get("MarkdownOptionsPane.abbreviationsExtCheckBox.text"));
-		add(abbreviationsExtCheckBox, "cell 0 2");
+		add(abbreviationsExtCheckBox, "cell 0 0");
 
-		//---- abbreviationsExtLink ----
-		abbreviationsExtLink.setText(Messages.get("MarkdownOptionsPane.abbreviationsExtLink.text"));
-		abbreviationsExtLink.setUri("http://michelf.com/projects/php-markdown/extra/#abbr");
-		add(abbreviationsExtLink, "cell 0 2,gapx 0");
-
-		//---- hardwrapsExtCheckBox ----
-		hardwrapsExtCheckBox.setText(Messages.get("MarkdownOptionsPane.hardwrapsExtCheckBox.text"));
-		add(hardwrapsExtCheckBox, "cell 0 3");
-
-		//---- hardwrapsExtLink ----
-		hardwrapsExtLink.setText(Messages.get("MarkdownOptionsPane.hardwrapsExtLink.text"));
-		hardwrapsExtLink.setUri("https://help.github.com/articles/writing-on-github/#markup");
-		add(hardwrapsExtLink, "cell 0 3,gapx 0");
+		//---- anchorlinksExtCheckBox ----
+		anchorlinksExtCheckBox.setText(Messages.get("MarkdownOptionsPane.anchorlinksExtCheckBox.text"));
+		add(anchorlinksExtCheckBox, "cell 0 1");
 
 		//---- autolinksExtCheckBox ----
 		autolinksExtCheckBox.setText(Messages.get("MarkdownOptionsPane.autolinksExtCheckBox.text"));
-		add(autolinksExtCheckBox, "cell 0 4");
+		add(autolinksExtCheckBox, "cell 0 2");
 
-		//---- autolinksExtLink ----
-		autolinksExtLink.setText(Messages.get("MarkdownOptionsPane.autolinksExtLink.text"));
-		autolinksExtLink.setUri("https://help.github.com/articles/github-flavored-markdown/#url-autolinking");
-		add(autolinksExtLink, "cell 0 4,gapx 0");
+		//---- emojiExtCheckBox ----
+		emojiExtCheckBox.setText(Messages.get("MarkdownOptionsPane.emojiExtCheckBox.text"));
+		add(emojiExtCheckBox, "cell 0 3");
+
+		//---- emojiExtLink ----
+		emojiExtLink.setText(Messages.get("MarkdownOptionsPane.emojiExtLink.text"));
+		emojiExtLink.setUri("http://www.emoji-cheat-sheet.com/");
+		add(emojiExtLink, "cell 0 3,gapx 0");
+
+		//---- footnotesExtCheckBox ----
+		footnotesExtCheckBox.setText(Messages.get("MarkdownOptionsPane.footnotesExtCheckBox.text"));
+		add(footnotesExtCheckBox, "cell 0 4");
+
+		//---- strikethroughExtCheckBox ----
+		strikethroughExtCheckBox.setText(Messages.get("MarkdownOptionsPane.strikethroughExtCheckBox.text"));
+		add(strikethroughExtCheckBox, "cell 0 5");
 
 		//---- tablesExtCheckBox ----
 		tablesExtCheckBox.setText(Messages.get("MarkdownOptionsPane.tablesExtCheckBox.text"));
-		add(tablesExtCheckBox, "cell 0 5");
+		add(tablesExtCheckBox, "cell 0 6");
 
-		//---- tablesExtLink ----
-		tablesExtLink.setText(Messages.get("MarkdownOptionsPane.tablesExtLink.text"));
-		tablesExtLink.setUri("http://fletcher.github.io/MultiMarkdown-4/syntax.html#tables");
-		add(tablesExtLink, "cell 0 5,gapx 0");
+		//---- tocExtCheckBox ----
+		tocExtCheckBox.setText(Messages.get("MarkdownOptionsPane.tocExtCheckBox.text"));
+		add(tocExtCheckBox, "cell 0 7");
 
-		//---- tablesExtLabel ----
-		tablesExtLabel.setText(Messages.get("MarkdownOptionsPane.tablesExtLabel.text"));
-		add(tablesExtLabel, "cell 0 5,gapx 3");
+		//---- taskListsExtCheckBox ----
+		taskListsExtCheckBox.setText(Messages.get("MarkdownOptionsPane.taskListsExtCheckBox.text"));
+		add(taskListsExtCheckBox, "cell 0 8");
 
-		//---- tablesExtLink2 ----
-		tablesExtLink2.setText(Messages.get("MarkdownOptionsPane.tablesExtLink2.text"));
-		tablesExtLink2.setUri("https://michelf.ca/projects/php-markdown/extra/#table");
-		add(tablesExtLink2, "cell 0 5,gapx 3 3");
+		//---- wikiLinksExtCheckBox ----
+		wikiLinksExtCheckBox.setText(Messages.get("MarkdownOptionsPane.wikiLinksExtCheckBox.text"));
+		add(wikiLinksExtCheckBox, "cell 0 9");
 
-		//---- tablesExtLabel2 ----
-		tablesExtLabel2.setText(Messages.get("MarkdownOptionsPane.tablesExtLabel2.text"));
-		add(tablesExtLabel2, "cell 0 5,gapx 0");
+		//---- yamlFrontMatterExtCheckBox ----
+		yamlFrontMatterExtCheckBox.setText(Messages.get("MarkdownOptionsPane.yamlFrontMatterExtCheckBox.text"));
+		add(yamlFrontMatterExtCheckBox, "cell 0 10");
 
 		//---- definitionListsExtCheckBox ----
 		definitionListsExtCheckBox.setText(Messages.get("MarkdownOptionsPane.definitionListsExtCheckBox.text"));
-		add(definitionListsExtCheckBox, "cell 0 6");
+		definitionListsExtCheckBox.setVisible(false);
+		add(definitionListsExtCheckBox, "cell 0 12");
 
 		//---- definitionListsExtLink ----
 		definitionListsExtLink.setText(Messages.get("MarkdownOptionsPane.definitionListsExtLink.text"));
 		definitionListsExtLink.setUri("https://michelf.ca/projects/php-markdown/extra/#def-list");
-		add(definitionListsExtLink, "cell 0 6,gapx 0");
+		definitionListsExtLink.setVisible(false);
+		add(definitionListsExtLink, "cell 0 12,gapx 0");
 
 		//---- fencedCodeBlocksExtCheckBox ----
 		fencedCodeBlocksExtCheckBox.setText(Messages.get("MarkdownOptionsPane.fencedCodeBlocksExtCheckBox.text"));
-		add(fencedCodeBlocksExtCheckBox, "cell 0 7");
+		fencedCodeBlocksExtCheckBox.setVisible(false);
+		add(fencedCodeBlocksExtCheckBox, "cell 0 13");
 
 		//---- fencedCodeBlocksExtLink ----
 		fencedCodeBlocksExtLink.setText(Messages.get("MarkdownOptionsPane.fencedCodeBlocksExtLink.text"));
 		fencedCodeBlocksExtLink.setUri("http://michelf.com/projects/php-markdown/extra/#fenced-code-blocks");
-		add(fencedCodeBlocksExtLink, "cell 0 7,gapx 0");
+		fencedCodeBlocksExtLink.setVisible(false);
+		add(fencedCodeBlocksExtLink, "cell 0 13,gapx 0");
 
 		//---- fencedCodeBlocksExtLabel ----
 		fencedCodeBlocksExtLabel.setText(Messages.get("MarkdownOptionsPane.fencedCodeBlocksExtLabel.text"));
-		add(fencedCodeBlocksExtLabel, "cell 0 7,gapx 3");
+		fencedCodeBlocksExtLabel.setVisible(false);
+		add(fencedCodeBlocksExtLabel, "cell 0 13,gapx 3");
 
 		//---- fencedCodeBlocksExtLink2 ----
 		fencedCodeBlocksExtLink2.setText(Messages.get("MarkdownOptionsPane.fencedCodeBlocksExtLink2.text"));
 		fencedCodeBlocksExtLink2.setUri("https://help.github.com/articles/github-flavored-markdown/#fenced-code-blocks");
-		add(fencedCodeBlocksExtLink2, "cell 0 7,gapx 3");
+		fencedCodeBlocksExtLink2.setVisible(false);
+		add(fencedCodeBlocksExtLink2, "cell 0 13,gapx 3");
 
-		//---- wikilinksExtCheckBox ----
-		wikilinksExtCheckBox.setText(Messages.get("MarkdownOptionsPane.wikilinksExtCheckBox.text"));
-		add(wikilinksExtCheckBox, "cell 0 8");
+		//---- hardwrapsExtCheckBox ----
+		hardwrapsExtCheckBox.setText(Messages.get("MarkdownOptionsPane.hardwrapsExtCheckBox.text"));
+		hardwrapsExtCheckBox.setVisible(false);
+		add(hardwrapsExtCheckBox, "cell 0 14");
 
-		//---- strikethroughExtCheckBox ----
-		strikethroughExtCheckBox.setText(Messages.get("MarkdownOptionsPane.strikethroughExtCheckBox.text"));
-		add(strikethroughExtCheckBox, "cell 0 9");
-
-		//---- anchorlinksExtCheckBox ----
-		anchorlinksExtCheckBox.setText(Messages.get("MarkdownOptionsPane.anchorlinksExtCheckBox.text"));
-		add(anchorlinksExtCheckBox, "cell 0 10");
+		//---- hardwrapsExtLink ----
+		hardwrapsExtLink.setText(Messages.get("MarkdownOptionsPane.hardwrapsExtLink.text"));
+		hardwrapsExtLink.setUri("https://help.github.com/articles/writing-on-github/#markup");
+		hardwrapsExtLink.setVisible(false);
+		add(hardwrapsExtLink, "cell 0 14,gapx 0");
 
 		//---- suppressHtmlBlocksExtCheckBox ----
 		suppressHtmlBlocksExtCheckBox.setText(Messages.get("MarkdownOptionsPane.suppressHtmlBlocksExtCheckBox.text"));
-		add(suppressHtmlBlocksExtCheckBox, "cell 0 11");
+		suppressHtmlBlocksExtCheckBox.setVisible(false);
+		add(suppressHtmlBlocksExtCheckBox, "cell 0 15");
 
 		//---- suppressInlineHtmlExtCheckBox ----
 		suppressInlineHtmlExtCheckBox.setText(Messages.get("MarkdownOptionsPane.suppressInlineHtmlExtCheckBox.text"));
-		add(suppressInlineHtmlExtCheckBox, "cell 0 12");
-
-		//---- atxHeaderSpaceExtCheckBox ----
-		atxHeaderSpaceExtCheckBox.setText(Messages.get("MarkdownOptionsPane.atxHeaderSpaceExtCheckBox.text"));
-		add(atxHeaderSpaceExtCheckBox, "cell 0 13");
-
-		//---- forceListItemParaExtCheckBox ----
-		forceListItemParaExtCheckBox.setText(Messages.get("MarkdownOptionsPane.forceListItemParaExtCheckBox.text"));
-		add(forceListItemParaExtCheckBox, "cell 0 14");
-
-		//---- relaxedHrRulesExtCheckBox ----
-		relaxedHrRulesExtCheckBox.setText(Messages.get("MarkdownOptionsPane.relaxedHrRulesExtCheckBox.text"));
-		add(relaxedHrRulesExtCheckBox, "cell 0 15");
-
-		//---- taskListItemsExtCheckBox ----
-		taskListItemsExtCheckBox.setText(Messages.get("MarkdownOptionsPane.taskListItemsExtCheckBox.text"));
-		add(taskListItemsExtCheckBox, "cell 0 16");
-
-		//---- extAnchorLinksExtCheckBox ----
-		extAnchorLinksExtCheckBox.setText(Messages.get("MarkdownOptionsPane.extAnchorLinksExtCheckBox.text"));
-		add(extAnchorLinksExtCheckBox, "cell 0 17");
+		suppressInlineHtmlExtCheckBox.setVisible(false);
+		add(suppressInlineHtmlExtCheckBox, "cell 0 16");
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 	}
 
 	// JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
-	private FlagCheckBox smartsExtCheckBox;
-	private FlagCheckBox quotesExtCheckBox;
-	private FlagCheckBox abbreviationsExtCheckBox;
-	private FlagCheckBox hardwrapsExtCheckBox;
-	private FlagCheckBox autolinksExtCheckBox;
-	private FlagCheckBox tablesExtCheckBox;
-	private FlagCheckBox definitionListsExtCheckBox;
+	private ExtensionCheckBox abbreviationsExtCheckBox;
+	private ExtensionCheckBox anchorlinksExtCheckBox;
+	private ExtensionCheckBox autolinksExtCheckBox;
+	private ExtensionCheckBox emojiExtCheckBox;
+	private ExtensionCheckBox footnotesExtCheckBox;
+	private ExtensionCheckBox strikethroughExtCheckBox;
+	private ExtensionCheckBox tablesExtCheckBox;
+	private ExtensionCheckBox tocExtCheckBox;
+	private ExtensionCheckBox taskListsExtCheckBox;
+	private ExtensionCheckBox wikiLinksExtCheckBox;
+	private ExtensionCheckBox yamlFrontMatterExtCheckBox;
+	private ExtensionCheckBox definitionListsExtCheckBox;
 	private FlagCheckBox fencedCodeBlocksExtCheckBox;
-	private FlagCheckBox wikilinksExtCheckBox;
-	private FlagCheckBox strikethroughExtCheckBox;
-	private FlagCheckBox anchorlinksExtCheckBox;
+	private FlagCheckBox hardwrapsExtCheckBox;
 	private FlagCheckBox suppressHtmlBlocksExtCheckBox;
 	private FlagCheckBox suppressInlineHtmlExtCheckBox;
-	private FlagCheckBox atxHeaderSpaceExtCheckBox;
-	private FlagCheckBox forceListItemParaExtCheckBox;
-	private FlagCheckBox relaxedHrRulesExtCheckBox;
-	private FlagCheckBox taskListItemsExtCheckBox;
-	private FlagCheckBox extAnchorLinksExtCheckBox;
 	// JFormDesigner - End of variables declaration  //GEN-END:variables
 }

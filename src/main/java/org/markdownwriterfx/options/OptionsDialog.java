@@ -112,7 +112,7 @@ public class OptionsDialog
 				markdownTab.setContent(markdownOptionsPane);
 			}
 
-			tabPane.getTabs().addAll(generalTab/*, markdownTab*/);
+			tabPane.getTabs().addAll(generalTab, markdownTab);
 		}
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 	}

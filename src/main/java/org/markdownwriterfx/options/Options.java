@@ -29,9 +29,9 @@ package org.markdownwriterfx.options;
 
 import java.util.prefs.Preferences;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import org.markdownwriterfx.util.Utils;
@@ -50,14 +50,14 @@ public class Options
 
 		setLineSeparator(options.get("lineSeparator", null));
 		setEncoding(options.get("encoding", null));
-//		setMarkdownExtensions(options.getInt("markdownExtensions", Extensions.ALL));
+		setMarkdownExtensions(Utils.getPrefsStrings(options, "markdownExtensions"));
 		setShowWhitespace(options.getBoolean("showWhitespace", false));
 	}
 
 	public static void save() {
 		Utils.putPrefs(options, "lineSeparator", getLineSeparator(), null);
 		Utils.putPrefs(options, "encoding", getEncoding(), null);
-//		Utils.putPrefsInt(options, "markdownExtensions", getMarkdownExtensions(), Extensions.ALL);
+		Utils.putPrefsStrings(options, "markdownExtensions", getMarkdownExtensions());
 		Utils.putPrefsBoolean(options, "showWhitespace", isShowWhitespace(), false);
 	}
 
@@ -74,10 +74,10 @@ public class Options
 	public static StringProperty encodingProperty() { return encoding; }
 
 	// 'markdownExtensions' property
-	private static final IntegerProperty markdownExtensions = new SimpleIntegerProperty();
-	public static int getMarkdownExtensions() { return markdownExtensions.get(); }
-	public static void setMarkdownExtensions(int markdownExtensions) { Options.markdownExtensions.set(markdownExtensions); }
-	public static IntegerProperty markdownExtensionsProperty() { return markdownExtensions; }
+	private static final ObjectProperty<String[]> markdownExtensions = new SimpleObjectProperty<>(new String[0]);
+	public static String[] getMarkdownExtensions() { return markdownExtensions.get(); }
+	public static void setMarkdownExtensions(String[] markdownExtensions) { Options.markdownExtensions.set(markdownExtensions); }
+	public static ObjectProperty<String[]> markdownExtensionsProperty() { return markdownExtensions; }
 
 	// 'showWhitespace' property
 	private static final BooleanProperty showWhitespace = new SimpleBooleanProperty();

@@ -57,6 +57,7 @@ import org.fxmisc.wellbehaved.event.Nodes;
 import org.markdownwriterfx.dialogs.ImageDialog;
 import org.markdownwriterfx.dialogs.LinkDialog;
 import org.markdownwriterfx.options.Options;
+import org.markdownwriterfx.util.FlexmarkUtils;
 import org.markdownwriterfx.util.Utils;
 
 /**
@@ -197,8 +198,11 @@ public class MarkdownEditorPane
 	}
 
 	private Node parseMarkdown(String text) {
-		if (parser == null)
-			parser = Parser.builder().build();
+		if (parser == null) {
+			parser = Parser.builder()
+				.extensions(FlexmarkUtils.getExtensions())
+				.build();
+		}
 		return parser.parse(text);
 	}
 
