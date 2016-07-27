@@ -29,14 +29,14 @@ package org.markdownwriterfx.editor;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import javafx.collections.ObservableList;
 import javafx.geometry.Rectangle2D;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.text.Text;
-import org.fxmisc.richtext.Paragraph;
-import org.fxmisc.richtext.StyledText;
+import org.fxmisc.richtext.model.Paragraph;
+import org.fxmisc.richtext.model.StyledText;
 import org.markdownwriterfx.editor.ParagraphOverlayGraphicFactory.OverlayFactory;
+import org.reactfx.collection.LiveList;
 
 /**
  * Shows whitespace characters.
@@ -48,13 +48,13 @@ class WhitespaceOverlayFactory
 {
 	@Override
 	public Node[] createOverlayNodes(int paragraphIndex) {
-		ObservableList<Paragraph<Collection<String>>> paragraphs = getTextArea().getParagraphs();
-		Paragraph<Collection<String>> par = paragraphs.get(paragraphIndex);
+		LiveList<Paragraph<Collection<String>, Collection<String>>> paragraphs = getTextArea().getParagraphs();
+		Paragraph<Collection<String>, Collection<String>> par = paragraphs.get(paragraphIndex);
 
 		ArrayList<Node> nodes = new ArrayList<>();
 		int segmentStart = 0;
 		for(StyledText<Collection<String>> segment : par.getSegments()) {
-			String text = segment.toString();
+			String text = segment.getText();
 			int textLength = text.length();
 			for (int i = 0; i < textLength; i++) {
 				char ch = text.charAt(i);

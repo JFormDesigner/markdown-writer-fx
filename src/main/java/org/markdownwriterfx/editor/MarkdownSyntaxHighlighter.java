@@ -32,8 +32,8 @@ import java.util.Collection;
 import java.util.Collections;
 import javafx.application.Platform;
 import org.fxmisc.richtext.StyleClassedTextArea;
-import org.fxmisc.richtext.StyleSpans;
-import org.fxmisc.richtext.StyleSpansBuilder;
+import org.fxmisc.richtext.model.StyleSpans;
+import org.fxmisc.richtext.model.StyleSpansBuilder;
 import org.pegdown.ast.*;
 
 /**

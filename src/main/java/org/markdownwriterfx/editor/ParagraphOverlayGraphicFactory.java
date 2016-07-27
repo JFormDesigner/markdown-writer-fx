@@ -199,7 +199,7 @@ public class ParagraphOverlayGraphicFactory
 			mGetChildren = Parent.class.getDeclaredMethod("getChildren");
 			mGetChildren.setAccessible(true);
 
-			Class<?> textFlowExtClass = Class.forName("org.fxmisc.richtext.skin.TextFlowExt");
+			Class<?> textFlowExtClass = Class.forName("org.fxmisc.richtext.TextFlowExt");
 			mGetRangeShape = textFlowExtClass.getDeclaredMethod("getRangeShape", int.class, int.class);
 			mGetRangeShape.setAccessible(true);
 		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException ex) {

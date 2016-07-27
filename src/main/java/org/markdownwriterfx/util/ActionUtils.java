@@ -35,7 +35,7 @@ import javafx.scene.control.Separator;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.ToolBar;
 import javafx.scene.control.Tooltip;
-import de.jensd.fx.glyphs.GlyphsDude;
+import de.jensd.fx.glyphs.fontawesome.utils.FontAwesomeIconFactory;
 
 /**
  * Action utilities
@@ -63,7 +63,7 @@ public class ActionUtils
 		if (action.accelerator != null)
 			menuItem.setAccelerator(action.accelerator);
 		if (action.icon != null)
-			menuItem.setGraphic(GlyphsDude.createIcon(action.icon));
+			menuItem.setGraphic(FontAwesomeIconFactory.get().createIcon(action.icon));
 		menuItem.setOnAction(action.action);
 		if (action.disable != null)
 			menuItem.disableProperty().bind(action.disable);
@@ -86,7 +86,7 @@ public class ActionUtils
 
 	public static Button createToolBarButton(Action action) {
 		Button button = new Button();
-		button.setGraphic(GlyphsDude.createIcon(action.icon, "1.2em"));
+		button.setGraphic(FontAwesomeIconFactory.get().createIcon(action.icon, "1.2em"));
 		String tooltip = action.text;
 		if (tooltip.endsWith("..."))
 			tooltip = tooltip.substring(0, tooltip.length() - 3);
