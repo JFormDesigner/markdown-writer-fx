@@ -48,7 +48,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.IndexRange;
 import javafx.scene.input.KeyEvent;
-import com.vladsch.flexmark.node.Node;
+import com.vladsch.flexmark.ast.Node;
 import com.vladsch.flexmark.parser.Parser;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.StyleClassedTextArea;

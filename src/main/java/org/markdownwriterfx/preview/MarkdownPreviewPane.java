@@ -37,7 +37,7 @@ import javafx.geometry.Side;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabClosingPolicy;
-import com.vladsch.flexmark.node.Node;
+import com.vladsch.flexmark.ast.Node;
 import org.markdownwriterfx.Messages;
 
 /**

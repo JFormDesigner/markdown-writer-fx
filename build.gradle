@@ -11,6 +11,20 @@ dependencies {
 	compile group: 'org.fxmisc.richtext', name: 'richtextfx', version: '0.7-M2'
 	compile group: 'com.miglayout', name: 'miglayout-javafx', version: '5.0'
 	compile group: 'de.jensd', name: 'fontawesomefx-fontawesome', version: '4.5.0'
+
+	def flexmarkVersion = '0.4.17'
+	compile 'com.vladsch.flexmark:flexmark:' + flexmarkVersion
+	compile 'com.vladsch.flexmark:flexmark-ext-abbreviation:' + flexmarkVersion
+	compile 'com.vladsch.flexmark:flexmark-ext-anchorlink:' + flexmarkVersion
+	compile 'com.vladsch.flexmark:flexmark-ext-autolink:' + flexmarkVersion
+	compile 'com.vladsch.flexmark:flexmark-ext-emoji:' + flexmarkVersion
+	compile 'com.vladsch.flexmark:flexmark-ext-footnotes:' + flexmarkVersion
+	compile 'com.vladsch.flexmark:flexmark-ext-gfm-strikethrough:' + flexmarkVersion
+	compile 'com.vladsch.flexmark:flexmark-ext-gfm-tables:' + flexmarkVersion
+	compile 'com.vladsch.flexmark:flexmark-ext-gfm-tasklist:' + flexmarkVersion
+	compile 'com.vladsch.flexmark:flexmark-ext-toc:' + flexmarkVersion
+	compile 'com.vladsch.flexmark:flexmark-ext-wikilink:' + flexmarkVersion
+	compile 'com.vladsch.flexmark:flexmark-ext-yaml-front-matter:' + flexmarkVersion
 }
 
 sourceCompatibility = 1.8

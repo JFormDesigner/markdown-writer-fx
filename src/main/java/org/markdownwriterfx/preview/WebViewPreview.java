@@ -31,7 +31,7 @@ import java.nio.file.Path;
 import javafx.scene.web.WebView;
 import org.markdownwriterfx.util.FlexmarkUtils;
 import com.vladsch.flexmark.html.HtmlRenderer;
-import com.vladsch.flexmark.node.Node;
+import com.vladsch.flexmark.ast.Node;
 
 /**
  * WebView preview.
