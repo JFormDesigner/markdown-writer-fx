@@ -9,8 +9,8 @@ new FormModel {
 	root: new FormRoot {
 		add( new FormContainer( "org.tbee.javafx.scene.layout.fxml.MigPane", new FormLayoutManager( class org.tbee.javafx.scene.layout.fxml.MigPane ) {
 			"$layoutConstraints": ""
-			"$columnConstraints": "[fill][fill][fill]"
-			"$rowConstraints": "[][]para[]"
+			"$columnConstraints": "[fill][fill][grow,fill]"
+			"$rowConstraints": "[][][]para[]"
 		} ) {
 			name: "this"
 			add( new FormComponent( "javafx.scene.control.Label" ) {
@@ -59,11 +59,26 @@ new FormModel {
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 1 1"
 			} )
+			add( new FormComponent( "javafx.scene.control.Label" ) {
+				name: "markdownFileExtensionsLabel"
+				"text": new FormMessage( null, "GeneralOptionsPane.markdownFileExtensionsLabel.text" )
+				"mnemonicParsing": true
+				auxiliary() {
+					"JavaCodeGenerator.variableLocal": true
+				}
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 2"
+			} )
+			add( new FormComponent( "javafx.scene.control.TextField" ) {
+				name: "markdownFileExtensionsField"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 1 2 2 1"
+			} )
 			add( new FormComponent( "javafx.scene.control.CheckBox" ) {
 				name: "showWhitespaceCheckBox"
 				"text": new FormMessage( null, "GeneralOptionsPane.showWhitespaceCheckBox.text" )
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 2 3 1,growx 0,alignx left"
+				"value": "cell 0 3 3 1,alignx left,growx 0"
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new javafx.geometry.Point2D( 0.0, 0.0 )
