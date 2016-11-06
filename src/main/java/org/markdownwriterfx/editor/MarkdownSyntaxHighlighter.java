@@ -128,7 +128,17 @@ class MarkdownSyntaxHighlighter
 			new VisitHandler<>(Emphasis.class, this::visit),
 			new VisitHandler<>(StrongEmphasis.class, this::visit),
 			new VisitHandler<>(FencedCodeBlock.class, this::visit),
-			new VisitHandler<>(IndentedCodeBlock.class, this::visit));
+			new VisitHandler<>(IndentedCodeBlock.class, this::visit))
+		{
+			@Override
+			public void visit(Node node) {
+				VisitHandler<?> handler = myCustomHandlersMap.get(node.getClass());
+				if (handler != null)
+					handler.visit(node);
+
+				visitChildren(node);
+			}
+		};
 		visitor.visit(astRoot);
 
 		// build style spans
