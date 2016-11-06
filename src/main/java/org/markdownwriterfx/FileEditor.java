@@ -136,6 +136,7 @@ class FileEditor
 
 		// bind preview to editor
 		markdownPreviewPane.pathProperty().bind(pathProperty());
+		markdownPreviewPane.markdownTextProperty().bind(markdownEditorPane.markdownTextProperty());
 		markdownPreviewPane.markdownASTProperty().bind(markdownEditorPane.markdownASTProperty());
 		markdownPreviewPane.scrollYProperty().bind(markdownEditorPane.scrollYProperty());
 

@@ -60,7 +60,7 @@ class WebViewPreview
 	}
 
 	@Override
-	public void update(Node astRoot, Path path) {
+	public void update(String markdownText, Node astRoot, Path path) {
 		if (!webView.getEngine().getLoadWorker().isRunning()) {
 			// get window.scrollX and window.scrollY from web engine,
 			// but only no worker is running (in this case the result would be zero)

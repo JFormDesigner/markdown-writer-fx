@@ -33,6 +33,7 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.geometry.Side;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -55,7 +56,7 @@ public class MarkdownPreviewPane
 	private final ASTPreview astPreview = new ASTPreview();
 
 	interface Preview {
-		void update(Node astRoot, Path path);
+		void update(String markdownText, Node astRoot, Path path);
 		void scrollY(double value);
 	}
 
@@ -102,7 +103,7 @@ public class MarkdownPreviewPane
 	}
 
 	private void update() {
-		getActivePreview().update(getMarkdownAST(), getPath());
+		getActivePreview().update(getMarkdownText(), getMarkdownAST(), getPath());
 	}
 
 	private boolean scrollYrunLaterPending;
@@ -123,6 +124,12 @@ public class MarkdownPreviewPane
 	public Path getPath() { return path.get(); }
 	public void setPath(Path path) { this.path.set(path); }
 	public ObjectProperty<Path> pathProperty() { return path; }
+
+	// 'markdownText' property
+	private final SimpleStringProperty markdownText = new SimpleStringProperty();
+	public String getMarkdownText() { return markdownText.get(); }
+	public void getMarkdownText(String text) { markdownText.set(text); }
+	public SimpleStringProperty markdownTextProperty() { return markdownText; }
 
 	// 'markdownAST' property
 	private final ObjectProperty<Node> markdownAST = new SimpleObjectProperty<Node>();

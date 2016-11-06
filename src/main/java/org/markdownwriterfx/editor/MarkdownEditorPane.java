@@ -43,6 +43,8 @@ import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.ReadOnlyStringProperty;
+import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -170,6 +172,11 @@ public class MarkdownEditorPane
 	}
 	public ObservableValue<String> markdownProperty() { return textArea.textProperty(); }
 
+	// 'markdownText' property
+	private final ReadOnlyStringWrapper markdownText = new ReadOnlyStringWrapper();
+	public String getMarkdownText() { return markdownText.get(); }
+	public ReadOnlyStringProperty markdownTextProperty() { return markdownText.getReadOnlyProperty(); }
+
 	// 'markdownAST' property
 	private final ReadOnlyObjectWrapper<Node> markdownAST = new ReadOnlyObjectWrapper<>();
 	public Node getMarkdownAST() { return markdownAST.get(); }
@@ -194,6 +201,8 @@ public class MarkdownEditorPane
 	private void textChanged(String newText) {
 		Node astRoot = parseMarkdown(newText);
 		applyHighlighting(astRoot);
+
+		markdownText.set(newText);
 		markdownAST.set(astRoot);
 	}
 

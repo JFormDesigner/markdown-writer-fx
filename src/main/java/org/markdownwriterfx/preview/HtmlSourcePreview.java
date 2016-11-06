@@ -54,7 +54,7 @@ class HtmlSourcePreview
 	}
 
 	@Override
-	public void update(Node astRoot, Path path) {
+	public void update(String markdownText, Node astRoot, Path path) {
 		double scrollTop = textArea.getScrollTop();
 
 		textArea.setText(WebViewPreview.toHtml(astRoot));
