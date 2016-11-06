@@ -8,9 +8,9 @@ repositories {
 }
 
 dependencies {
-	compile group: 'org.fxmisc.richtext', name: 'richtextfx', version: '0.7-M2'
-	compile group: 'com.miglayout', name: 'miglayout-javafx', version: '5.0'
-	compile group: 'de.jensd', name: 'fontawesomefx-fontawesome', version: '4.5.0'
+	compile 'org.fxmisc.richtext:richtextfx:0.7-M2'
+	compile 'com.miglayout:miglayout-javafx:5.0'
+	compile 'de.jensd:fontawesomefx-fontawesome:4.5.0'
 
 	def flexmarkVersion = '0.5.0'
 	compile 'com.vladsch.flexmark:flexmark:' + flexmarkVersion
