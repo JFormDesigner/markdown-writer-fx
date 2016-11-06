@@ -85,6 +85,7 @@ class MarkdownSyntaxHighlighter
 		// misc
 		html,
 		monospace,
+		br,
 	};
 
 	/**
@@ -128,7 +129,8 @@ class MarkdownSyntaxHighlighter
 			new VisitHandler<>(Emphasis.class, this::visit),
 			new VisitHandler<>(StrongEmphasis.class, this::visit),
 			new VisitHandler<>(FencedCodeBlock.class, this::visit),
-			new VisitHandler<>(IndentedCodeBlock.class, this::visit))
+			new VisitHandler<>(IndentedCodeBlock.class, this::visit),
+			new VisitHandler<>(HardLineBreak.class, this::visit))
 		{
 			@Override
 			public void visit(Node node) {
@@ -260,6 +262,10 @@ class MarkdownSyntaxHighlighter
 
 	private void visit(IndentedCodeBlock node) {
 		setStyleClass(node, StyleClass.pre);
+	}
+
+	private void visit(HardLineBreak node) {
+		setStyleClass(node, StyleClass.br);
 	}
 
 /*TODO

@@ -144,6 +144,11 @@
 	-fx-font-family: monospace;
 	-fx-fill: derive(crimson, -50%);
 }
+
 .markdown-editor .monospace {
 	-fx-font-family: monospace;
+}
+
+.markdown-editor .br {
+	-rtfx-background-color: #c8eafb;
 }
