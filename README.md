@@ -1,4 +1,4 @@
-![Markdown Writer FX](images/logo.png)
+![Markdown Writer FX](images/markdownwriterfx.png)
 
 Markdown Writer FX
 ==================

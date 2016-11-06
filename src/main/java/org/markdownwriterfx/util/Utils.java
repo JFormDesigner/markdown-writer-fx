@@ -47,6 +47,10 @@ public class Utils
 		return o1.equals(o2);
 	}
 
+	public static String defaultIfEmpty(String value, String defaultValue) {
+		return isNullOrEmpty(value) ? defaultValue : value;
+	}
+
 	public static boolean isNullOrEmpty(String s) {
 		return s == null || s.isEmpty();
 	}

@@ -34,8 +34,10 @@ import java.util.SortedMap;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import org.markdownwriterfx.Messages;
 import org.markdownwriterfx.util.Item;
+import org.markdownwriterfx.util.Utils;
 import org.tbee.javafx.scene.layout.fxml.MigPane;
 
 /**
@@ -58,6 +60,8 @@ public class GeneralOptionsPane
 			new Item<String>( Messages.get("GeneralOptionsPane.sepUnix"), "\n" ));
 
 		encodingField.getItems().addAll(getAvailableEncodings());
+
+		markdownFileExtensionsField.setPromptText(Options.DEF_MARKDOWN_FILE_EXTENSIONS);
 	}
 
 	private Collection<Item<String>> getAvailableEncodings() {
@@ -73,6 +77,7 @@ public class GeneralOptionsPane
 	void load() {
 		lineSeparatorField.setValue(new Item<String>(Options.getLineSeparator(), Options.getLineSeparator()));
 		encodingField.setValue(new Item<String>(Options.getEncoding(), Options.getEncoding()));
+		markdownFileExtensionsField.setText(Options.getMarkdownFileExtensions());
 
 		showWhitespaceCheckBox.setSelected(Options.isShowWhitespace());
 	}
@@ -80,6 +85,9 @@ public class GeneralOptionsPane
 	void save() {
 		Options.setLineSeparator(lineSeparatorField.getValue().value);
 		Options.setEncoding(encodingField.getValue().value);
+		Options.setMarkdownFileExtensions(Utils.defaultIfEmpty(
+				markdownFileExtensionsField.getText().trim(),
+				Options.DEF_MARKDOWN_FILE_EXTENSIONS));
 
 		Options.setShowWhitespace(showWhitespaceCheckBox.isSelected());
 	}
@@ -91,11 +99,13 @@ public class GeneralOptionsPane
 		Label lineSeparatorLabel2 = new Label();
 		Label encodingLabel = new Label();
 		encodingField = new ComboBox<>();
+		Label markdownFileExtensionsLabel = new Label();
+		markdownFileExtensionsField = new TextField();
 		showWhitespaceCheckBox = new CheckBox();
 
 		//======== this ========
-		setCols("[fill][fill][fill]");
-		setRows("[][]para[]");
+		setCols("[fill][fill][grow,fill]");
+		setRows("[][][]para[]");
 
 		//---- lineSeparatorLabel ----
 		lineSeparatorLabel.setText(Messages.get("GeneralOptionsPane.lineSeparatorLabel.text"));
@@ -116,19 +126,27 @@ public class GeneralOptionsPane
 		encodingField.setVisibleRowCount(20);
 		add(encodingField, "cell 1 1");
 
+		//---- markdownFileExtensionsLabel ----
+		markdownFileExtensionsLabel.setText(Messages.get("GeneralOptionsPane.markdownFileExtensionsLabel.text"));
+		markdownFileExtensionsLabel.setMnemonicParsing(true);
+		add(markdownFileExtensionsLabel, "cell 0 2");
+		add(markdownFileExtensionsField, "cell 1 2 2 1");
+
 		//---- showWhitespaceCheckBox ----
 		showWhitespaceCheckBox.setText(Messages.get("GeneralOptionsPane.showWhitespaceCheckBox.text"));
-		add(showWhitespaceCheckBox, "cell 0 2 3 1,growx 0,alignx left");
+		add(showWhitespaceCheckBox, "cell 0 3 3 1,alignx left,growx 0");
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 
 		// TODO set this in JFormDesigner as soon as it supports labelFor
 		lineSeparatorLabel.setLabelFor(lineSeparatorField);
 		encodingLabel.setLabelFor(encodingField);
+		markdownFileExtensionsLabel.setLabelFor(markdownFileExtensionsField);
 	}
 
 	// JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
 	private ComboBox<Item<String>> lineSeparatorField;
 	private ComboBox<Item<String>> encodingField;
+	private TextField markdownFileExtensionsField;
 	private CheckBox showWhitespaceCheckBox;
 	// JFormDesigner - End of variables declaration  //GEN-END:variables
 }

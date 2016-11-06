@@ -43,6 +43,8 @@ import org.markdownwriterfx.util.Utils;
  */
 public class Options
 {
+	public static final String DEF_MARKDOWN_FILE_EXTENSIONS = "*.md,*.markdown,*.txt";
+
 	private static Preferences options;
 
 	public static void load(Preferences options) {
@@ -50,6 +52,7 @@ public class Options
 
 		setLineSeparator(options.get("lineSeparator", null));
 		setEncoding(options.get("encoding", null));
+		setMarkdownFileExtensions(options.get("markdownFileExtensions", DEF_MARKDOWN_FILE_EXTENSIONS));
 		setMarkdownExtensions(Utils.getPrefsStrings(options, "markdownExtensions"));
 		setShowWhitespace(options.getBoolean("showWhitespace", false));
 	}
@@ -57,6 +60,7 @@ public class Options
 	public static void save() {
 		Utils.putPrefs(options, "lineSeparator", getLineSeparator(), null);
 		Utils.putPrefs(options, "encoding", getEncoding(), null);
+		Utils.putPrefs(options, "markdownFileExtensions", getMarkdownFileExtensions(), DEF_MARKDOWN_FILE_EXTENSIONS);
 		Utils.putPrefsStrings(options, "markdownExtensions", getMarkdownExtensions());
 		Utils.putPrefsBoolean(options, "showWhitespace", isShowWhitespace(), false);
 	}
@@ -72,6 +76,12 @@ public class Options
 	public static String getEncoding() { return encoding.get(); }
 	public static void setEncoding(String encoding) { Options.encoding.set(encoding); }
 	public static StringProperty encodingProperty() { return encoding; }
+
+	// 'markdownFileExtensions' property
+	private static final StringProperty markdownFileExtensions = new SimpleStringProperty();
+	public static String getMarkdownFileExtensions() { return markdownFileExtensions.get(); }
+	public static void setMarkdownFileExtensions(String markdownFileExtensions) { Options.markdownFileExtensions.set(markdownFileExtensions); }
+	public static StringProperty markdownFileExtensionsProperty() { return markdownFileExtensions; }
 
 	// 'markdownExtensions' property
 	private static final ObjectProperty<String[]> markdownExtensions = new SimpleObjectProperty<>(new String[0]);

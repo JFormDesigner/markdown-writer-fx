@@ -49,6 +49,7 @@ import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabClosingPolicy;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
+import org.markdownwriterfx.options.Options;
 import org.markdownwriterfx.util.Utils;
 
 /**
@@ -297,10 +298,12 @@ class FileEditorTabPane
 	}
 
 	private FileChooser createFileChooser(String title) {
+		String[] extensions = Options.getMarkdownFileExtensions().trim().split("\\s*,\\s*");
+
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle(title);
 		fileChooser.getExtensionFilters().addAll(
-			new ExtensionFilter(Messages.get("FileEditorTabPane.chooser.markdownFilesFilter"), "*.md", "*.markdown", "*.txt"),
+			new ExtensionFilter(Messages.get("FileEditorTabPane.chooser.markdownFilesFilter"), extensions),
 			new ExtensionFilter(Messages.get("FileEditorTabPane.chooser.allFilesFilter"), "*.*"));
 
 		String lastDirectory = MarkdownWriterFXApp.getState().get("lastDirectory", null);
