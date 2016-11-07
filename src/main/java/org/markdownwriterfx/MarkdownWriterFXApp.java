@@ -27,10 +27,15 @@
 
 package org.markdownwriterfx;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.prefs.Preferences;
 import javafx.application.Application;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import org.fxmisc.cssfx.CSSFX;
+import org.fxmisc.cssfx.api.URIToPathConverter;
 import org.markdownwriterfx.options.Options;
 import org.markdownwriterfx.util.StageState;
 
@@ -56,6 +61,23 @@ public class MarkdownWriterFXApp
 	public void start(Stage primaryStage) throws Exception {
 		app = this;
 		Options.load(getOptions());
+
+		// enable auto-reloading CSS files (start with -Dcssfx=true)
+		if (Boolean.getBoolean("cssfx")) {
+//			System.setProperty("cssfx.log", "true");
+//			System.setProperty("cssfx.log.level", "DEBUG");
+
+			CSSFX.addConverter(new URIToPathConverter() {
+				@Override
+				public Path convert(String uri) {
+					if (uri.startsWith("jar:") || uri.startsWith("file:"))
+						return null;
+
+					Path p = Paths.get("bin", uri);
+					return Files.exists(p) ? p : null;
+				}
+			}).start();
+		}
 
 		mainWindow = new MainWindow();
 
