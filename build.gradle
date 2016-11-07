@@ -12,7 +12,7 @@ dependencies {
 	compile 'com.miglayout:miglayout-javafx:5.0'
 	compile 'de.jensd:fontawesomefx-fontawesome:4.5.0'
 
-	def flexmarkVersion = '0.5.0'
+	def flexmarkVersion = '0.6.0'
 	compile 'com.vladsch.flexmark:flexmark:' + flexmarkVersion
 	compile 'com.vladsch.flexmark:flexmark-ext-abbreviation:' + flexmarkVersion
 	compile 'com.vladsch.flexmark:flexmark-ext-anchorlink:' + flexmarkVersion
