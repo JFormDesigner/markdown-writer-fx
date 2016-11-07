@@ -51,6 +51,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
@@ -274,22 +275,22 @@ class MainWindow
 				insertUnorderedListAction,
 				insertOrderedListAction);
 
-		ToolBar rightToolBar = ActionUtils.createToolBar(
+		// horizontal spacer
+		Region spacer = new Region();
+		HBox.setHgrow(spacer, Priority.ALWAYS);
+		toolBar.getItems().add(spacer);
+
+		// preview actions
+		Node[] previewButtons = ActionUtils.createToolBarButtons(
 				viewPreviewAction,
 				viewHtmlSourceAction,
 				viewMarkdownAstAction);
-
-		// group preview actions
 		ToggleGroup viewGroup = new ToggleGroup();
-		for (Node n : rightToolBar.getItems()) {
-			if (n instanceof ToggleButton)
-				((ToggleButton)n).setToggleGroup(viewGroup);
-		}
+		for (Node n : previewButtons)
+			((ToggleButton)n).setToggleGroup(viewGroup);
+		toolBar.getItems().addAll(previewButtons);
 
-		HBox toolBarPane = new HBox(toolBar, rightToolBar);
-		HBox.setHgrow(toolBar, Priority.ALWAYS);
-
-		return new VBox(menuBar, toolBarPane);
+		return new VBox(menuBar, toolBar);
 	}
 
 	private MarkdownEditorPane getActiveEditor() {
