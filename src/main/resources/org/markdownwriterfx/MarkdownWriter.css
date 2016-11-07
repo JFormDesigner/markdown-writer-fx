@@ -69,3 +69,42 @@
 	-fx-background-color: red;
 	-fx-opacity: 1.0;
 }
+
+
+/*---- scroll bars ----*/
+
+/* make horizontal increment/decrement buttons square */
+.scroll-bar:horizontal > .increment-button, 
+.scroll-bar:horizontal > .decrement-button {
+	-fx-padding: 0.25em 0.416667em; /* 3 5 */
+	-fx-background-insets: 0;
+}
+
+/* make vertical increment/decrement buttons square */
+.scroll-bar:vertical > .increment-button, 
+.scroll-bar:vertical > .decrement-button {
+	-fx-padding: 0.416667em 0.25em; /* 5 3 */
+	-fx-background-insets: 0;
+}
+
+.scroll-bar > .increment-button:hover, 
+.scroll-bar > .decrement-button:hover {
+	-fx-background-color: #ddd;
+}
+.scroll-bar > .increment-button:pressed, 
+.scroll-bar > .decrement-button:pressed {
+	-fx-background-color: #bbb;
+}
+
+/* make thumb flat */
+.scroll-bar > .thumb {
+	-fx-background-color: #ccc;
+	-fx-background-insets: 0;
+	-fx-background-radius: 0;
+}
+.scroll-bar > .thumb:hover {
+	-fx-background-color: #aaa;
+}
+.scroll-bar > .thumb:pressed {
+	-fx-background-color: #888;
+}
