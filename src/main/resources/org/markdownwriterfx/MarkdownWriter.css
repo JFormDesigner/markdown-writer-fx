@@ -108,3 +108,28 @@
 .scroll-bar > .thumb:pressed {
 	-fx-background-color: #888;
 }
+
+
+/*---- main window ----*/
+
+/* 1px width split pane */
+.main .split-pane > .split-pane-divider {
+    -fx-background-color: #aaa;
+    -fx-padding: 0 1 0 0;
+}
+/* make (invisible) split pane grabber larger */
+.main .split-pane:horizontal .split-pane-divider .horizontal-grabber,
+.main .split-pane:vertical .split-pane-divider .vertical-grabber {
+    -fx-padding: 0.25em;
+}
+
+/* remove scroll pane borders */
+.main .scroll-pane {
+    -fx-padding: 0;
+}
+
+/* remove text area round edges */
+.main .text-input {
+	-fx-background-insets: 0;
+	-fx-background-radius: 0;
+}
