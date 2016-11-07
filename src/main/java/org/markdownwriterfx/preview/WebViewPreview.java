@@ -29,13 +29,10 @@ package org.markdownwriterfx.preview;
 
 import java.nio.file.Path;
 import javafx.scene.web.WebView;
-import org.markdownwriterfx.util.FlexmarkUtils;
-import com.vladsch.flexmark.html.HtmlRenderer;
-import com.vladsch.flexmark.ast.Node;
+import org.markdownwriterfx.preview.MarkdownPreviewPane.Renderer;
 
 /**
  * WebView preview.
- * Serializes the AST tree to HTML and shows it in a WebView.
  *
  * @author Karl Tauber
  */
@@ -51,17 +48,8 @@ class WebViewPreview
 		return webView;
 	}
 
-	static String toHtml(Node astRoot) {
-		if (astRoot == null)
-			return "";
-		HtmlRenderer renderer = HtmlRenderer.builder()
-				.extensions(FlexmarkUtils.getExtensions())
-				.build();
-		return renderer.render(astRoot);
-	}
-
 	@Override
-	public void update(String markdownText, Node astRoot, Path path) {
+	public void update(Renderer renderer, Path path) {
 		if (!webView.getEngine().getLoadWorker().isRunning()) {
 			// get window.scrollX and window.scrollY from web engine,
 			// but only no worker is running (in this case the result would be zero)
@@ -86,7 +74,7 @@ class WebViewPreview
 			+ base
 			+ "</head>\n"
 			+ "<body" + scrollScript + ">\n"
-			+ toHtml(astRoot)
+			+ renderer.getHtml()
 			+ "</body>\n"
 			+ "</html>");
 	}

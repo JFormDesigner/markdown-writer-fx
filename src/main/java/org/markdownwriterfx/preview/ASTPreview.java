@@ -30,11 +30,11 @@ package org.markdownwriterfx.preview;
 import java.nio.file.Path;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.TextArea;
-import com.vladsch.flexmark.ast.Node;
+import org.markdownwriterfx.preview.MarkdownPreviewPane.Renderer;
 import org.markdownwriterfx.util.Utils;
 
 /**
- * flexmark-java AST preview.
+ * Markdown AST preview.
  * Prints the AST tree to a text area.
  *
  * @author Karl Tauber
@@ -55,11 +55,11 @@ class ASTPreview
 	}
 
 	@Override
-	public void update(String markdownText, Node astRoot, Path path) {
+	public void update(Renderer renderer, Path path) {
 		double scrollTop = textArea.getScrollTop();
 		double scrollLeft = textArea.getScrollLeft();
 
-		textArea.setText(printTree(astRoot));
+		textArea.setText(renderer.getAST());
 
 		textArea.setScrollTop(scrollTop);
 		textArea.setScrollLeft(scrollLeft);
@@ -74,24 +74,5 @@ class ASTPreview
 
 		double maxValue = vScrollBar.maxProperty().get();
 		vScrollBar.setValue(maxValue * value);
-	}
-
-	private String printTree(Node astRoot) {
-		if (astRoot == null)
-			return "";
-
-		StringBuilder buf = new StringBuilder(100);
-		printNode(buf, "", astRoot);
-		return buf.toString().replace(Node.SPLICE, "...");
-	}
-
-	private void printNode(StringBuilder buf, String indent, Node node) {
-		buf.append(indent);
-		node.astString(buf, true);
-		buf.append('\n');
-
-		indent += "    ";
-		for (Node child = node.getFirstChild(); child != null; child = child.getNext())
-			printNode(buf, indent, child);
 	}
 }

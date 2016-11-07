@@ -51,22 +51,27 @@ public class MarkdownPreviewPane
 	private final HtmlSourcePreview htmlSourcePreview = new HtmlSourcePreview();
 	private final ASTPreview astPreview = new ASTPreview();
 
+	private final Renderer activeRenderer;
 	private Preview activePreview;
+
+	interface Renderer {
+		void update(String markdownText, Node astRoot);
+		String getHtml();
+		String getAST();
+	}
 
 	interface Preview {
 		javafx.scene.Node getNode();
-		void update(String markdownText, Node astRoot, Path path);
+		void update(Renderer fenderer, Path path);
 		void scrollY(double value);
 	}
 
 	public MarkdownPreviewPane() {
-		path.addListener((observable, oldValue, newValue) -> {
-			update();
-		});
+		activeRenderer = new FlexmarkPreviewRenderer();
 
-		markdownAST.addListener((observable, oldValue, newValue) -> {
-			update();
-		});
+		path.addListener((observable, oldValue, newValue) -> update() );
+		markdownText.addListener((observable, oldValue, newValue) -> update() );
+		markdownAST.addListener((observable, oldValue, newValue) -> update() );
 
 		scrollY.addListener((observable, oldValue, newValue) -> {
 			scrollY();
@@ -95,9 +100,22 @@ public class MarkdownPreviewPane
 		scrollY();
 	}
 
+	private boolean updateRunLaterPending;
 	private void update() {
-		if (activePreview != null)
-			activePreview.update(getMarkdownText(), getMarkdownAST(), getPath());
+		if (activePreview == null)
+			return;
+
+		// avoid too many (and useless) runLater() invocations
+		if (updateRunLaterPending)
+			return;
+		updateRunLaterPending = true;
+
+		Platform.runLater(() -> {
+			updateRunLaterPending = false;
+
+			activeRenderer.update(getMarkdownText(), getMarkdownAST());
+			activePreview.update(activeRenderer, getPath());
+		});
 	}
 
 	private boolean scrollYrunLaterPending;
