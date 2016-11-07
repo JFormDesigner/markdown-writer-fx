@@ -49,7 +49,8 @@ class HtmlSourcePreview
 		textArea.setWrapText(true);
 	}
 
-	javafx.scene.Node getNode() {
+	@Override
+	public javafx.scene.Node getNode() {
 		return textArea;
 	}
 

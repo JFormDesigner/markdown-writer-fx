@@ -10,7 +10,7 @@ repositories {
 dependencies {
 	compile 'org.fxmisc.richtext:richtextfx:0.7-M2'
 	compile 'com.miglayout:miglayout-javafx:5.0'
-	compile 'de.jensd:fontawesomefx-fontawesome:4.5.0'
+	compile 'de.jensd:fontawesomefx-fontawesome:4.7.0'
 
 	def flexmarkVersion = '0.6.0'
 	compile 'com.vladsch.flexmark:flexmark:' + flexmarkVersion

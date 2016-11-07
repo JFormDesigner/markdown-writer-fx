@@ -34,53 +34,32 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.geometry.Side;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
-import javafx.scene.control.TabPane.TabClosingPolicy;
+import javafx.scene.layout.BorderPane;
 import com.vladsch.flexmark.ast.Node;
-import org.markdownwriterfx.Messages;
 
 /**
  * Markdown preview pane.
- *
- * Uses flexmark-java AST.
  *
  * @author Karl Tauber
  */
 public class MarkdownPreviewPane
 {
-	private final TabPane tabPane = new TabPane();
+	public enum Type { None, Web, Source, Ast };
+
+	private final BorderPane pane = new BorderPane();
 	private final WebViewPreview webViewPreview = new WebViewPreview();
 	private final HtmlSourcePreview htmlSourcePreview = new HtmlSourcePreview();
 	private final ASTPreview astPreview = new ASTPreview();
 
+	private Preview activePreview;
+
 	interface Preview {
+		javafx.scene.Node getNode();
 		void update(String markdownText, Node astRoot, Path path);
 		void scrollY(double value);
 	}
 
 	public MarkdownPreviewPane() {
-		tabPane.setSide(Side.BOTTOM);
-		tabPane.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
-
-		Tab webViewTab = new Tab(Messages.get("MarkdownPreviewPane.webViewTab"), webViewPreview.getNode());
-		webViewTab.setUserData(webViewPreview);
-		tabPane.getTabs().add(webViewTab);
-
-		Tab htmlSourceTab = new Tab(Messages.get("MarkdownPreviewPane.htmlSourceTab"), htmlSourcePreview.getNode());
-		htmlSourceTab.setUserData(htmlSourcePreview);
-		tabPane.getTabs().add(htmlSourceTab);
-
-		Tab astTab = new Tab(Messages.get("MarkdownPreviewPane.astTab"), astPreview.getNode());
-		astTab.setUserData(astPreview);
-		tabPane.getTabs().add(astTab);
-
-		tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
-			update();
-			scrollY();
-		});
-
 		path.addListener((observable, oldValue, newValue) -> {
 			update();
 		});
@@ -95,19 +74,37 @@ public class MarkdownPreviewPane
 	}
 
 	public javafx.scene.Node getNode() {
-		return tabPane;
+		return pane;
 	}
 
-	private Preview getActivePreview() {
-		return (Preview) tabPane.getSelectionModel().getSelectedItem().getUserData();
+	public void setType(Type type) {
+		Preview preview;
+		switch (type) {
+			case Web:		preview = webViewPreview; break;
+			case Source:	preview = htmlSourcePreview; break;
+			case Ast:		preview = astPreview; break;
+			default:		preview = null; break;
+		}
+		if (activePreview == preview)
+			return;
+
+		activePreview = preview;
+		pane.setCenter((preview != null) ? preview.getNode() : null);
+
+		update();
+		scrollY();
 	}
 
 	private void update() {
-		getActivePreview().update(getMarkdownText(), getMarkdownAST(), getPath());
+		if (activePreview != null)
+			activePreview.update(getMarkdownText(), getMarkdownAST(), getPath());
 	}
 
 	private boolean scrollYrunLaterPending;
 	private void scrollY() {
+		if (activePreview == null)
+			return;
+
 		// avoid too many (and useless) runLater() invocations
 		if (scrollYrunLaterPending)
 			return;
@@ -115,7 +112,7 @@ public class MarkdownPreviewPane
 
 		Platform.runLater(() -> {
 			scrollYrunLaterPending = false;
-			getActivePreview().scrollY(getScrollY());
+			activePreview.scrollY(getScrollY());
 		});
 	}
 

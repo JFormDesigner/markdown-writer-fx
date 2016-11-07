@@ -49,7 +49,8 @@ class ASTPreview
 		textArea.setEditable(false);
 	}
 
-	javafx.scene.Node getNode() {
+	@Override
+	public javafx.scene.Node getNode() {
 		return textArea;
 	}
 
@@ -76,6 +77,9 @@ class ASTPreview
 	}
 
 	private String printTree(Node astRoot) {
+		if (astRoot == null)
+			return "";
+
 		StringBuilder buf = new StringBuilder(100);
 		printNode(buf, "", astRoot);
 		return buf.toString().replace(Node.SPLICE, "...");

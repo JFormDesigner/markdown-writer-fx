@@ -43,10 +43,14 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.ToolBar;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
@@ -120,6 +124,14 @@ class MainWindow
 		Action editRedoAction = new Action(Messages.get("MainWindow.editRedoAction"), "Shortcut+Y", REPEAT,
 				e -> getActiveEditor().redo(),
 				createActiveBooleanProperty(FileEditor::canRedoProperty).not());
+
+		// View actions
+		Action viewPreviewAction = new Action(Messages.get("MainWindow.viewPreviewAction"), null, EYE,
+				null, null, fileEditorTabPane.previewVisible);
+		Action viewHtmlSourceAction = new Action(Messages.get("MainWindow.viewHtmlSourceAction"), null, HTML5,
+				null, null, fileEditorTabPane.htmlSourceVisible);
+		Action viewMarkdownAstAction = new Action(Messages.get("MainWindow.viewMarkdownAstAction"), null, SITEMAP,
+				null, null, fileEditorTabPane.markdownAstVisible);
 
 		// Insert actions
 		Action insertBoldAction = new Action(Messages.get("MainWindow.insertBoldAction"), "Shortcut+B", BOLD,
@@ -202,6 +214,11 @@ class MainWindow
 				editUndoAction,
 				editRedoAction);
 
+		Menu viewMenu = ActionUtils.createMenu(Messages.get("MainWindow.viewMenu"),
+				viewPreviewAction,
+				viewHtmlSourceAction,
+				viewMarkdownAstAction);
+
 		Menu insertMenu = ActionUtils.createMenu(Messages.get("MainWindow.insertMenu"),
 				insertBoldAction,
 				insertItalicAction,
@@ -230,7 +247,7 @@ class MainWindow
 		Menu helpMenu = ActionUtils.createMenu(Messages.get("MainWindow.helpMenu"),
 				helpAboutAction);
 
-		menuBar = new MenuBar(fileMenu, editMenu, insertMenu, toolsMenu, helpMenu);
+		menuBar = new MenuBar(fileMenu, editMenu, viewMenu, insertMenu, toolsMenu, helpMenu);
 
 
 		//---- ToolBar ----
@@ -257,7 +274,22 @@ class MainWindow
 				insertUnorderedListAction,
 				insertOrderedListAction);
 
-		return new VBox(menuBar, toolBar);
+		ToolBar rightToolBar = ActionUtils.createToolBar(
+				viewPreviewAction,
+				viewHtmlSourceAction,
+				viewMarkdownAstAction);
+
+		// group preview actions
+		ToggleGroup viewGroup = new ToggleGroup();
+		for (Node n : rightToolBar.getItems()) {
+			if (n instanceof ToggleButton)
+				((ToggleButton)n).setToggleGroup(viewGroup);
+		}
+
+		HBox toolBarPane = new HBox(toolBar, rightToolBar);
+		HBox.setHgrow(toolBar, Priority.ALWAYS);
+
+		return new VBox(menuBar, toolBarPane);
 	}
 
 	private MarkdownEditorPane getActiveEditor() {

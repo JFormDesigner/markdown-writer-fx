@@ -46,7 +46,8 @@ class WebViewPreview
 	private int lastScrollX;
 	private int lastScrollY;
 
-	javafx.scene.Node getNode() {
+	@Override
+	public javafx.scene.Node getNode() {
 		return webView;
 	}
 

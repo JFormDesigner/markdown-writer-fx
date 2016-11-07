@@ -32,10 +32,12 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.Preferences;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -63,6 +65,10 @@ class FileEditorTabPane
 	private final TabPane tabPane;
 	private final ReadOnlyObjectWrapper<FileEditor> activeFileEditor = new ReadOnlyObjectWrapper<>();
 	private final ReadOnlyBooleanWrapper anyFileEditorModified = new ReadOnlyBooleanWrapper();
+
+	final BooleanProperty previewVisible = new SimpleBooleanProperty(true);
+	final BooleanProperty htmlSourceVisible = new SimpleBooleanProperty();
+	final BooleanProperty markdownAstVisible = new SimpleBooleanProperty();
 
 	FileEditorTabPane(MainWindow mainWindow) {
 		this.mainWindow = mainWindow;
@@ -123,7 +129,7 @@ class FileEditorTabPane
 	}
 
 	private FileEditor createFileEditor(Path path) {
-		FileEditor fileEditor = new FileEditor(mainWindow, path);
+		FileEditor fileEditor = new FileEditor(mainWindow, this, path);
 		fileEditor.getTab().setOnCloseRequest(e -> {
 			if (!canCloseEditor(fileEditor))
 				e.consume();
@@ -320,6 +326,11 @@ class FileEditorTabPane
 
 	private void restoreState() {
 		Preferences state = MarkdownWriterFXApp.getState();
+
+		previewVisible.set(state.getBoolean("previewVisible", true));
+		htmlSourceVisible.set(state.getBoolean("htmlSourceVisible", false));
+		markdownAstVisible.set(state.getBoolean("markdownAstVisible", false));
+
 		String[] fileNames = Utils.getPrefsStrings(state, "file");
 		String activeFileName = state.get("activeFile", null);
 
@@ -356,5 +367,9 @@ class FileEditorTabPane
 			state.put("activeFile", activeEditor.getPath().toString());
 		else
 			state.remove("activeFile");
+
+		Utils.putPrefsBoolean(state, "previewVisible", previewVisible.get(), true);
+		Utils.putPrefsBoolean(state, "htmlSourceVisible", htmlSourceVisible.get(), false);
+		Utils.putPrefsBoolean(state, "markdownAstVisible", markdownAstVisible.get(), false);
 	}
 }
