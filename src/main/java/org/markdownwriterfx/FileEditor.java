@@ -63,12 +63,14 @@ class FileEditor
 {
 	private final MainWindow mainWindow;
 	private final FileEditorTabPane fileEditorTabPane;
-	private final ChangeListener<Boolean> previewTypeListener;
+	@SuppressWarnings("rawtypes")
+	private final ChangeListener previewTypeListener;
 	private final Tab tab = new Tab();
 	private SplitPane splitPane;
 	private MarkdownEditorPane markdownEditorPane;
 	private MarkdownPreviewPane markdownPreviewPane;
 
+	@SuppressWarnings("unchecked")
 	FileEditor(MainWindow mainWindow, FileEditorTabPane fileEditorTabPane, Path path) {
 		this.mainWindow = mainWindow;
 		this.fileEditorTabPane = fileEditorTabPane;
@@ -87,10 +89,12 @@ class FileEditor
 			if(tab.isSelected()) {
 				Platform.runLater(() -> activated());
 
+				fileEditorTabPane.rendererType.addListener(previewTypeListener);
 				fileEditorTabPane.previewVisible.addListener(previewTypeListener);
 				fileEditorTabPane.htmlSourceVisible.addListener(previewTypeListener);
 				fileEditorTabPane.markdownAstVisible.addListener(previewTypeListener);
 			} else {
+				fileEditorTabPane.rendererType.removeListener(previewTypeListener);
 				fileEditorTabPane.previewVisible.removeListener(previewTypeListener);
 				fileEditorTabPane.htmlSourceVisible.removeListener(previewTypeListener);
 				fileEditorTabPane.markdownAstVisible.removeListener(previewTypeListener);
@@ -153,6 +157,7 @@ class FileEditor
 			if (fileEditorTabPane.markdownAstVisible.get())
 				previewType = MarkdownPreviewPane.Type.Ast;
 
+			markdownPreviewPane.setRendererType(fileEditorTabPane.rendererType.get());
 			markdownPreviewPane.setType(previewType);
 
 			// add/remove previewPane from splitPane

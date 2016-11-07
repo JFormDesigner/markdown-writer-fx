@@ -7,7 +7,8 @@ An open source [Markdown] editor written in JavaFX 8.
 
 ![Markdown Writer FX Screenshot](images/screenshot.png)
 
-For Markdown processing it uses [flexmark-java], a Java implementation of [CommonMark].
+For Markdown rendering it uses [commonmark-java] or [flexmark-java],
+two Java implementations of the [CommonMark] specification.
 
 Features
 --------

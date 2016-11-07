@@ -32,12 +32,14 @@
 }
 
 .tool-bar .button,
-.tool-bar .toggle-button {
+.tool-bar .toggle-button,
+.tool-bar .choice-box {
 	-fx-background-color: transparent;
 }
 
 .tool-bar .button:hover,
-.tool-bar .toggle-button:hover {
+.tool-bar .toggle-button:hover,
+.tool-bar .choice-box:hover {
 	-fx-background-color: -fx-shadow-highlight-color, -fx-outer-border, -fx-inner-border, -fx-body-color;
 	-fx-color: -fx-hover-base;
 }

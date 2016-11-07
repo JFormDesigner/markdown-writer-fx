@@ -39,6 +39,7 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.control.Menu;
@@ -57,6 +58,7 @@ import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import org.markdownwriterfx.editor.MarkdownEditorPane;
 import org.markdownwriterfx.options.OptionsDialog;
+import org.markdownwriterfx.preview.MarkdownPreviewPane.RendererType;
 import org.markdownwriterfx.util.Action;
 import org.markdownwriterfx.util.ActionUtils;
 import static de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon.*;
@@ -279,6 +281,14 @@ class MainWindow
 		Region spacer = new Region();
 		HBox.setHgrow(spacer, Priority.ALWAYS);
 		toolBar.getItems().add(spacer);
+
+		// preview renderer type choice box
+		ChoiceBox<RendererType> previewRenderer = new ChoiceBox<>();
+		previewRenderer.setFocusTraversable(false);
+		previewRenderer.getItems().addAll(RendererType.values());
+		previewRenderer.getSelectionModel().select(fileEditorTabPane.rendererType.get());
+		toolBar.getItems().add(previewRenderer);
+		fileEditorTabPane.rendererType.bind(previewRenderer.getSelectionModel().selectedItemProperty());
 
 		// preview actions
 		Node[] previewButtons = ActionUtils.createToolBarButtons(

@@ -44,6 +44,7 @@ import com.vladsch.flexmark.ast.Node;
  */
 public class MarkdownPreviewPane
 {
+	public enum RendererType { CommonMark, FlexMark };
 	public enum Type { None, Web, Source, Ast };
 
 	private final BorderPane pane = new BorderPane();
@@ -51,7 +52,8 @@ public class MarkdownPreviewPane
 	private final HtmlSourcePreview htmlSourcePreview = new HtmlSourcePreview();
 	private final ASTPreview astPreview = new ASTPreview();
 
-	private final Renderer activeRenderer;
+	private RendererType activeRendererType;
+	private Renderer activeRenderer;
 	private Preview activePreview;
 
 	interface Renderer {
@@ -67,8 +69,6 @@ public class MarkdownPreviewPane
 	}
 
 	public MarkdownPreviewPane() {
-		activeRenderer = new FlexmarkPreviewRenderer();
-
 		path.addListener((observable, oldValue, newValue) -> update() );
 		markdownText.addListener((observable, oldValue, newValue) -> update() );
 		markdownAST.addListener((observable, oldValue, newValue) -> update() );
@@ -80,6 +80,21 @@ public class MarkdownPreviewPane
 
 	public javafx.scene.Node getNode() {
 		return pane;
+	}
+
+	public void setRendererType(RendererType rendererType) {
+		if (rendererType == null)
+			rendererType = RendererType.CommonMark;
+
+		if (activeRendererType == rendererType)
+			return;
+		activeRendererType = rendererType;
+		activePreview = null;
+
+		switch (rendererType) {
+			case CommonMark:	activeRenderer = new CommonmarkPreviewRenderer(); break;
+			case FlexMark:		activeRenderer = new FlexmarkPreviewRenderer(); break;
+		}
 	}
 
 	public void setType(Type type) {
