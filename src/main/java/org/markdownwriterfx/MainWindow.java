@@ -78,6 +78,7 @@ class MainWindow
 		fileEditorTabPane = new FileEditorTabPane(this);
 
 		BorderPane borderPane = new BorderPane();
+		borderPane.getStyleClass().add("main");
 		borderPane.setPrefSize(800, 800);
 		borderPane.setTop(createMenuBarAndToolBar());
 		borderPane.setCenter(fileEditorTabPane.getNode());

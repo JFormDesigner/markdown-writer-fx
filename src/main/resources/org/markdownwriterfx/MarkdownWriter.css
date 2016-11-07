@@ -52,3 +52,20 @@
 .tool-bar .toggle-button:selected {
 	-fx-background-color: -fx-pressed-base, -fx-outer-border, -fx-inner-border, -fx-body-color;
 }
+
+
+/*---- main tab pane ----*/
+
+/* hide tab-close-button by default; show it only for selected tab and on hover */
+.main .tab-pane > .tab-header-area > .headers-region > .tab > .tab-container > .tab-close-button {
+	-fx-background-color: transparent;
+}
+.main .tab-pane > .tab-header-area > .headers-region > .tab:selected > .tab-container > .tab-close-button,
+.main .tab-pane > .tab-header-area > .headers-region > .tab:hover > .tab-container > .tab-close-button {
+	-fx-background-color: -fx-mark-color;
+	-fx-opacity: 0.4;
+}
+.main .tab-pane > .tab-header-area > .headers-region > .tab > .tab-container > .tab-close-button:hover {
+	-fx-background-color: red;
+	-fx-opacity: 1.0;
+}
