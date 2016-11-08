@@ -93,6 +93,7 @@ class MarkdownSyntaxHighlighter
 		// misc
 		html,
 		monospace,
+		reference,
 	};
 
 	private static final HashMap<Class<? extends Node>, StyleClass> node2style = new HashMap<>();
@@ -127,6 +128,7 @@ class MarkdownSyntaxHighlighter
 		// misc
 		node2style.put(HtmlBlock.class, StyleClass.html);
 		node2style.put(HtmlInline.class, StyleClass.html);
+		node2style.put(Reference.class, StyleClass.reference);
 	}
 
 	/**

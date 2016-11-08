@@ -160,3 +160,7 @@
 .markdown-editor .monospace {
 	-fx-font-family: monospace;
 }
+
+.markdown-editor .reference {
+	-fx-fill: derive(#4183C4,30%) !important;
+}
