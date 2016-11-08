@@ -25,10 +25,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/*---- menubar ----*/
+
+.menu-bar {
+	-fx-background-color: -fx-outer-border, white;
+	-fx-background-insets: 0 0 0 0, 0 0 1 0;
+}
+
+
 /*---- toolbar ----*/
 
 .tool-bar {
 	-fx-spacing: 0;
+	-fx-background-color: derive(-fx-background,25%);
 }
 
 .tool-bar .button,
