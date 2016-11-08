@@ -30,8 +30,15 @@ package org.markdownwriterfx.editor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import javafx.application.Platform;
 import com.vladsch.flexmark.ast.*;
+import com.vladsch.flexmark.ext.gfm.strikethrough.Strikethrough;
+import com.vladsch.flexmark.ext.gfm.tables.TableBlock;
+import com.vladsch.flexmark.ext.gfm.tables.TableBody;
+import com.vladsch.flexmark.ext.gfm.tables.TableCell;
+import com.vladsch.flexmark.ext.gfm.tables.TableHead;
+import com.vladsch.flexmark.ext.gfm.tables.TableRow;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
@@ -61,6 +68,7 @@ class MarkdownSyntaxHighlighter
 		a,
 		img,
 		code,
+		br,
 
 		// blocks
 		pre,
@@ -78,15 +86,48 @@ class MarkdownSyntaxHighlighter
 		table,
 		thead,
 		tbody,
-		th,
 		tr,
+		th,
 		td,
 
 		// misc
 		html,
 		monospace,
-		br,
 	};
+
+	private static final HashMap<Class<? extends Node>, StyleClass> node2style = new HashMap<>();
+
+	static {
+		// inlines
+		node2style.put(StrongEmphasis.class, StyleClass.strong);
+		node2style.put(Emphasis.class, StyleClass.em);
+		node2style.put(Strikethrough.class, StyleClass.del);
+		node2style.put(Link.class, StyleClass.a);
+		node2style.put(LinkRef.class, StyleClass.a);
+		node2style.put(Image.class, StyleClass.img);
+		node2style.put(Code.class, StyleClass.code);
+		node2style.put(HardLineBreak.class, StyleClass.br);
+
+		// blocks
+		node2style.put(FencedCodeBlock.class, StyleClass.pre);
+		node2style.put(IndentedCodeBlock.class, StyleClass.pre);
+		node2style.put(BlockQuote.class, StyleClass.blockquote);
+
+		// lists
+		node2style.put(BulletList.class, StyleClass.ul);
+		node2style.put(OrderedList.class, StyleClass.ol);
+		node2style.put(ListItem.class, StyleClass.li);
+
+		// tables
+		node2style.put(TableBlock.class, StyleClass.table);
+		node2style.put(TableHead.class, StyleClass.thead);
+		node2style.put(TableBody.class, StyleClass.tbody);
+		node2style.put(TableRow.class, StyleClass.tr);
+
+		// misc
+		node2style.put(HtmlBlock.class, StyleClass.html);
+		node2style.put(HtmlInline.class, StyleClass.html);
+	}
 
 	/**
 	 * style bits (1 << StyleClass.ordinal()) for each character
@@ -116,27 +157,20 @@ class MarkdownSyntaxHighlighter
 
 		// visit all nodes
 		NodeVisitor visitor = new NodeVisitor(
-			new VisitHandler<>(BlockQuote.class, this::visit),
-			new VisitHandler<>(BulletList.class, this::visit),
-			new VisitHandler<>(Code.class, this::visit),
 			new VisitHandler<>(Heading.class, this::visit),
-			new VisitHandler<>(HtmlBlock.class, this::visit),
-			new VisitHandler<>(HtmlInline.class, this::visit),
-			new VisitHandler<>(ListItem.class, this::visit),
-			new VisitHandler<>(OrderedList.class, this::visit),
-			new VisitHandler<>(Image.class, this::visit),
-			new VisitHandler<>(Link.class, this::visit),
-			new VisitHandler<>(Emphasis.class, this::visit),
-			new VisitHandler<>(StrongEmphasis.class, this::visit),
-			new VisitHandler<>(FencedCodeBlock.class, this::visit),
-			new VisitHandler<>(IndentedCodeBlock.class, this::visit),
-			new VisitHandler<>(HardLineBreak.class, this::visit))
+			new VisitHandler<>(TableCell.class, this::visit))
 		{
 			@Override
 			public void visit(Node node) {
-				VisitHandler<?> handler = myCustomHandlersMap.get(node.getClass());
-				if (handler != null)
-					handler.visit(node);
+				Class<? extends Node> nodeClass = node.getClass();
+				StyleClass style = node2style.get(nodeClass);
+				if (style != null)
+					setStyleClass(node, style);
+				else {
+					VisitHandler<?> handler = myCustomHandlersMap.get(nodeClass);
+					if (handler != null)
+						handler.visit(node);
+				}
 
 				visitChildren(node);
 			}
@@ -194,18 +228,6 @@ class MarkdownSyntaxHighlighter
 		return styleClasses;
 	}
 
-	private void visit(BlockQuote node) {
-		setStyleClass(node, StyleClass.blockquote);
-	}
-
-	private void visit(BulletList node) {
-		setStyleClass(node, StyleClass.ul);
-	}
-
-	private void visit(Code node) {
-		setStyleClass(node, StyleClass.code);
-	}
-
 	private void visit(Heading node) {
 		StyleClass styleClass;
 		switch (node.getLevel()) {
@@ -224,75 +246,9 @@ class MarkdownSyntaxHighlighter
 			setStyleClass(node, StyleClass.monospace);
 	}
 
-	private void visit(HtmlBlock node) {
-		setStyleClass(node, StyleClass.html);
+	private void visit(TableCell node) {
+		setStyleClass(node, node.isHeader() ?  StyleClass.th : StyleClass.td);
 	}
-
-	private void visit(HtmlInline node) {
-		setStyleClass(node, StyleClass.html);
-	}
-
-	private void visit(ListItem node) {
-		setStyleClass(node, StyleClass.li);
-	}
-
-	private void visit(OrderedList node) {
-		setStyleClass(node, StyleClass.ol);
-	}
-
-	private void visit(Image node) {
-		setStyleClass(node, StyleClass.img);
-	}
-
-	private void visit(Link node) {
-		setStyleClass(node, StyleClass.a);
-	}
-
-	private void visit(Emphasis node) {
-		setStyleClass(node, StyleClass.em);
-	}
-
-	private void visit(StrongEmphasis node) {
-		setStyleClass(node, StyleClass.strong);
-	}
-
-	private void visit(FencedCodeBlock node) {
-		setStyleClass(node, StyleClass.pre);
-	}
-
-	private void visit(IndentedCodeBlock node) {
-		setStyleClass(node, StyleClass.pre);
-	}
-
-	private void visit(HardLineBreak node) {
-		setStyleClass(node, StyleClass.br);
-	}
-
-/*TODO
-	@Override
-	public void visit(CustomBlock node) {
-		if (node instanceof TableBlock)
-			setStyleClass(node, StyleClass.table);
-
-		super.visit(node);
-	}
-
-	@Override
-	public void visit(CustomNode node) {
-		if (node instanceof Strikethrough)
-			setStyleClass(node, StyleClass.del);
-		else if (node instanceof TableHead)
-			setStyleClass(node, StyleClass.thead);
-		else if (node instanceof TableBody)
-			setStyleClass(node, StyleClass.tbody);
-		else if (node instanceof TableRow)
-			setStyleClass(node, StyleClass.tr);
-		else if (node instanceof TableCell)
-			setStyleClass(node, ((TableCell)node).isHeader() ?  StyleClass.th : StyleClass.td);
-
-		super.visit(node);
-	}
-*/
 
 	private void setStyleClass(Node node, StyleClass styleClass) {
 		int start = node.getStartOffset();

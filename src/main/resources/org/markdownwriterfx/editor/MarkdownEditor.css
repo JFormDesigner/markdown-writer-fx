@@ -77,6 +77,10 @@
 	-fx-fill: #090 !important;
 }
 
+.markdown-editor .br {
+	-rtfx-background-color: #c8eafb;
+}
+
 
 /*---- blocks ----*/
 
@@ -127,11 +131,11 @@
 .markdown-editor .tbody {
 }
 
-.markdown-editor .th {
-	-fx-font-weight: bold;
+.markdown-editor .tr {
 }
 
-.markdown-editor .tr {
+.markdown-editor .th {
+	-fx-font-weight: bold;
 }
 
 .markdown-editor .td {
@@ -147,8 +151,4 @@
 
 .markdown-editor .monospace {
 	-fx-font-family: monospace;
-}
-
-.markdown-editor .br {
-	-rtfx-background-color: #c8eafb;
 }
