@@ -26,6 +26,8 @@
  */
 
 .markdown-editor {
+	-mwfx-inline-background-color: #f6f6f6;
+
 	-fx-font-size: 14px;
 }
 
@@ -54,27 +56,33 @@
 
 .markdown-editor .strong {
 	-fx-font-weight: bold;
+	-rtfx-background-color: -mwfx-inline-background-color;
 }
 
 .markdown-editor .em {
 	-fx-font-style: italic;
+	-rtfx-background-color: -mwfx-inline-background-color;
 }
 
 .markdown-editor .del {
 	-fx-strikethrough: true;
+	-rtfx-background-color: -mwfx-inline-background-color;
 }
 
 .markdown-editor .a {
 	-fx-fill: #4183C4 !important;
+	-rtfx-background-color: -mwfx-inline-background-color;
 }
 
 .markdown-editor .img {
 	-fx-fill: #4183C4 !important;
+	-rtfx-background-color: -mwfx-inline-background-color;
 }
 
 .markdown-editor .code {
 	-fx-font-family: monospace;
 	-fx-fill: #090 !important;
+	-rtfx-background-color: -mwfx-inline-background-color;
 }
 
 .markdown-editor .br {
