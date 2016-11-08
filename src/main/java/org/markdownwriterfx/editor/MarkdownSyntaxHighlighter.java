@@ -137,9 +137,6 @@ class MarkdownSyntaxHighlighter
 	 */
 	private int[] styleClassBits;
 
-	private int lineCount;
-	private int[] linePositions;
-
 	static void highlight(StyleClassedTextArea textArea, Node astRoot) {
 		assert StyleClass.values().length <= 32;
 		assert Platform.isFxApplicationThread();
@@ -153,8 +150,6 @@ class MarkdownSyntaxHighlighter
 	}
 
 	private StyleSpans<Collection<String>> computeHighlighting(Node astRoot, String text) {
-		initLinePositions(text);
-
 		styleClassBits = new int[text.length()];
 
 		// visit all nodes
@@ -199,23 +194,6 @@ class MarkdownSyntaxHighlighter
 		} else
 			spansBuilder.add(Collections.emptyList(), 0);
 		return spansBuilder.create();
-	}
-
-	private void initLinePositions(String text) {
-		lineCount = 1;
-		linePositions = new int[Math.max(text.length() / 20, 10)];
-
-		int newlineIndex = 0;
-		while((newlineIndex = text.indexOf('\n', newlineIndex)) >= 0) {
-			if (lineCount >= linePositions.length) {
-				// grow line positions array
-				int[] linePositions2 = new int[linePositions.length + (linePositions.length >> 1)];
-				System.arraycopy(linePositions, 0, linePositions2, 0, linePositions.length);
-				linePositions = linePositions2;
-			}
-
-			linePositions[lineCount++] = ++newlineIndex;
-		}
 	}
 
 	private Collection<String> toStyleClasses(int bits) {
