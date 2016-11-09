@@ -96,6 +96,7 @@ class MarkdownSyntaxHighlighter
 		reference,
 	};
 
+	private static final HashMap<Long, Collection<String>> styleClassesCache = new HashMap<>();
 	private static final HashMap<Class<? extends Node>, StyleClass> node2style = new HashMap<>();
 
 	static {
@@ -190,11 +191,16 @@ class MarkdownSyntaxHighlighter
 		if (bits == 0)
 			return Collections.emptyList();
 
-		Collection<String> styleClasses = new ArrayList<>(1);
+		Collection<String> styleClasses = styleClassesCache.get(bits);
+		if (styleClasses != null)
+			return styleClasses;
+
+		styleClasses = new ArrayList<>(1);
 		for (StyleClass styleClass : StyleClass.values()) {
 			if ((bits & (1 << styleClass.ordinal())) != 0)
 				styleClasses.add(styleClass.name());
 		}
+		styleClassesCache.put(bits, styleClasses);
 		return styleClasses;
 	}
 
