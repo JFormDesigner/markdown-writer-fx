@@ -52,7 +52,7 @@ import org.fxmisc.richtext.model.StyleSpansBuilder;
  */
 class MarkdownSyntaxHighlighter
 {
-	private enum StyleClass {
+	/*private*/ enum StyleClass {
 		// headers
 		h1,
 		h2,
@@ -131,14 +131,9 @@ class MarkdownSyntaxHighlighter
 		node2style.put(Reference.class, StyleClass.reference);
 	}
 
-	/**
-	 * style bits (1 << StyleClass.ordinal()) for each character
-	 * simplifies implementation of overlapping styles
-	 */
-	private int[] styleClassBits;
+	private ArrayList<StyleRange> styleRanges;
 
 	static void highlight(StyleClassedTextArea textArea, Node astRoot) {
-		assert StyleClass.values().length <= 32;
 		assert Platform.isFxApplicationThread();
 
 		assert textArea.getText().length() == textArea.getLength();
@@ -150,7 +145,7 @@ class MarkdownSyntaxHighlighter
 	}
 
 	private StyleSpans<Collection<String>> computeHighlighting(Node astRoot, String text) {
-		styleClassBits = new int[text.length()];
+		styleRanges = new ArrayList<>();
 
 		// visit all nodes
 		NodeVisitor visitor = new NodeVisitor(
@@ -176,27 +171,22 @@ class MarkdownSyntaxHighlighter
 
 		// build style spans
 		StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
-		if (styleClassBits.length > 0) {
+		if (text.length() > 0) {
 			int spanStart = 0;
-			int previousBits = styleClassBits[0];
-
-			for (int i = 1; i < styleClassBits.length; i++) {
-				int bits = styleClassBits[i];
-				if (bits == previousBits)
-					continue;
-
-				spansBuilder.add(toStyleClasses(previousBits), i - spanStart);
-
-				spanStart = i;
-				previousBits = bits;
+			for (StyleRange range : styleRanges) {
+				if (range.begin > spanStart)
+					spansBuilder.add(Collections.emptyList(), range.begin - spanStart);
+				spansBuilder.add(toStyleClasses(range.styleBits), range.end - range.begin);
+				spanStart = range.end;
 			}
-			spansBuilder.add(toStyleClasses(previousBits), styleClassBits.length - spanStart);
+			if (spanStart < text.length())
+				spansBuilder.add(Collections.emptyList(), text.length() - spanStart);
 		} else
 			spansBuilder.add(Collections.emptyList(), 0);
 		return spansBuilder.create();
 	}
 
-	private Collection<String> toStyleClasses(int bits) {
+	private Collection<String> toStyleClasses(long bits) {
 		if (bits == 0)
 			return Collections.emptyList();
 
@@ -233,9 +223,107 @@ class MarkdownSyntaxHighlighter
 	private void setStyleClass(Node node, StyleClass styleClass) {
 		int start = node.getStartOffset();
 		int end = node.getEndOffset();
-		int styleBit = 1 << styleClass.ordinal();
 
-		for (int i = start; i < end; i++)
-			styleClassBits[i] |= styleBit;
+		addStyledRange(styleRanges, start, end, styleClass);
+	}
+
+	/**
+	 * Adds a style range to styleRanges.
+	 *
+	 * Makes sure that the ranges are sorted by begin index
+	 * and that there are no overlapping ranges.
+	 * In case the added range overlaps, existing ranges are split.
+	 *
+	 * @param begin the beginning index, inclusive
+	 * @param end   the ending index, exclusive
+	 */
+	/*private*/ static void addStyledRange(ArrayList<StyleRange> styleRanges, int begin, int end, StyleClass styleClass) {
+		final int styleBits = 1 << styleClass.ordinal();
+		final int lastIndex = styleRanges.size() - 1;
+
+		// check whether list is empty
+		if (styleRanges.isEmpty()) {
+			styleRanges.add(new StyleRange(begin, end, styleBits));
+			return;
+		}
+
+		// check whether new range is after last range
+		final StyleRange lastRange = styleRanges.get(lastIndex);
+		if (begin >= lastRange.end) {
+			styleRanges.add(new StyleRange(begin, end, styleBits));
+			return;
+		}
+
+		// walk existing ranges from last to first
+		for (int i = lastIndex; i >= 0; i--) {
+			StyleRange range = styleRanges.get(i);
+			if (end <= range.begin) {
+				// new range is before existing range (no overlapping) --> nothing yet to do
+				continue;
+			}
+
+			if (begin >= range.end) {
+				// existing range is before new range (no overlapping)
+
+				if (begin < styleRanges.get(i+1).begin) {
+					// new range starts after this range (may overlap next range) --> add
+					int end2 = Math.min(end, styleRanges.get(i+1).begin);
+					styleRanges.add(i + 1, new StyleRange(begin, end2, styleBits));
+				}
+
+				break; // done
+			}
+
+			if (end > range.end) {
+				// new range ends after this range (may overlap next range) --> add
+				int end2 = (i == lastIndex) ? end : Math.min(end, styleRanges.get(i+1).begin);
+				if (end2 > range.end)
+					styleRanges.add(i + 1, new StyleRange(range.end, end2, styleBits));
+			}
+
+			if (begin < range.end && end > range.begin) {
+				// the new range overlaps the existing range somewhere
+
+				if (begin <= range.begin && end >= range.end) {
+					// new range completely overlaps existing range --> merge style bits
+					styleRanges.set(i, new StyleRange(range.begin, range.end, range.styleBits | styleBits));
+				} else if (begin <= range.begin && end < range.end) {
+					// new range overlaps at the begin with existing range --> split range
+					styleRanges.set(i, new StyleRange(range.begin, end, range.styleBits | styleBits));
+					styleRanges.add(i + 1, new StyleRange(end, range.end, range.styleBits));
+				} else if (begin > range.begin && end >= range.end) {
+					// new range overlaps at the end with existing range --> split range
+					styleRanges.set(i, new StyleRange(range.begin, begin, range.styleBits));
+					styleRanges.add(i + 1, new StyleRange(begin, range.end, range.styleBits | styleBits));
+				} else if (begin > range.begin && end < range.end) {
+					// new range is in existing range --> split range
+					styleRanges.set(i, new StyleRange(range.begin, begin, range.styleBits));
+					styleRanges.add(i + 1, new StyleRange(begin, end, range.styleBits | styleBits));
+					styleRanges.add(i + 2, new StyleRange(end, range.end, range.styleBits));
+				}
+			}
+		}
+
+		// check whether new range starts before first range
+		if (begin < styleRanges.get(0).begin) {
+			// add new range (part) before first range
+			int end2 = Math.min(end, styleRanges.get(0).begin);
+			styleRanges.add(0, new StyleRange(begin, end2, styleBits));
+		}
+	}
+
+	//---- class StyleRange ---------------------------------------------------
+
+	/*private*/ static class StyleRange
+	{
+		final int begin;		// inclusive
+		final int end;			// exclusive
+		final long styleBits;	// 1 << StyleClass.ordinal()
+
+		StyleRange(int begin, int end, long styleBits) {
+			this.begin = begin;
+			this.end = end;
+			this.styleBits = styleBits;
+		}
 	}
 }
