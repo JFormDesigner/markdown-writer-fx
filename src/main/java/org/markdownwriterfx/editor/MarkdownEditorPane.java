@@ -119,7 +119,7 @@ public class MarkdownEditorPane
 			if (textArea.getScene() == null)
 				return; // editor closed but not yet GCed
 
-			if (e == Options.markdownExtensionsProperty()) {
+			if (e == Options.markdownRendererProperty() || e == Options.markdownExtensionsProperty()) {
 				// re-process markdown if markdown extensions option changes
 				parser = null;
 				textChanged(textArea.getText());
@@ -127,6 +127,7 @@ public class MarkdownEditorPane
 				updateShowWhitespace();
 		};
 		WeakInvalidationListener weakOptionsListener = new WeakInvalidationListener(optionsListener);
+		Options.markdownRendererProperty().addListener(weakOptionsListener);
 		Options.markdownExtensionsProperty().addListener(weakOptionsListener);
 		Options.showWhitespaceProperty().addListener(weakOptionsListener);
 	}
@@ -209,7 +210,7 @@ public class MarkdownEditorPane
 	private Node parseMarkdown(String text) {
 		if (parser == null) {
 			parser = Parser.builder()
-				.extensions(MarkdownExtensions.getFlexmarkExtensions())
+				.extensions(MarkdownExtensions.getFlexmarkExtensions(Options.getMarkdownRenderer()))
 				.build();
 		}
 		return parser.parse(text);

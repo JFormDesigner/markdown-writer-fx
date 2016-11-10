@@ -81,21 +81,28 @@ public class MarkdownExtensions
 	}
 
 	public static List<org.commonmark.Extension> getCommonmarkExtensions() {
-		return createdExtensions(commonmarkExtClasses);
+		return createdExtensions(commonmarkExtClasses, null);
 	}
 
 	public static List<com.vladsch.flexmark.Extension> getFlexmarkExtensions() {
-		return createdExtensions(flexmarkExtClasses);
+		return createdExtensions(flexmarkExtClasses, null);
 	}
 
-	private static <E> ArrayList<E> createdExtensions(HashMap<String, String> extClasses) {
+	public static List<com.vladsch.flexmark.Extension> getFlexmarkExtensions(RendererType rendererType) {
+		return createdExtensions(flexmarkExtClasses, rendererType);
+	}
+
+	private static <E> ArrayList<E> createdExtensions(HashMap<String, String> extClasses, RendererType rendererType) {
 		ArrayList<E> extensions = new ArrayList<>();
 		for (String markdownExtension : Options.getMarkdownExtensions()) {
-			try {
-				String extClassName = extClasses.get(markdownExtension);
-				if (extClassName == null)
-					continue; // extension not supported by renderer
+			if (rendererType != null && !isAvailable(rendererType, markdownExtension))
+				continue;
 
+			String extClassName = extClasses.get(markdownExtension);
+			if (extClassName == null)
+				continue; // extension not supported by renderer
+
+			try {
 				Class<?> cls = Class.forName(extClassName);
 				Method createMethod = cls.getMethod("create");
 				@SuppressWarnings("unchecked")
