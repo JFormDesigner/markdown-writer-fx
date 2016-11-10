@@ -66,6 +66,8 @@ Credits
   * Vladimir Schneider for [flexmark-java] Markdown parser
   * Atlassian for [commonmark-java] Markdown parser
   * Jens Deters for [FontAwesomeFX]
+  * The [ControlsFX] project
+  * Matthieu Brouillard for [CSSFX]
 
 License
 -------
@@ -86,3 +88,5 @@ License
    [Flowless]: https://github.com/TomasMikula/Flowless
    [UndoFX]: https://github.com/TomasMikula/UndoFX
    [FontAwesomeFX]: https://bitbucket.org/Jerady/fontawesomefx
+   [ControlsFX]: http://fxexperience.com/controlsfx/
+   [CSSFX]: https://github.com/McFoggy/cssfx
