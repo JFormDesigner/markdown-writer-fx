@@ -89,12 +89,12 @@ class FileEditor
 			if(tab.isSelected()) {
 				Platform.runLater(() -> activated());
 
-				fileEditorTabPane.rendererType.addListener(previewTypeListener);
+				Options.markdownRendererProperty().addListener(previewTypeListener);
 				fileEditorTabPane.previewVisible.addListener(previewTypeListener);
 				fileEditorTabPane.htmlSourceVisible.addListener(previewTypeListener);
 				fileEditorTabPane.markdownAstVisible.addListener(previewTypeListener);
 			} else {
-				fileEditorTabPane.rendererType.removeListener(previewTypeListener);
+				Options.markdownRendererProperty().removeListener(previewTypeListener);
 				fileEditorTabPane.previewVisible.removeListener(previewTypeListener);
 				fileEditorTabPane.htmlSourceVisible.removeListener(previewTypeListener);
 				fileEditorTabPane.markdownAstVisible.removeListener(previewTypeListener);
@@ -157,7 +157,7 @@ class FileEditor
 			if (fileEditorTabPane.markdownAstVisible.get())
 				previewType = MarkdownPreviewPane.Type.Ast;
 
-			markdownPreviewPane.setRendererType(fileEditorTabPane.rendererType.get());
+			markdownPreviewPane.setRendererType(Options.getMarkdownRenderer());
 			markdownPreviewPane.setType(previewType);
 
 			// add/remove previewPane from splitPane

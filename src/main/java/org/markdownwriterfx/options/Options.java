@@ -44,6 +44,7 @@ import org.markdownwriterfx.util.Utils;
 public class Options
 {
 	public static final String DEF_MARKDOWN_FILE_EXTENSIONS = "*.md,*.markdown,*.txt";
+	public enum RendererType { CommonMark, FlexMark };
 
 	public static void load(Preferences options) {
 		// load options
@@ -51,6 +52,7 @@ public class Options
 		setEncoding(options.get("encoding", null));
 		setMarkdownFileExtensions(options.get("markdownFileExtensions", DEF_MARKDOWN_FILE_EXTENSIONS));
 		setMarkdownExtensions(Utils.getPrefsStrings(options, "markdownExtensions"));
+		setMarkdownRenderer(Utils.getPrefsEnum(options, "markdownRenderer", RendererType.CommonMark));
 		setShowWhitespace(options.getBoolean("showWhitespace", false));
 
 		// save options on change
@@ -65,6 +67,9 @@ public class Options
 		});
 		markdownExtensionsProperty().addListener((ob, o, n) -> {
 			Utils.putPrefsStrings(options, "markdownExtensions", getMarkdownExtensions());
+		});
+		markdownRendererProperty().addListener((ob, o, n) -> {
+			Utils.putPrefsEnum(options, "markdownRenderer", getMarkdownRenderer(), RendererType.CommonMark);
 		});
 		showWhitespaceProperty().addListener((ob, o, n) -> {
 			Utils.putPrefsBoolean(options, "showWhitespace", isShowWhitespace(), false);
@@ -94,6 +99,12 @@ public class Options
 	public static String[] getMarkdownExtensions() { return markdownExtensions.get(); }
 	public static void setMarkdownExtensions(String[] markdownExtensions) { Options.markdownExtensions.set(markdownExtensions); }
 	public static ObjectProperty<String[]> markdownExtensionsProperty() { return markdownExtensions; }
+
+	// 'markdownRenderer' property
+	private static final ObjectProperty<RendererType> markdownRenderer = new SimpleObjectProperty<>(RendererType.CommonMark);
+	public static RendererType getMarkdownRenderer() { return markdownRenderer.get(); }
+	public static void setMarkdownRenderer(RendererType markdownRenderer) { Options.markdownRenderer.set(markdownRenderer); }
+	public static ObjectProperty<RendererType> markdownRendererProperty() { return markdownRenderer; }
 
 	// 'showWhitespace' property
 	private static final BooleanProperty showWhitespace = new SimpleBooleanProperty();

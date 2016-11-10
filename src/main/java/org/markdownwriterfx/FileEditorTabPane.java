@@ -33,13 +33,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -54,7 +52,6 @@ import javafx.scene.control.TabPane.TabClosingPolicy;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import org.markdownwriterfx.options.Options;
-import org.markdownwriterfx.preview.MarkdownPreviewPane.RendererType;
 import org.markdownwriterfx.util.Utils;
 
 /**
@@ -69,7 +66,6 @@ class FileEditorTabPane
 	private final ReadOnlyObjectWrapper<FileEditor> activeFileEditor = new ReadOnlyObjectWrapper<>();
 	private final ReadOnlyBooleanWrapper anyFileEditorModified = new ReadOnlyBooleanWrapper();
 
-	final ObjectProperty<RendererType> rendererType = new SimpleObjectProperty<>(RendererType.CommonMark);
 	final BooleanProperty previewVisible = new SimpleBooleanProperty(true);
 	final BooleanProperty htmlSourceVisible = new SimpleBooleanProperty();
 	final BooleanProperty markdownAstVisible = new SimpleBooleanProperty();
@@ -331,7 +327,6 @@ class FileEditorTabPane
 	private void restoreState() {
 		Preferences state = MarkdownWriterFXApp.getState();
 
-		rendererType.set(Utils.getPrefsEnum(state, "previewRendererType", RendererType.CommonMark));
 		previewVisible.set(state.getBoolean("previewVisible", true));
 		htmlSourceVisible.set(state.getBoolean("htmlSourceVisible", false));
 		markdownAstVisible.set(state.getBoolean("markdownAstVisible", false));
@@ -373,7 +368,6 @@ class FileEditorTabPane
 		else
 			state.remove("activeFile");
 
-		Utils.putPrefsEnum(state, "previewRendererType", rendererType.get(), RendererType.CommonMark);
 		Utils.putPrefsBoolean(state, "previewVisible", previewVisible.get(), true);
 		Utils.putPrefsBoolean(state, "htmlSourceVisible", htmlSourceVisible.get(), false);
 		Utils.putPrefsBoolean(state, "markdownAstVisible", markdownAstVisible.get(), false);

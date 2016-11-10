@@ -35,6 +35,7 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.layout.BorderPane;
+import org.markdownwriterfx.options.Options.RendererType;
 import com.vladsch.flexmark.ast.Node;
 
 /**
@@ -44,7 +45,6 @@ import com.vladsch.flexmark.ast.Node;
  */
 public class MarkdownPreviewPane
 {
-	public enum RendererType { CommonMark, FlexMark };
 	public enum Type { None, Web, Source, Ast };
 
 	private final BorderPane pane = new BorderPane();

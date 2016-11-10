@@ -61,8 +61,9 @@ import org.controlsfx.control.PopOver;
 import org.controlsfx.control.PopOver.ArrowLocation;
 import org.markdownwriterfx.editor.MarkdownEditorPane;
 import org.markdownwriterfx.options.MarkdownExtensionsPane;
+import org.markdownwriterfx.options.Options;
+import org.markdownwriterfx.options.Options.RendererType;
 import org.markdownwriterfx.options.OptionsDialog;
-import org.markdownwriterfx.preview.MarkdownPreviewPane.RendererType;
 import org.markdownwriterfx.util.Action;
 import org.markdownwriterfx.util.ActionUtils;
 import static de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon.*;
@@ -292,9 +293,9 @@ class MainWindow
 		ChoiceBox<RendererType> previewRenderer = new ChoiceBox<>();
 		previewRenderer.setFocusTraversable(false);
 		previewRenderer.getItems().addAll(RendererType.values());
-		previewRenderer.getSelectionModel().select(fileEditorTabPane.rendererType.get());
+		previewRenderer.getSelectionModel().select(Options.getMarkdownRenderer());
 		toolBar.getItems().add(previewRenderer);
-		fileEditorTabPane.rendererType.bind(previewRenderer.getSelectionModel().selectedItemProperty());
+		Options.markdownRendererProperty().bind(previewRenderer.getSelectionModel().selectedItemProperty());
 
 		// markdown extensions popover
 		String title = Messages.get("MainWindow.MarkdownExtensions");
