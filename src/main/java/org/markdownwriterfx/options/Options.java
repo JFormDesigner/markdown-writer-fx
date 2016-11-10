@@ -45,24 +45,30 @@ public class Options
 {
 	public static final String DEF_MARKDOWN_FILE_EXTENSIONS = "*.md,*.markdown,*.txt";
 
-	private static Preferences options;
-
 	public static void load(Preferences options) {
-		Options.options = options;
-
+		// load options
 		setLineSeparator(options.get("lineSeparator", null));
 		setEncoding(options.get("encoding", null));
 		setMarkdownFileExtensions(options.get("markdownFileExtensions", DEF_MARKDOWN_FILE_EXTENSIONS));
 		setMarkdownExtensions(Utils.getPrefsStrings(options, "markdownExtensions"));
 		setShowWhitespace(options.getBoolean("showWhitespace", false));
-	}
 
-	public static void save() {
-		Utils.putPrefs(options, "lineSeparator", getLineSeparator(), null);
-		Utils.putPrefs(options, "encoding", getEncoding(), null);
-		Utils.putPrefs(options, "markdownFileExtensions", getMarkdownFileExtensions(), DEF_MARKDOWN_FILE_EXTENSIONS);
-		Utils.putPrefsStrings(options, "markdownExtensions", getMarkdownExtensions());
-		Utils.putPrefsBoolean(options, "showWhitespace", isShowWhitespace(), false);
+		// save options on change
+		lineSeparatorProperty().addListener((ob, o, n) -> {
+			Utils.putPrefs(options, "lineSeparator", getLineSeparator(), null);
+		});
+		encodingProperty().addListener((ob, o, n) -> {
+			Utils.putPrefs(options, "encoding", getEncoding(), null);
+		});
+		markdownFileExtensionsProperty().addListener((ob, o, n) -> {
+			Utils.putPrefs(options, "markdownFileExtensions", getMarkdownFileExtensions(), DEF_MARKDOWN_FILE_EXTENSIONS);
+		});
+		markdownExtensionsProperty().addListener((ob, o, n) -> {
+			Utils.putPrefsStrings(options, "markdownExtensions", getMarkdownExtensions());
+		});
+		showWhitespaceProperty().addListener((ob, o, n) -> {
+			Utils.putPrefsBoolean(options, "showWhitespace", isShowWhitespace(), false);
+		});
 	}
 
 	// 'lineSeparator' property

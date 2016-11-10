@@ -85,7 +85,6 @@ public class OptionsDialog
 	private void save() {
 		generalOptionsPane.save();
 		markdownOptionsPane.save();
-		Options.save();
 	}
 
 	private void initComponents() {

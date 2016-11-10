@@ -11,14 +11,16 @@ dependencies {
 	compile 'org.fxmisc.richtext:richtextfx:0.7-M2'
 	compile 'com.miglayout:miglayout-javafx:5.0'
 	compile 'de.jensd:fontawesomefx-fontawesome:4.7.0'
+	compile 'org.controlsfx:controlsfx:8.40.12'
 	compile 'org.fxmisc.cssfx:cssfx:1.0.0'
 
 	def flexmarkVersion = '0.6.0'
 	compile 'com.vladsch.flexmark:flexmark:' + flexmarkVersion
 	compile 'com.vladsch.flexmark:flexmark-ext-abbreviation:' + flexmarkVersion
 	compile 'com.vladsch.flexmark:flexmark-ext-anchorlink:' + flexmarkVersion
+	compile 'com.vladsch.flexmark:flexmark-ext-aside:' + flexmarkVersion
 	compile 'com.vladsch.flexmark:flexmark-ext-autolink:' + flexmarkVersion
-	compile 'com.vladsch.flexmark:flexmark-ext-emoji:' + flexmarkVersion
+	compile 'com.vladsch.flexmark:flexmark-ext-definition:' + flexmarkVersion
 	compile 'com.vladsch.flexmark:flexmark-ext-footnotes:' + flexmarkVersion
 	compile 'com.vladsch.flexmark:flexmark-ext-gfm-strikethrough:' + flexmarkVersion
 	compile 'com.vladsch.flexmark:flexmark-ext-gfm-tables:' + flexmarkVersion
@@ -29,6 +31,12 @@ dependencies {
 
 	def commonmarkVersion = '0.7.1'
 	compile 'com.atlassian.commonmark:commonmark:' + commonmarkVersion
+	compile 'com.atlassian.commonmark:commonmark-ext-autolink:' + commonmarkVersion
+	compile 'com.atlassian.commonmark:commonmark-ext-gfm-strikethrough:' + commonmarkVersion
+	compile 'com.atlassian.commonmark:commonmark-ext-gfm-tables:' + commonmarkVersion
+	compile 'com.atlassian.commonmark:commonmark-ext-heading-anchor:' + commonmarkVersion
+	compile 'com.atlassian.commonmark:commonmark-ext-ins:' + commonmarkVersion
+	compile 'com.atlassian.commonmark:commonmark-ext-yaml-front-matter:' + commonmarkVersion
 
 	testCompile 'junit:junit:4.12'
 }

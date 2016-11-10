@@ -8,178 +8,19 @@ new FormModel {
 	contentType: "form/javafx"
 	root: new FormRoot {
 		add( new FormContainer( "org.tbee.javafx.scene.layout.fxml.MigPane", new FormLayoutManager( class org.tbee.javafx.scene.layout.fxml.MigPane ) {
-			"$rowConstraints": "[][][][][][][][][][][][][][][][][]"
-			"$columnConstraints": "[]"
+			"$rowConstraints": "[grow,fill]"
+			"$columnConstraints": "[grow,fill]"
+			"$layoutConstraints": "insets 0"
 		} ) {
 			name: "this"
-			add( new FormComponent( "org.markdownwriterfx.controls.ExtensionCheckBox" ) {
-				name: "abbreviationsExtCheckBox"
-				"text": new FormMessage( null, "MarkdownOptionsPane.abbreviationsExtCheckBox.text" )
+			add( new FormComponent( "org.markdownwriterfx.options.MarkdownExtensionsPane" ) {
+				name: "markdownExtensionsPane"
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 0 0"
 			} )
-			add( new FormComponent( "org.markdownwriterfx.controls.ExtensionCheckBox" ) {
-				name: "anchorlinksExtCheckBox"
-				"text": new FormMessage( null, "MarkdownOptionsPane.anchorlinksExtCheckBox.text" )
-			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 1"
-			} )
-			add( new FormComponent( "org.markdownwriterfx.controls.ExtensionCheckBox" ) {
-				name: "autolinksExtCheckBox"
-				"text": new FormMessage( null, "MarkdownOptionsPane.autolinksExtCheckBox.text" )
-			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 2"
-			} )
-			add( new FormComponent( "org.markdownwriterfx.controls.ExtensionCheckBox" ) {
-				name: "emojiExtCheckBox"
-				"text": new FormMessage( null, "MarkdownOptionsPane.emojiExtCheckBox.text" )
-			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 3"
-			} )
-			add( new FormComponent( "org.markdownwriterfx.controls.WebHyperlink" ) {
-				name: "emojiExtLink"
-				"text": new FormMessage( null, "MarkdownOptionsPane.emojiExtLink.text" )
-				"uri": "http://www.emoji-cheat-sheet.com/"
-				auxiliary() {
-					"JavaCodeGenerator.variableLocal": true
-				}
-			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 3,gapx 0"
-			} )
-			add( new FormComponent( "org.markdownwriterfx.controls.ExtensionCheckBox" ) {
-				name: "footnotesExtCheckBox"
-				"text": new FormMessage( null, "MarkdownOptionsPane.footnotesExtCheckBox.text" )
-			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 4"
-			} )
-			add( new FormComponent( "org.markdownwriterfx.controls.ExtensionCheckBox" ) {
-				name: "strikethroughExtCheckBox"
-				"text": new FormMessage( null, "MarkdownOptionsPane.strikethroughExtCheckBox.text" )
-			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 5"
-			} )
-			add( new FormComponent( "org.markdownwriterfx.controls.ExtensionCheckBox" ) {
-				name: "tablesExtCheckBox"
-				"text": new FormMessage( null, "MarkdownOptionsPane.tablesExtCheckBox.text" )
-			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 6"
-			} )
-			add( new FormComponent( "org.markdownwriterfx.controls.ExtensionCheckBox" ) {
-				name: "tocExtCheckBox"
-				"text": new FormMessage( null, "MarkdownOptionsPane.tocExtCheckBox.text" )
-			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 7"
-			} )
-			add( new FormComponent( "org.markdownwriterfx.controls.ExtensionCheckBox" ) {
-				name: "taskListsExtCheckBox"
-				"text": new FormMessage( null, "MarkdownOptionsPane.taskListsExtCheckBox.text" )
-			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 8"
-			} )
-			add( new FormComponent( "org.markdownwriterfx.controls.ExtensionCheckBox" ) {
-				name: "wikiLinksExtCheckBox"
-				"text": new FormMessage( null, "MarkdownOptionsPane.wikiLinksExtCheckBox.text" )
-			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 9"
-			} )
-			add( new FormComponent( "org.markdownwriterfx.controls.ExtensionCheckBox" ) {
-				name: "yamlFrontMatterExtCheckBox"
-				"text": new FormMessage( null, "MarkdownOptionsPane.yamlFrontMatterExtCheckBox.text" )
-			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 10"
-			} )
-			add( new FormComponent( "org.markdownwriterfx.controls.ExtensionCheckBox" ) {
-				name: "definitionListsExtCheckBox"
-				"text": new FormMessage( null, "MarkdownOptionsPane.definitionListsExtCheckBox.text" )
-				"visible": false
-			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 12"
-			} )
-			add( new FormComponent( "org.markdownwriterfx.controls.WebHyperlink" ) {
-				name: "definitionListsExtLink"
-				"text": new FormMessage( null, "MarkdownOptionsPane.definitionListsExtLink.text" )
-				"uri": "https://michelf.ca/projects/php-markdown/extra/#def-list"
-				"visible": false
-				auxiliary() {
-					"JavaCodeGenerator.variableLocal": true
-				}
-			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 12,gapx 0"
-			} )
-			add( new FormComponent( "org.markdownwriterfx.controls.FlagCheckBox" ) {
-				name: "fencedCodeBlocksExtCheckBox"
-				"text": new FormMessage( null, "MarkdownOptionsPane.fencedCodeBlocksExtCheckBox.text" )
-				"visible": false
-			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 13"
-			} )
-			add( new FormComponent( "org.markdownwriterfx.controls.WebHyperlink" ) {
-				name: "fencedCodeBlocksExtLink"
-				"text": new FormMessage( null, "MarkdownOptionsPane.fencedCodeBlocksExtLink.text" )
-				"uri": "http://michelf.com/projects/php-markdown/extra/#fenced-code-blocks"
-				"visible": false
-				auxiliary() {
-					"JavaCodeGenerator.variableLocal": true
-				}
-			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 13,gapx 0"
-			} )
-			add( new FormComponent( "javafx.scene.control.Label" ) {
-				name: "fencedCodeBlocksExtLabel"
-				"text": new FormMessage( null, "MarkdownOptionsPane.fencedCodeBlocksExtLabel.text" )
-				"visible": false
-				auxiliary() {
-					"JavaCodeGenerator.variableLocal": true
-				}
-			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 13,gapx 3"
-			} )
-			add( new FormComponent( "org.markdownwriterfx.controls.WebHyperlink" ) {
-				name: "fencedCodeBlocksExtLink2"
-				"text": new FormMessage( null, "MarkdownOptionsPane.fencedCodeBlocksExtLink2.text" )
-				"uri": "https://help.github.com/articles/github-flavored-markdown/#fenced-code-blocks"
-				"visible": false
-				auxiliary() {
-					"JavaCodeGenerator.variableLocal": true
-				}
-			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 13,gapx 3"
-			} )
-			add( new FormComponent( "org.markdownwriterfx.controls.FlagCheckBox" ) {
-				name: "hardwrapsExtCheckBox"
-				"text": new FormMessage( null, "MarkdownOptionsPane.hardwrapsExtCheckBox.text" )
-				"visible": false
-			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 14"
-			} )
-			add( new FormComponent( "org.markdownwriterfx.controls.WebHyperlink" ) {
-				name: "hardwrapsExtLink"
-				"text": new FormMessage( null, "MarkdownOptionsPane.hardwrapsExtLink.text" )
-				"uri": "https://help.github.com/articles/writing-on-github/#markup"
-				"visible": false
-				auxiliary() {
-					"JavaCodeGenerator.variableLocal": true
-				}
-			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 14,gapx 0"
-			} )
-			add( new FormComponent( "org.markdownwriterfx.controls.FlagCheckBox" ) {
-				name: "suppressHtmlBlocksExtCheckBox"
-				"text": new FormMessage( null, "MarkdownOptionsPane.suppressHtmlBlocksExtCheckBox.text" )
-				"visible": false
-			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 15"
-			} )
-			add( new FormComponent( "org.markdownwriterfx.controls.FlagCheckBox" ) {
-				name: "suppressInlineHtmlExtCheckBox"
-				"text": new FormMessage( null, "MarkdownOptionsPane.suppressInlineHtmlExtCheckBox.text" )
-				"visible": false
-			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 16"
-			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new javafx.geometry.Point2D( 0.0, 0.0 )
-			"size": new javafx.geometry.Dimension2D( 600.0, 676.0 )
+			"size": new javafx.geometry.Dimension2D( 359.0, 419.0 )
 		} )
 	}
 }

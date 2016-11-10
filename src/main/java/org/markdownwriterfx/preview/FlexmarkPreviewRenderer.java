@@ -27,7 +27,7 @@
 
 package org.markdownwriterfx.preview;
 
-import org.markdownwriterfx.util.FlexmarkUtils;
+import org.markdownwriterfx.options.MarkdownExtensions;
 import com.vladsch.flexmark.ast.Node;
 import com.vladsch.flexmark.html.HtmlRenderer;
 
@@ -71,7 +71,7 @@ class FlexmarkPreviewRenderer
 			return "";
 
 		HtmlRenderer renderer = HtmlRenderer.builder()
-				.extensions(FlexmarkUtils.getExtensions())
+				.extensions(MarkdownExtensions.getFlexmarkExtensions())
 				.build();
 		return renderer.render(astRoot);
 	}

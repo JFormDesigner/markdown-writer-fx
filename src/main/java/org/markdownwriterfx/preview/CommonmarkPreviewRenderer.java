@@ -30,6 +30,7 @@ package org.markdownwriterfx.preview;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
+import org.markdownwriterfx.options.MarkdownExtensions;
 
 /**
  * commonmark-java preview.
@@ -39,8 +40,6 @@ import org.commonmark.renderer.html.HtmlRenderer;
 class CommonmarkPreviewRenderer
 	implements MarkdownPreviewPane.Renderer
 {
-	private Parser parser;
-
 	private String markdownText;
 	private Node astRoot;
 	private String html;
@@ -70,8 +69,9 @@ class CommonmarkPreviewRenderer
 	}
 
 	private Node parseMarkdown(String text) {
-		if (parser == null)
-			parser = Parser.builder().build();
+		Parser parser = Parser.builder()
+				.extensions(MarkdownExtensions.getCommonmarkExtensions())
+				.build();
 		return parser.parse(text);
 	}
 
@@ -86,7 +86,9 @@ class CommonmarkPreviewRenderer
 		if (astRoot == null)
 			return "";
 
-		HtmlRenderer renderer = HtmlRenderer.builder().build();
+		HtmlRenderer renderer = HtmlRenderer.builder()
+				.extensions(MarkdownExtensions.getCommonmarkExtensions())
+				.build();
 		return renderer.render(astRoot);
 	}
 

@@ -58,8 +58,8 @@ import org.fxmisc.undo.UndoManager;
 import org.fxmisc.wellbehaved.event.Nodes;
 import org.markdownwriterfx.dialogs.ImageDialog;
 import org.markdownwriterfx.dialogs.LinkDialog;
+import org.markdownwriterfx.options.MarkdownExtensions;
 import org.markdownwriterfx.options.Options;
-import org.markdownwriterfx.util.FlexmarkUtils;
 import org.markdownwriterfx.util.Utils;
 
 /**
@@ -209,7 +209,7 @@ public class MarkdownEditorPane
 	private Node parseMarkdown(String text) {
 		if (parser == null) {
 			parser = Parser.builder()
-				.extensions(FlexmarkUtils.getExtensions())
+				.extensions(MarkdownExtensions.getFlexmarkExtensions())
 				.build();
 		}
 		return parser.parse(text);
@@ -246,7 +246,6 @@ public class MarkdownEditorPane
 
 	private void showWhitespace(KeyEvent e) {
 		Options.setShowWhitespace(!Options.isShowWhitespace());
-		Options.save();
 	}
 
 	private void updateShowWhitespace() {

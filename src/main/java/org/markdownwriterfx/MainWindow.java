@@ -44,6 +44,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
+import javafx.scene.control.Separator;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.ToolBar;
@@ -56,7 +57,10 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
+import org.controlsfx.control.PopOver;
+import org.controlsfx.control.PopOver.ArrowLocation;
 import org.markdownwriterfx.editor.MarkdownEditorPane;
+import org.markdownwriterfx.options.MarkdownExtensionsPane;
 import org.markdownwriterfx.options.OptionsDialog;
 import org.markdownwriterfx.preview.MarkdownPreviewPane.RendererType;
 import org.markdownwriterfx.util.Action;
@@ -73,6 +77,7 @@ class MainWindow
 	private final Scene scene;
 	private final FileEditorTabPane fileEditorTabPane;
 	private MenuBar menuBar;
+	private Node extensionsButton;
 
 	MainWindow() {
 		fileEditorTabPane = new FileEditorTabPane(this);
@@ -290,6 +295,20 @@ class MainWindow
 		previewRenderer.getSelectionModel().select(fileEditorTabPane.rendererType.get());
 		toolBar.getItems().add(previewRenderer);
 		fileEditorTabPane.rendererType.bind(previewRenderer.getSelectionModel().selectedItemProperty());
+
+		// markdown extensions popover
+		String title = Messages.get("MainWindow.MarkdownExtensions");
+		extensionsButton = ActionUtils.createToolBarButton(
+				new Action(title, null, COG, e -> {
+					PopOver popOver = new PopOver();
+					popOver.setTitle(title);
+					popOver.setHeaderAlwaysVisible(true);
+					popOver.setArrowLocation(ArrowLocation.TOP_CENTER);
+					popOver.setContentNode(new MarkdownExtensionsPane(true));
+					popOver.show(extensionsButton);
+				}));
+		toolBar.getItems().add(extensionsButton);
+		toolBar.getItems().add(new Separator());
 
 		// preview actions
 		Node[] previewButtons = ActionUtils.createToolBarButtons(
