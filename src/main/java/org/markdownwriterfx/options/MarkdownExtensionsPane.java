@@ -32,6 +32,7 @@ import javafx.beans.property.ListProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
 import org.controlsfx.control.ToggleSwitch;
+import org.markdownwriterfx.options.Options.RendererType;
 import org.tbee.javafx.scene.layout.fxml.MigPane;
 
 /**
@@ -60,7 +61,7 @@ public class MarkdownExtensionsPane
 		this(false);
 	}
 
-	public MarkdownExtensionsPane(boolean autoSave) {
+	public MarkdownExtensionsPane(boolean popover) {
 		setLayout("insets dialog");
 
 		// get IDs of all available extensions
@@ -73,7 +74,12 @@ public class MarkdownExtensionsPane
 			.toArray(Ext[]::new);
 
 		// create toggle switches for all available extensions
+		RendererType rendererType = Options.getMarkdownRenderer();
 		for (Ext ext : extensions) {
+			boolean available = MarkdownExtensions.isAvailable(rendererType, ext.id);
+			if (popover && !available)
+				continue;
+
 			ext.toggleSwitch = new ToggleSwitch(ext.displayName);
 			ext.toggleSwitch.selectedProperty().addListener((ob, oldSelected, newSelected) -> {
 				if (newSelected) {
@@ -90,10 +96,12 @@ public class MarkdownExtensionsPane
 
 		// listener that updates toggle switch selection and option property
 		enabledExtensions.addListener((obs, oldExtensions, newExtensions) -> {
-			for (Ext ext : extensions)
-				ext.toggleSwitch.setSelected(newExtensions.contains(ext.id));
+			for (Ext ext : extensions) {
+				if (ext.toggleSwitch != null)
+					ext.toggleSwitch.setSelected(newExtensions.contains(ext.id));
+			}
 
-			if (autoSave)
+			if (popover)
 				save();
 		});
 

@@ -34,6 +34,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.ResourceBundle;
 import org.markdownwriterfx.Messages;
+import org.markdownwriterfx.options.Options.RendererType;
 
 /**
  * Markdown extensions
@@ -69,6 +70,14 @@ public class MarkdownExtensions
 
 	public static String displayName(String id) {
 		return displayNames.get(id);
+	}
+
+	public static boolean isAvailable(RendererType rendererType, String id) {
+		switch (rendererType) {
+			case CommonMark:	return commonmarkExtClasses.containsKey(id);
+			case FlexMark:		return flexmarkExtClasses.containsKey(id);
+			default:			return false;
+		}
 	}
 
 	public static List<org.commonmark.Extension> getCommonmarkExtensions() {
