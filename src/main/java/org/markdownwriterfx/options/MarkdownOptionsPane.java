@@ -27,6 +27,11 @@
 
 package org.markdownwriterfx.options;
 
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.Label;
+import javafx.scene.text.Font;
+import org.markdownwriterfx.Messages;
+import org.markdownwriterfx.options.Options.RendererType;
 import org.tbee.javafx.scene.layout.fxml.MigPane;
 
 /**
@@ -39,28 +44,52 @@ class MarkdownOptionsPane
 {
 	MarkdownOptionsPane() {
 		initComponents();
+
+		markdownRendererChoiceBox.getItems().addAll(RendererType.values());
+		markdownRendererChoiceBox.getSelectionModel().selectedItemProperty().addListener((ob, o, n) -> {
+			markdownExtensionsPane.rendererTypeChanged(n);
+		});
+
+		markdownExtensionsLabel.setFont(Font.font(16));
 	}
 
 	void load() {
+		markdownRendererChoiceBox.getSelectionModel().select(Options.getMarkdownRenderer());
 	}
 
 	void save() {
+		Options.setMarkdownRenderer(markdownRendererChoiceBox.getSelectionModel().getSelectedItem());
 		markdownExtensionsPane.save();
 	}
 
 	private void initComponents() {
 		// JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+		markdownRendererLabel = new Label();
+		markdownRendererChoiceBox = new ChoiceBox<>();
+		markdownExtensionsLabel = new Label();
 		markdownExtensionsPane = new MarkdownExtensionsPane();
 
 		//======== this ========
-		setLayout("insets 0");
-		setCols("[grow,fill]");
-		setRows("[grow,fill]");
-		add(markdownExtensionsPane, "cell 0 0");
+		setLayout("insets dialog");
+		setCols("[][grow,fill]");
+		setRows("[]para[][grow,fill]");
+
+		//---- markdownRendererLabel ----
+		markdownRendererLabel.setText(Messages.get("MarkdownOptionsPane.markdownRendererLabel.text"));
+		add(markdownRendererLabel, "cell 0 0");
+		add(markdownRendererChoiceBox, "cell 1 0,alignx left,growx 0");
+
+		//---- markdownExtensionsLabel ----
+		markdownExtensionsLabel.setText(Messages.get("MarkdownOptionsPane.markdownExtensionsLabel.text"));
+		add(markdownExtensionsLabel, "cell 0 1 2 1");
+		add(markdownExtensionsPane, "pad 0 indent 0 0,cell 0 2 2 1");
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 	}
 
 	// JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
+	private Label markdownRendererLabel;
+	private ChoiceBox<org.markdownwriterfx.options.Options.RendererType> markdownRendererChoiceBox;
+	private Label markdownExtensionsLabel;
 	private MarkdownExtensionsPane markdownExtensionsPane;
 	// JFormDesigner - End of variables declaration  //GEN-END:variables
 }

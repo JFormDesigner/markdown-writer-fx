@@ -294,8 +294,13 @@ class MainWindow
 		previewRenderer.setFocusTraversable(false);
 		previewRenderer.getItems().addAll(RendererType.values());
 		previewRenderer.getSelectionModel().select(Options.getMarkdownRenderer());
+		previewRenderer.getSelectionModel().selectedItemProperty().addListener((ob, o, n) -> {
+			Options.setMarkdownRenderer(n);
+		});
+		Options.markdownRendererProperty().addListener((ob, o, n) -> {
+			previewRenderer.getSelectionModel().select(n);
+		});
 		toolBar.getItems().add(previewRenderer);
-		Options.markdownRendererProperty().bind(previewRenderer.getSelectionModel().selectedItemProperty());
 
 		// markdown extensions popover
 		String title = Messages.get("MainWindow.MarkdownExtensions");

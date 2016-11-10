@@ -8,15 +8,35 @@ new FormModel {
 	contentType: "form/javafx"
 	root: new FormRoot {
 		add( new FormContainer( "org.tbee.javafx.scene.layout.fxml.MigPane", new FormLayoutManager( class org.tbee.javafx.scene.layout.fxml.MigPane ) {
-			"$rowConstraints": "[grow,fill]"
-			"$columnConstraints": "[grow,fill]"
-			"$layoutConstraints": "insets 0"
+			"$rowConstraints": "[]para[][grow,fill]"
+			"$columnConstraints": "[][grow,fill]"
+			"$layoutConstraints": "insets dialog"
 		} ) {
 			name: "this"
+			add( new FormComponent( "javafx.scene.control.Label" ) {
+				name: "markdownRendererLabel"
+				"text": new FormMessage( null, "MarkdownOptionsPane.markdownRendererLabel.text" )
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 0"
+			} )
+			add( new FormComponent( "javafx.scene.control.ChoiceBox" ) {
+				name: "markdownRendererChoiceBox"
+				auxiliary() {
+					"JavaCodeGenerator.typeParameters": "org.markdownwriterfx.options.Options.RendererType"
+				}
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 1 0,alignx left,growx 0"
+			} )
+			add( new FormComponent( "javafx.scene.control.Label" ) {
+				name: "markdownExtensionsLabel"
+				"text": new FormMessage( null, "MarkdownOptionsPane.markdownExtensionsLabel.text" )
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 1 2 1"
+			} )
 			add( new FormComponent( "org.markdownwriterfx.options.MarkdownExtensionsPane" ) {
 				name: "markdownExtensionsPane"
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 0"
+				"value": "pad 0 indent 0 0,cell 0 2 2 1"
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new javafx.geometry.Point2D( 0.0, 0.0 )

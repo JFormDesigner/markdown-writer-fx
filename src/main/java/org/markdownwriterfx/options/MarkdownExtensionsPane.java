@@ -62,7 +62,7 @@ public class MarkdownExtensionsPane
 	}
 
 	public MarkdownExtensionsPane(boolean popover) {
-		setLayout("insets dialog");
+		setLayout(popover ? "insets dialog" : "insets 0");
 
 		// get IDs of all available extensions
 		String[] ids = MarkdownExtensions.ids();
@@ -89,7 +89,8 @@ public class MarkdownExtensionsPane
 					enabledExtensions.remove(ext.id);
 			});
 
-			//TODO disable extension if not available for current preview renderer
+			if (!popover && !available)
+				ext.toggleSwitch.setDisable(true);
 
 			add(ext.toggleSwitch, "grow, wrap");
 		}
@@ -107,6 +108,11 @@ public class MarkdownExtensionsPane
 
 		// initialize from option property
 		enabledExtensions.set(FXCollections.observableArrayList(Options.getMarkdownExtensions()));
+	}
+
+	void rendererTypeChanged(RendererType rendererType) {
+		for (Ext ext : extensions)
+			ext.toggleSwitch.setDisable(!MarkdownExtensions.isAvailable(rendererType, ext.id));
 	}
 
 	void save() {
