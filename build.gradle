@@ -24,6 +24,7 @@ dependencies {
 	compile 'org.controlsfx:controlsfx:8.40.12'
 	compile 'org.fxmisc.cssfx:cssfx:1.0.0'
 	compile 'org.apache.commons:commons-lang3:3.5'
+	compile 'org.kohsuke:github-api:1.79'
 
 	def flexmarkVersion = '0.7.0'
 	compile 'com.vladsch.flexmark:flexmark:' + flexmarkVersion
