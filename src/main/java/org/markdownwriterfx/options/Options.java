@@ -54,7 +54,7 @@ public class Options
 		"Lucida Console",
 	};
 
-	public static final int DEF_FONT_SIZE = 13;
+	public static final int DEF_FONT_SIZE = 12;
 	public static final int MIN_FONT_SIZE = 8;
 	public static final int MAX_FONT_SIZE = 36;
 	public static final String DEF_MARKDOWN_FILE_EXTENSIONS = "*.md,*.markdown,*.txt";
