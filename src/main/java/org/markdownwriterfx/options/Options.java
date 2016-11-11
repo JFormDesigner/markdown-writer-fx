@@ -27,13 +27,17 @@
 
 package org.markdownwriterfx.options;
 
+import java.util.List;
 import java.util.prefs.Preferences;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.scene.text.Font;
 import org.markdownwriterfx.util.Utils;
 
 /**
@@ -43,11 +47,21 @@ import org.markdownwriterfx.util.Utils;
  */
 public class Options
 {
+	public static final String[] DEF_FONT_FAMILIES = {
+		"Consolas",
+		"DejaVu Sans Mono",
+		"Lucida Sans Typewriter",
+		"Lucida Console",
+	};
+
+	public static final int DEF_FONT_SIZE = 12;
 	public static final String DEF_MARKDOWN_FILE_EXTENSIONS = "*.md,*.markdown,*.txt";
 	public enum RendererType { CommonMark, FlexMark };
 
 	public static void load(Preferences options) {
 		// load options
+		setFontFamily(safeFontFamily(options.get("fontFamily", null)));
+		setFontSize(options.getInt("fontSize", DEF_FONT_SIZE));
 		setLineSeparator(options.get("lineSeparator", null));
 		setEncoding(options.get("encoding", null));
 		setMarkdownFileExtensions(options.get("markdownFileExtensions", DEF_MARKDOWN_FILE_EXTENSIONS));
@@ -56,6 +70,12 @@ public class Options
 		setShowWhitespace(options.getBoolean("showWhitespace", false));
 
 		// save options on change
+		fontFamilyProperty().addListener((ob, o, n) -> {
+			Utils.putPrefs(options, "fontFamily", getFontFamily(), null);
+		});
+		fontSizeProperty().addListener((ob, o, n) -> {
+			Utils.putPrefsInt(options, "fontSize", getFontSize(), DEF_FONT_SIZE);
+		});
 		lineSeparatorProperty().addListener((ob, o, n) -> {
 			Utils.putPrefs(options, "lineSeparator", getLineSeparator(), null);
 		});
@@ -75,6 +95,34 @@ public class Options
 			Utils.putPrefsBoolean(options, "showWhitespace", isShowWhitespace(), false);
 		});
 	}
+
+	/**
+	 * Check whether font family is null or invalid (family not available on system)
+	 * and search for an available family.
+	 */
+	private static String safeFontFamily(String fontFamily) {
+		List<String> fontFamilies = Font.getFamilies();
+		if (fontFamily != null && fontFamilies.contains(fontFamily))
+			return fontFamily;
+
+		for (String family : DEF_FONT_FAMILIES) {
+			if (fontFamilies.contains(family))
+				return family;
+		}
+		return "Monospaced";
+	}
+
+	// 'fontFamily' property
+	private static final StringProperty fontFamily = new SimpleStringProperty();
+	public static String getFontFamily() { return fontFamily.get(); }
+	public static void setFontFamily(String fontFamily) { Options.fontFamily.set(fontFamily); }
+	public static StringProperty fontFamilyProperty() { return fontFamily; }
+
+	// 'fontSize' property
+	private static final IntegerProperty fontSize = new SimpleIntegerProperty(DEF_FONT_SIZE);
+	public static int getFontSize() { return fontSize.get(); }
+	public static void setFontSize(int fontSize) { Options.fontSize.set(fontSize); }
+	public static IntegerProperty fontSizeProperty() { return fontSize; }
 
 	// 'lineSeparator' property
 	private static final StringProperty lineSeparator = new SimpleStringProperty();

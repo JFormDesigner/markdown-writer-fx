@@ -12,6 +12,8 @@ Markdown Writer FX Change Log
 - Possibility to hide the Preview (deselect toggle button in toolbar).
 - Quickly enable/disable markdown extensions with popover window from toolbar.
 - Syntax highlighting improved.
+- Use monospaced font in editor.
+- Configurable editor font family and size in Options dialog.
 - Configurable Markdown filename extensions in Options dialog (fixes #2).
 - Support \*.svg in image chooser dialog.
 - RichTextFX updated to version 0.7-M2.

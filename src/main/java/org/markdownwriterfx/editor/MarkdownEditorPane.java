@@ -112,6 +112,7 @@ public class MarkdownEditorPane
 
 		overlayGraphicFactory = new ParagraphOverlayGraphicFactory(textArea);
 		textArea.setParagraphGraphicFactory(overlayGraphicFactory);
+		updateFont();
 		updateShowWhitespace();
 
 		// listen to option changes
@@ -119,17 +120,27 @@ public class MarkdownEditorPane
 			if (textArea.getScene() == null)
 				return; // editor closed but not yet GCed
 
-			if (e == Options.markdownRendererProperty() || e == Options.markdownExtensionsProperty()) {
+			if (e == Options.fontFamilyProperty() || e == Options.fontSizeProperty())
+				updateFont();
+			else if (e == Options.showWhitespaceProperty())
+				updateShowWhitespace();
+			else if (e == Options.markdownRendererProperty() || e == Options.markdownExtensionsProperty()) {
 				// re-process markdown if markdown extensions option changes
 				parser = null;
 				textChanged(textArea.getText());
-			} else if (e == Options.showWhitespaceProperty())
-				updateShowWhitespace();
+			}
 		};
 		WeakInvalidationListener weakOptionsListener = new WeakInvalidationListener(optionsListener);
+		Options.fontFamilyProperty().addListener(weakOptionsListener);
+		Options.fontSizeProperty().addListener(weakOptionsListener);
 		Options.markdownRendererProperty().addListener(weakOptionsListener);
 		Options.markdownExtensionsProperty().addListener(weakOptionsListener);
 		Options.showWhitespaceProperty().addListener(weakOptionsListener);
+	}
+
+	private void updateFont() {
+		textArea.setStyle("-fx-font-family: '" + Options.getFontFamily()
+				+ "'; -fx-font-size: " + Options.getFontSize() );
 	}
 
 	public javafx.scene.Node getNode() {
