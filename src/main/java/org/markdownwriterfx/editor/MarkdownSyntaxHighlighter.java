@@ -33,12 +33,18 @@ import java.util.Collections;
 import java.util.HashMap;
 import javafx.application.Platform;
 import com.vladsch.flexmark.ast.*;
+import com.vladsch.flexmark.ext.abbreviation.Abbreviation;
+import com.vladsch.flexmark.ext.abbreviation.AbbreviationBlock;
+import com.vladsch.flexmark.ext.aside.AsideBlock;
 import com.vladsch.flexmark.ext.gfm.strikethrough.Strikethrough;
 import com.vladsch.flexmark.ext.gfm.tables.TableBlock;
 import com.vladsch.flexmark.ext.gfm.tables.TableBody;
 import com.vladsch.flexmark.ext.gfm.tables.TableCell;
 import com.vladsch.flexmark.ext.gfm.tables.TableHead;
 import com.vladsch.flexmark.ext.gfm.tables.TableRow;
+import com.vladsch.flexmark.ext.gfm.tasklist.TaskListItem;
+import com.vladsch.flexmark.ext.wikilink.WikiLink;
+import com.vladsch.flexmark.util.sequence.BasedSequence;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
@@ -73,11 +79,14 @@ class MarkdownSyntaxHighlighter
 		// blocks
 		pre,
 		blockquote,
+		aside,
 
 		// lists
 		ul,
 		ol,
 		li,
+		liopen,
+		liopentask,
 		dl,
 		dt,
 		dd,
@@ -93,6 +102,8 @@ class MarkdownSyntaxHighlighter
 		// misc
 		html,
 		reference,
+		abbrdef,
+		abbr,
 	};
 
 	private static final HashMap<Long, Collection<String>> styleClassesCache = new HashMap<>();
@@ -105,6 +116,7 @@ class MarkdownSyntaxHighlighter
 		node2style.put(Strikethrough.class, StyleClass.del);
 		node2style.put(Link.class, StyleClass.a);
 		node2style.put(LinkRef.class, StyleClass.a);
+		node2style.put(WikiLink.class, StyleClass.a);
 		node2style.put(Image.class, StyleClass.img);
 		node2style.put(Code.class, StyleClass.code);
 		node2style.put(HardLineBreak.class, StyleClass.br);
@@ -113,11 +125,14 @@ class MarkdownSyntaxHighlighter
 		node2style.put(FencedCodeBlock.class, StyleClass.pre);
 		node2style.put(IndentedCodeBlock.class, StyleClass.pre);
 		node2style.put(BlockQuote.class, StyleClass.blockquote);
+		node2style.put(AsideBlock.class, StyleClass.aside);
 
 		// lists
 		node2style.put(BulletList.class, StyleClass.ul);
 		node2style.put(OrderedList.class, StyleClass.ol);
-		node2style.put(ListItem.class, StyleClass.li);
+		node2style.put(BulletListItem.class, StyleClass.li);
+		node2style.put(OrderedListItem.class, StyleClass.li);
+		node2style.put(TaskListItem.class, StyleClass.li);
 
 		// tables
 		node2style.put(TableBlock.class, StyleClass.table);
@@ -129,6 +144,8 @@ class MarkdownSyntaxHighlighter
 		node2style.put(HtmlBlock.class, StyleClass.html);
 		node2style.put(HtmlInline.class, StyleClass.html);
 		node2style.put(Reference.class, StyleClass.reference);
+		node2style.put(AbbreviationBlock.class, StyleClass.abbrdef);
+		node2style.put(Abbreviation.class, StyleClass.abbr);
 	}
 
 	private ArrayList<StyleRange> styleRanges;
@@ -150,6 +167,9 @@ class MarkdownSyntaxHighlighter
 		// visit all nodes
 		NodeVisitor visitor = new NodeVisitor(
 			new VisitHandler<>(Heading.class, this::visit),
+			new VisitHandler<>(BulletListItem.class, this::visit),
+			new VisitHandler<>(OrderedListItem.class, this::visit),
+			new VisitHandler<>(TaskListItem.class, this::visit),
 			new VisitHandler<>(TableCell.class, this::visit))
 		{
 			@Override
@@ -158,11 +178,10 @@ class MarkdownSyntaxHighlighter
 				StyleClass style = node2style.get(nodeClass);
 				if (style != null)
 					setStyleClass(node, style);
-				else {
-					VisitHandler<?> handler = myCustomHandlersMap.get(nodeClass);
-					if (handler != null)
-						handler.visit(node);
-				}
+
+				VisitHandler<?> handler = myCustomHandlersMap.get(nodeClass);
+				if (handler != null)
+					handler.visit(node);
 
 				visitChildren(node);
 			}
@@ -171,7 +190,8 @@ class MarkdownSyntaxHighlighter
 
 		// build style spans
 		StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
-		if (text.length() > 0) {
+		int textLength = text.length();
+		if (textLength > 0) {
 			int spanStart = 0;
 			for (StyleRange range : styleRanges) {
 				if (range.begin > spanStart)
@@ -179,8 +199,8 @@ class MarkdownSyntaxHighlighter
 				spansBuilder.add(toStyleClasses(range.styleBits), range.end - range.begin);
 				spanStart = range.end;
 			}
-			if (spanStart < text.length())
-				spansBuilder.add(Collections.emptyList(), text.length() - spanStart);
+			if (spanStart < textLength)
+				spansBuilder.add(Collections.emptyList(), textLength - spanStart);
 		} else
 			spansBuilder.add(Collections.emptyList(), 0);
 		return spansBuilder.create();
@@ -196,7 +216,7 @@ class MarkdownSyntaxHighlighter
 
 		styleClasses = new ArrayList<>(1);
 		for (StyleClass styleClass : StyleClass.values()) {
-			if ((bits & (1 << styleClass.ordinal())) != 0)
+			if ((bits & (1L << styleClass.ordinal())) != 0)
 				styleClasses.add(styleClass.name());
 		}
 		styleClassesCache.put(bits, styleClasses);
@@ -217,13 +237,26 @@ class MarkdownSyntaxHighlighter
 		setStyleClass(node, styleClass);
 	}
 
+	private void visit(ListItem node) {
+		setStyleClass(node.getOpeningMarker(), StyleClass.liopen);
+	}
+
+	private void visit(TaskListItem node) {
+		setStyleClass(node.getOpeningMarker(), StyleClass.liopen);
+		setStyleClass(node.getTaskOpeningMarker(), StyleClass.liopentask);
+	}
+
 	private void visit(TableCell node) {
 		setStyleClass(node, node.isHeader() ?  StyleClass.th : StyleClass.td);
 	}
 
 	private void setStyleClass(Node node, StyleClass styleClass) {
-		int start = node.getStartOffset();
-		int end = node.getEndOffset();
+		setStyleClass(node.getChars(), styleClass);
+	}
+
+	private void setStyleClass(BasedSequence sequence, StyleClass styleClass) {
+		int start = sequence.getStartOffset();
+		int end = sequence.getEndOffset();
 
 		addStyledRange(styleRanges, start, end, styleClass);
 	}
@@ -239,7 +272,7 @@ class MarkdownSyntaxHighlighter
 	 * @param end   the ending index, exclusive
 	 */
 	/*private*/ static void addStyledRange(ArrayList<StyleRange> styleRanges, int begin, int end, StyleClass styleClass) {
-		final int styleBits = 1 << styleClass.ordinal();
+		final long styleBits = 1L << styleClass.ordinal();
 		final int lastIndex = styleRanges.size() - 1;
 
 		// check whether list is empty
