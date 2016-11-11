@@ -39,18 +39,30 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
+import javafx.scene.control.Separator;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.ToolBar;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
+import org.controlsfx.control.PopOver;
+import org.controlsfx.control.PopOver.ArrowLocation;
 import org.markdownwriterfx.editor.MarkdownEditorPane;
+import org.markdownwriterfx.options.MarkdownExtensionsPane;
+import org.markdownwriterfx.options.Options;
+import org.markdownwriterfx.options.Options.RendererType;
 import org.markdownwriterfx.options.OptionsDialog;
 import org.markdownwriterfx.util.Action;
 import org.markdownwriterfx.util.ActionUtils;
@@ -66,11 +78,13 @@ class MainWindow
 	private final Scene scene;
 	private final FileEditorTabPane fileEditorTabPane;
 	private MenuBar menuBar;
+	private Node extensionsButton;
 
 	MainWindow() {
 		fileEditorTabPane = new FileEditorTabPane(this);
 
 		BorderPane borderPane = new BorderPane();
+		borderPane.getStyleClass().add("main");
 		borderPane.setPrefSize(800, 800);
 		borderPane.setTop(createMenuBarAndToolBar());
 		borderPane.setCenter(fileEditorTabPane.getNode());
@@ -120,6 +134,14 @@ class MainWindow
 		Action editRedoAction = new Action(Messages.get("MainWindow.editRedoAction"), "Shortcut+Y", REPEAT,
 				e -> getActiveEditor().redo(),
 				createActiveBooleanProperty(FileEditor::canRedoProperty).not());
+
+		// View actions
+		Action viewPreviewAction = new Action(Messages.get("MainWindow.viewPreviewAction"), null, EYE,
+				null, null, fileEditorTabPane.previewVisible);
+		Action viewHtmlSourceAction = new Action(Messages.get("MainWindow.viewHtmlSourceAction"), null, HTML5,
+				null, null, fileEditorTabPane.htmlSourceVisible);
+		Action viewMarkdownAstAction = new Action(Messages.get("MainWindow.viewMarkdownAstAction"), null, SITEMAP,
+				null, null, fileEditorTabPane.markdownAstVisible);
 
 		// Insert actions
 		Action insertBoldAction = new Action(Messages.get("MainWindow.insertBoldAction"), "Shortcut+B", BOLD,
@@ -202,6 +224,11 @@ class MainWindow
 				editUndoAction,
 				editRedoAction);
 
+		Menu viewMenu = ActionUtils.createMenu(Messages.get("MainWindow.viewMenu"),
+				viewPreviewAction,
+				viewHtmlSourceAction,
+				viewMarkdownAstAction);
+
 		Menu insertMenu = ActionUtils.createMenu(Messages.get("MainWindow.insertMenu"),
 				insertBoldAction,
 				insertItalicAction,
@@ -230,7 +257,7 @@ class MainWindow
 		Menu helpMenu = ActionUtils.createMenu(Messages.get("MainWindow.helpMenu"),
 				helpAboutAction);
 
-		menuBar = new MenuBar(fileMenu, editMenu, insertMenu, toolsMenu, helpMenu);
+		menuBar = new MenuBar(fileMenu, editMenu, viewMenu, insertMenu, toolsMenu, helpMenu);
 
 
 		//---- ToolBar ----
@@ -256,6 +283,48 @@ class MainWindow
 				null,
 				insertUnorderedListAction,
 				insertOrderedListAction);
+
+		// horizontal spacer
+		Region spacer = new Region();
+		HBox.setHgrow(spacer, Priority.ALWAYS);
+		toolBar.getItems().add(spacer);
+
+		// preview renderer type choice box
+		ChoiceBox<RendererType> previewRenderer = new ChoiceBox<>();
+		previewRenderer.setFocusTraversable(false);
+		previewRenderer.getItems().addAll(RendererType.values());
+		previewRenderer.getSelectionModel().select(Options.getMarkdownRenderer());
+		previewRenderer.getSelectionModel().selectedItemProperty().addListener((ob, o, n) -> {
+			Options.setMarkdownRenderer(n);
+		});
+		Options.markdownRendererProperty().addListener((ob, o, n) -> {
+			previewRenderer.getSelectionModel().select(n);
+		});
+		toolBar.getItems().add(previewRenderer);
+
+		// markdown extensions popover
+		String title = Messages.get("MainWindow.MarkdownExtensions");
+		extensionsButton = ActionUtils.createToolBarButton(
+				new Action(title, null, COG, e -> {
+					PopOver popOver = new PopOver();
+					popOver.setTitle(title);
+					popOver.setHeaderAlwaysVisible(true);
+					popOver.setArrowLocation(ArrowLocation.TOP_CENTER);
+					popOver.setContentNode(new MarkdownExtensionsPane(true));
+					popOver.show(extensionsButton);
+				}));
+		toolBar.getItems().add(extensionsButton);
+		toolBar.getItems().add(new Separator());
+
+		// preview actions
+		Node[] previewButtons = ActionUtils.createToolBarButtons(
+				viewPreviewAction,
+				viewHtmlSourceAction,
+				viewMarkdownAstAction);
+		ToggleGroup viewGroup = new ToggleGroup();
+		for (Node n : previewButtons)
+			((ToggleButton)n).setToggleGroup(viewGroup);
+		toolBar.getItems().addAll(previewButtons);
 
 		return new VBox(menuBar, toolBar);
 	}

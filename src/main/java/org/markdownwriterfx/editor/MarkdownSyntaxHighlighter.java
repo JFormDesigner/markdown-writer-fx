@@ -30,23 +30,35 @@ package org.markdownwriterfx.editor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import javafx.application.Platform;
+import com.vladsch.flexmark.ast.*;
+import com.vladsch.flexmark.ext.abbreviation.Abbreviation;
+import com.vladsch.flexmark.ext.abbreviation.AbbreviationBlock;
+import com.vladsch.flexmark.ext.aside.AsideBlock;
+import com.vladsch.flexmark.ext.gfm.strikethrough.Strikethrough;
+import com.vladsch.flexmark.ext.gfm.tables.TableBlock;
+import com.vladsch.flexmark.ext.gfm.tables.TableBody;
+import com.vladsch.flexmark.ext.gfm.tables.TableCell;
+import com.vladsch.flexmark.ext.gfm.tables.TableHead;
+import com.vladsch.flexmark.ext.gfm.tables.TableRow;
+import com.vladsch.flexmark.ext.gfm.tasklist.TaskListItem;
+import com.vladsch.flexmark.ext.wikilink.WikiLink;
+import com.vladsch.flexmark.util.sequence.BasedSequence;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
-import org.pegdown.ast.*;
 
 /**
  * Markdown syntax highlighter.
  *
- * Uses pegdown AST.
+ * Uses flexmark-java AST.
  *
  * @author Karl Tauber
  */
 class MarkdownSyntaxHighlighter
-	implements Visitor
 {
-	private enum StyleClass {
+	/*private*/ enum StyleClass {
 		// headers
 		h1,
 		h2,
@@ -62,15 +74,19 @@ class MarkdownSyntaxHighlighter
 		a,
 		img,
 		code,
+		br,
 
 		// blocks
 		pre,
 		blockquote,
+		aside,
 
 		// lists
 		ul,
 		ol,
 		li,
+		liopen,
+		liopentask,
 		dl,
 		dt,
 		dd,
@@ -79,138 +95,135 @@ class MarkdownSyntaxHighlighter
 		table,
 		thead,
 		tbody,
-		caption,
-		th,
 		tr,
+		th,
 		td,
 
 		// misc
 		html,
-		monospace,
+		reference,
+		abbrdef,
+		abbr,
 	};
 
-	/**
-	 * style bits (1 << StyleClass.ordinal()) for each character
-	 * simplifies implementation of overlapping styles
-	 */
-	private int[] styleClassBits;
-	private boolean inTableHeader;
+	private static final HashMap<Long, Collection<String>> styleClassesCache = new HashMap<>();
+	private static final HashMap<Class<? extends Node>, StyleClass> node2style = new HashMap<>();
 
-	static void highlight(StyleClassedTextArea textArea, RootNode astRoot) {
-		assert StyleClass.values().length <= 32;
+	static {
+		// inlines
+		node2style.put(StrongEmphasis.class, StyleClass.strong);
+		node2style.put(Emphasis.class, StyleClass.em);
+		node2style.put(Strikethrough.class, StyleClass.del);
+		node2style.put(Link.class, StyleClass.a);
+		node2style.put(LinkRef.class, StyleClass.a);
+		node2style.put(WikiLink.class, StyleClass.a);
+		node2style.put(Image.class, StyleClass.img);
+		node2style.put(Code.class, StyleClass.code);
+		node2style.put(HardLineBreak.class, StyleClass.br);
+
+		// blocks
+		node2style.put(FencedCodeBlock.class, StyleClass.pre);
+		node2style.put(IndentedCodeBlock.class, StyleClass.pre);
+		node2style.put(BlockQuote.class, StyleClass.blockquote);
+		node2style.put(AsideBlock.class, StyleClass.aside);
+
+		// lists
+		node2style.put(BulletList.class, StyleClass.ul);
+		node2style.put(OrderedList.class, StyleClass.ol);
+		node2style.put(BulletListItem.class, StyleClass.li);
+		node2style.put(OrderedListItem.class, StyleClass.li);
+		node2style.put(TaskListItem.class, StyleClass.li);
+
+		// tables
+		node2style.put(TableBlock.class, StyleClass.table);
+		node2style.put(TableHead.class, StyleClass.thead);
+		node2style.put(TableBody.class, StyleClass.tbody);
+		node2style.put(TableRow.class, StyleClass.tr);
+
+		// misc
+		node2style.put(HtmlBlock.class, StyleClass.html);
+		node2style.put(HtmlInline.class, StyleClass.html);
+		node2style.put(Reference.class, StyleClass.reference);
+		node2style.put(AbbreviationBlock.class, StyleClass.abbrdef);
+		node2style.put(Abbreviation.class, StyleClass.abbr);
+	}
+
+	private ArrayList<StyleRange> styleRanges;
+
+	static void highlight(StyleClassedTextArea textArea, Node astRoot) {
 		assert Platform.isFxApplicationThread();
 
+		assert textArea.getText().length() == textArea.getLength();
 		textArea.setStyleSpans(0, new MarkdownSyntaxHighlighter()
-				.computeHighlighting(astRoot, textArea.getLength()));
+				.computeHighlighting(astRoot, textArea.getText()));
 	}
 
 	private MarkdownSyntaxHighlighter() {
 	}
 
-	private StyleSpans<Collection<String>> computeHighlighting(RootNode astRoot, int textLength) {
-		styleClassBits = new int[textLength];
+	private StyleSpans<Collection<String>> computeHighlighting(Node astRoot, String text) {
+		styleRanges = new ArrayList<>();
 
 		// visit all nodes
-		astRoot.accept(this);
+		NodeVisitor visitor = new NodeVisitor(
+			new VisitHandler<>(Heading.class, this::visit),
+			new VisitHandler<>(BulletListItem.class, this::visit),
+			new VisitHandler<>(OrderedListItem.class, this::visit),
+			new VisitHandler<>(TaskListItem.class, this::visit),
+			new VisitHandler<>(TableCell.class, this::visit))
+		{
+			@Override
+			public void visit(Node node) {
+				Class<? extends Node> nodeClass = node.getClass();
+				StyleClass style = node2style.get(nodeClass);
+				if (style != null)
+					setStyleClass(node, style);
+
+				VisitHandler<?> handler = myCustomHandlersMap.get(nodeClass);
+				if (handler != null)
+					handler.visit(node);
+
+				visitChildren(node);
+			}
+		};
+		visitor.visit(astRoot);
 
 		// build style spans
 		StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
-		if (styleClassBits.length > 0) {
+		int textLength = text.length();
+		if (textLength > 0) {
 			int spanStart = 0;
-			int previousBits = styleClassBits[0];
-
-			for (int i = 1; i < styleClassBits.length; i++) {
-				int bits = styleClassBits[i];
-				if (bits == previousBits)
-					continue;
-
-				spansBuilder.add(toStyleClasses(previousBits), i - spanStart);
-
-				spanStart = i;
-				previousBits = bits;
+			for (StyleRange range : styleRanges) {
+				if (range.begin > spanStart)
+					spansBuilder.add(Collections.emptyList(), range.begin - spanStart);
+				spansBuilder.add(toStyleClasses(range.styleBits), range.end - range.begin);
+				spanStart = range.end;
 			}
-			spansBuilder.add(toStyleClasses(previousBits), styleClassBits.length - spanStart);
+			if (spanStart < textLength)
+				spansBuilder.add(Collections.emptyList(), textLength - spanStart);
 		} else
 			spansBuilder.add(Collections.emptyList(), 0);
 		return spansBuilder.create();
 	}
 
-	private Collection<String> toStyleClasses(int bits) {
+	private Collection<String> toStyleClasses(long bits) {
 		if (bits == 0)
 			return Collections.emptyList();
 
-		Collection<String> styleClasses = new ArrayList<>(1);
+		Collection<String> styleClasses = styleClassesCache.get(bits);
+		if (styleClasses != null)
+			return styleClasses;
+
+		styleClasses = new ArrayList<>(1);
 		for (StyleClass styleClass : StyleClass.values()) {
-			if ((bits & (1 << styleClass.ordinal())) != 0)
+			if ((bits & (1L << styleClass.ordinal())) != 0)
 				styleClasses.add(styleClass.name());
 		}
+		styleClassesCache.put(bits, styleClasses);
 		return styleClasses;
 	}
 
-	@Override
-	public void visit(AbbreviationNode node) {
-		// noting to do here
-	}
-
-	@Override
-	public void visit(AnchorLinkNode node) {
-		// noting to do here
-	}
-
-	@Override
-	public void visit(AutoLinkNode node) {
-		setStyleClass(node, StyleClass.a);
-	}
-
-	@Override
-	public void visit(BlockQuoteNode node) {
-		setStyleClass(node, StyleClass.blockquote);
-		visitChildren(node);
-	}
-
-	@Override
-	public void visit(BulletListNode node) {
-		setStyleClass(node, StyleClass.ul);
-		visitChildren(node);
-	}
-
-	@Override
-	public void visit(CodeNode node) {
-		setStyleClass(node, StyleClass.code);
-	}
-
-	@Override
-	public void visit(DefinitionListNode node) {
-		setStyleClass(node, StyleClass.dl);
-		visitChildren(node);
-	}
-
-	@Override
-	public void visit(DefinitionNode node) {
-		setStyleClass(node, StyleClass.dd);
-		visitChildren(node);
-	}
-
-	@Override
-	public void visit(DefinitionTermNode node) {
-		setStyleClass(node, StyleClass.dt);
-		visitChildren(node);
-	}
-
-	@Override
-	public void visit(ExpImageNode node) {
-		setStyleClass(node, StyleClass.img);
-		visitChildren(node);
-	}
-
-	@Override
-	public void visit(ExpLinkNode node) {
-		setStyleClass(node, StyleClass.a);
-		visitChildren(node);
-	}
-
-	@Override
-	public void visit(HeaderNode node) {
+	private void visit(Heading node) {
 		StyleClass styleClass;
 		switch (node.getLevel()) {
 			case 1: styleClass = StyleClass.h1; break;
@@ -222,181 +235,129 @@ class MarkdownSyntaxHighlighter
 			default: return;
 		}
 		setStyleClass(node, styleClass);
-
-		// use monospace font for underlined headers
-		if (!node.getChildren().isEmpty() &&
-				node.getChildren().get(0).getStartIndex() == node.getStartIndex())
-			setStyleClass(node, StyleClass.monospace);
-
-		visitChildren(node);
 	}
 
-	@Override
-	public void visit(HtmlBlockNode node) {
-		setStyleClass(node, StyleClass.html);
+	private void visit(ListItem node) {
+		setStyleClass(node.getOpeningMarker(), StyleClass.liopen);
 	}
 
-	@Override
-	public void visit(InlineHtmlNode node) {
-		setStyleClass(node, StyleClass.html);
+	private void visit(TaskListItem node) {
+		setStyleClass(node.getOpeningMarker(), StyleClass.liopen);
+		setStyleClass(node.getTaskOpeningMarker(), StyleClass.liopentask);
 	}
 
-	@Override
-	public void visit(ListItemNode node) {
-		setStyleClass(node, StyleClass.li);
-		visitChildren(node);
-	}
-
-	@Override
-	public void visit(MailLinkNode node) {
-		setStyleClass(node, StyleClass.a);
-	}
-
-	@Override
-	public void visit(OrderedListNode node) {
-		setStyleClass(node, StyleClass.ol);
-		visitChildren(node);
-	}
-
-	@Override
-	public void visit(ParaNode node) {
-		visitChildren(node);
-	}
-
-	@Override
-	public void visit(QuotedNode node) {
-		// noting to do here
-	}
-
-	@Override
-	public void visit(ReferenceNode node) {
-		// noting to do here
-	}
-
-	@Override
-	public void visit(RefImageNode node) {
-		setStyleClass(node, StyleClass.img);
-		visitChildren(node);
-	}
-
-	@Override
-	public void visit(RefLinkNode node) {
-		setStyleClass(node, StyleClass.a);
-		visitChildren(node);
-	}
-
-	@Override
-	public void visit(RootNode node) {
-		visitChildren(node);
-	}
-
-	@Override
-	public void visit(SimpleNode node) {
-		// noting to do here
-	}
-
-	@Override
-	public void visit(SpecialTextNode node) {
-		// noting to do here
-	}
-
-	@Override
-	public void visit(StrikeNode node) {
-		setStyleClass(node, StyleClass.del);
-		visitChildren(node);
-	}
-
-	@Override
-	public void visit(StrongEmphSuperNode node) {
-		if (node.isClosed())
-			setStyleClass(node, node.isStrong() ? StyleClass.strong : StyleClass.em);
-		// else sequence was not closed, treat open chars as ordinary chars
-
-		visitChildren(node);
-	}
-
-	@Override
-	public void visit(TableBodyNode node) {
-		setStyleClass(node, StyleClass.tbody);
-		visitChildren(node);
-	}
-
-	@Override
-	public void visit(TableCaptionNode node) {
-		setStyleClass(node, StyleClass.caption);
-		visitChildren(node);
-	}
-
-	@Override
-	public void visit(TableCellNode node) {
-		setStyleClass(node, inTableHeader ? StyleClass.th : StyleClass.td);
-		visitChildren(node);
-	}
-
-	@Override
-	public void visit(TableColumnNode node) {
-		// noting to do here
-	}
-
-	@Override
-	public void visit(TableHeaderNode node) {
-		setStyleClass(node, StyleClass.thead);
-
-		inTableHeader = true;
-		visitChildren(node);
-		inTableHeader = false;
-	}
-
-	@Override
-	public void visit(TableNode node) {
-		setStyleClass(node, StyleClass.table);
-		visitChildren(node);
-	}
-
-	@Override
-	public void visit(TableRowNode node) {
-		setStyleClass(node, StyleClass.tr);
-		visitChildren(node);
-	}
-
-	@Override
-	public void visit(VerbatimNode node) {
-		setStyleClass(node, StyleClass.pre);
-	}
-
-	@Override
-	public void visit(WikiLinkNode node) {
-		setStyleClass(node, StyleClass.a);
-	}
-
-	@Override
-	public void visit(TextNode node) {
-		// noting to do here
-	}
-
-	@Override
-	public void visit(SuperNode node) {
-		visitChildren(node);
-	}
-
-	@Override
-	public void visit(Node node) {
-		// ignore custom Node implementations
-	}
-
-	private void visitChildren(SuperNode node) {
-		for (Node child : node.getChildren())
-			child.accept(this);
+	private void visit(TableCell node) {
+		setStyleClass(node, node.isHeader() ?  StyleClass.th : StyleClass.td);
 	}
 
 	private void setStyleClass(Node node, StyleClass styleClass) {
-		// because PegDownProcessor.prepareSource() adds two trailing newlines
-		// to the text before parsing, we need to limit the end index
-		int start = node.getStartIndex();
-		int end = Math.min(node.getEndIndex(), styleClassBits.length);
-		int styleBit = 1 << styleClass.ordinal();
+		setStyleClass(node.getChars(), styleClass);
+	}
 
-		for (int i = start; i < end; i++)
-			styleClassBits[i] |= styleBit;
+	private void setStyleClass(BasedSequence sequence, StyleClass styleClass) {
+		int start = sequence.getStartOffset();
+		int end = sequence.getEndOffset();
+
+		addStyledRange(styleRanges, start, end, styleClass);
+	}
+
+	/**
+	 * Adds a style range to styleRanges.
+	 *
+	 * Makes sure that the ranges are sorted by begin index
+	 * and that there are no overlapping ranges.
+	 * In case the added range overlaps, existing ranges are split.
+	 *
+	 * @param begin the beginning index, inclusive
+	 * @param end   the ending index, exclusive
+	 */
+	/*private*/ static void addStyledRange(ArrayList<StyleRange> styleRanges, int begin, int end, StyleClass styleClass) {
+		final long styleBits = 1L << styleClass.ordinal();
+		final int lastIndex = styleRanges.size() - 1;
+
+		// check whether list is empty
+		if (styleRanges.isEmpty()) {
+			styleRanges.add(new StyleRange(begin, end, styleBits));
+			return;
+		}
+
+		// check whether new range is after last range
+		final StyleRange lastRange = styleRanges.get(lastIndex);
+		if (begin >= lastRange.end) {
+			styleRanges.add(new StyleRange(begin, end, styleBits));
+			return;
+		}
+
+		// walk existing ranges from last to first
+		for (int i = lastIndex; i >= 0; i--) {
+			StyleRange range = styleRanges.get(i);
+			if (end <= range.begin) {
+				// new range is before existing range (no overlapping) --> nothing yet to do
+				continue;
+			}
+
+			if (begin >= range.end) {
+				// existing range is before new range (no overlapping)
+
+				if (begin < styleRanges.get(i+1).begin) {
+					// new range starts after this range (may overlap next range) --> add
+					int end2 = Math.min(end, styleRanges.get(i+1).begin);
+					styleRanges.add(i + 1, new StyleRange(begin, end2, styleBits));
+				}
+
+				break; // done
+			}
+
+			if (end > range.end) {
+				// new range ends after this range (may overlap next range) --> add
+				int end2 = (i == lastIndex) ? end : Math.min(end, styleRanges.get(i+1).begin);
+				if (end2 > range.end)
+					styleRanges.add(i + 1, new StyleRange(range.end, end2, styleBits));
+			}
+
+			if (begin < range.end && end > range.begin) {
+				// the new range overlaps the existing range somewhere
+
+				if (begin <= range.begin && end >= range.end) {
+					// new range completely overlaps existing range --> merge style bits
+					styleRanges.set(i, new StyleRange(range.begin, range.end, range.styleBits | styleBits));
+				} else if (begin <= range.begin && end < range.end) {
+					// new range overlaps at the begin with existing range --> split range
+					styleRanges.set(i, new StyleRange(range.begin, end, range.styleBits | styleBits));
+					styleRanges.add(i + 1, new StyleRange(end, range.end, range.styleBits));
+				} else if (begin > range.begin && end >= range.end) {
+					// new range overlaps at the end with existing range --> split range
+					styleRanges.set(i, new StyleRange(range.begin, begin, range.styleBits));
+					styleRanges.add(i + 1, new StyleRange(begin, range.end, range.styleBits | styleBits));
+				} else if (begin > range.begin && end < range.end) {
+					// new range is in existing range --> split range
+					styleRanges.set(i, new StyleRange(range.begin, begin, range.styleBits));
+					styleRanges.add(i + 1, new StyleRange(begin, end, range.styleBits | styleBits));
+					styleRanges.add(i + 2, new StyleRange(end, range.end, range.styleBits));
+				}
+			}
+		}
+
+		// check whether new range starts before first range
+		if (begin < styleRanges.get(0).begin) {
+			// add new range (part) before first range
+			int end2 = Math.min(end, styleRanges.get(0).begin);
+			styleRanges.add(0, new StyleRange(begin, end2, styleBits));
+		}
+	}
+
+	//---- class StyleRange ---------------------------------------------------
+
+	/*private*/ static class StyleRange
+	{
+		final int begin;		// inclusive
+		final int end;			// exclusive
+		final long styleBits;	// 1 << StyleClass.ordinal()
+
+		StyleRange(int begin, int end, long styleBits) {
+			this.begin = begin;
+			this.end = end;
+			this.styleBits = styleBits;
+		}
 	}
 }

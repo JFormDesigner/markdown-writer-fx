@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Karl Tauber <karl at jformdesigner dot com>
+ * Copyright (c) 2016 Karl Tauber <karl at jformdesigner dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,50 +27,74 @@
 
 package org.markdownwriterfx.preview;
 
-import java.nio.file.Path;
-import javafx.scene.control.ScrollBar;
-import javafx.scene.control.TextArea;
-import org.markdownwriterfx.preview.MarkdownPreviewPane.Renderer;
-import org.markdownwriterfx.util.Utils;
+import org.markdownwriterfx.options.MarkdownExtensions;
+import com.vladsch.flexmark.ast.Node;
+import com.vladsch.flexmark.html.HtmlRenderer;
 
 /**
- * HTML source preview.
+ * flexmark-java preview.
  *
  * @author Karl Tauber
  */
-class HtmlSourcePreview
-	implements MarkdownPreviewPane.Preview
+class FlexmarkPreviewRenderer
+	implements MarkdownPreviewPane.Renderer
 {
-	private final TextArea textArea = new TextArea();
-	private ScrollBar vScrollBar;
+	private Node astRoot;
 
-	HtmlSourcePreview() {
-		textArea.setEditable(false);
-		textArea.setWrapText(true);
-	}
+	private String html;
+	private String ast;
 
 	@Override
-	public javafx.scene.Node getNode() {
-		return textArea;
-	}
-
-	@Override
-	public void update(Renderer renderer, Path path) {
-		double scrollTop = textArea.getScrollTop();
-
-		textArea.setText(renderer.getHtml());
-
-		textArea.setScrollTop(scrollTop);
-	}
-
-	@Override
-	public void scrollY(double value) {
-		if (vScrollBar == null)
-			vScrollBar = Utils.findVScrollBar(textArea);
-		if (vScrollBar == null)
+	public void update(String markdownText, Node astRoot) {
+		if (this.astRoot == astRoot)
 			return;
 
-		double maxValue = vScrollBar.maxProperty().get();
-		vScrollBar.setValue(maxValue * value);
+		this.astRoot = astRoot;
+
+		html = null;
+		ast = null;
+	}
+
+	@Override
+	public String getHtml() {
+		if (html == null)
+			html = toHtml();
+		return html;
+	}
+
+	@Override
+	public String getAST() {
+		if (ast == null)
+			ast = printTree();
+		return ast;
+	}
+
+	private String toHtml() {
+		if (astRoot == null)
+			return "";
+
+		HtmlRenderer renderer = HtmlRenderer.builder()
+				.extensions(MarkdownExtensions.getFlexmarkExtensions())
+				.build();
+		return renderer.render(astRoot);
+	}
+
+	private String printTree() {
+		if (astRoot == null)
+			return "";
+
+		StringBuilder buf = new StringBuilder(100);
+		printNode(buf, "", astRoot);
+		return buf.toString().replace(Node.SPLICE, "...");
+	}
+
+	private void printNode(StringBuilder buf, String indent, Node node) {
+		buf.append(indent);
+		node.astString(buf, true);
+		buf.append('\n');
+
+		indent += "    ";
+		for (Node child = node.getFirstChild(); child != null; child = child.getNext())
+			printNode(buf, indent, child);
 	}
 }

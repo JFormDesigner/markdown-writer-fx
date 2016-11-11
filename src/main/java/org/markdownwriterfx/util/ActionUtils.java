@@ -29,10 +29,13 @@ package org.markdownwriterfx.util;
 
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBase;
+import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Separator;
 import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToolBar;
 import javafx.scene.control.Tooltip;
 import de.jensd.fx.glyphs.fontawesome.utils.FontAwesomeIconFactory;
@@ -59,7 +62,7 @@ public class ActionUtils
 	}
 
 	public static MenuItem createMenuItem(Action action) {
-		MenuItem menuItem = new MenuItem(action.text);
+		MenuItem menuItem = (action.selected != null) ? new CheckMenuItem(action.text) : new MenuItem(action.text);
 		if (action.accelerator != null)
 			menuItem.setAccelerator(action.accelerator);
 		if (action.icon != null)
@@ -67,6 +70,8 @@ public class ActionUtils
 		menuItem.setOnAction(action.action);
 		if (action.disable != null)
 			menuItem.disableProperty().bind(action.disable);
+		if (action.selected != null)
+			((CheckMenuItem)menuItem).selectedProperty().bindBidirectional(action.selected);
 		return menuItem;
 	}
 
@@ -84,8 +89,8 @@ public class ActionUtils
 		return buttons;
 	}
 
-	public static Button createToolBarButton(Action action) {
-		Button button = new Button();
+	public static ButtonBase createToolBarButton(Action action) {
+		ButtonBase button = (action.selected != null) ? new ToggleButton() : new Button();
 		button.setGraphic(FontAwesomeIconFactory.get().createIcon(action.icon, "1.2em"));
 		String tooltip = action.text;
 		if (tooltip.endsWith("..."))
@@ -97,6 +102,8 @@ public class ActionUtils
 		button.setOnAction(action.action);
 		if (action.disable != null)
 			button.disableProperty().bind(action.disable);
+		if (action.selected != null)
+			((ToggleButton)button).selectedProperty().bindBidirectional(action.selected);
 		return button;
 	}
 }

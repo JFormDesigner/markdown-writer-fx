@@ -28,16 +28,13 @@
 package org.markdownwriterfx.preview;
 
 import java.nio.file.Path;
-import javafx.scene.Node;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.TextArea;
+import org.markdownwriterfx.preview.MarkdownPreviewPane.Renderer;
 import org.markdownwriterfx.util.Utils;
-import org.parboiled.support.ToStringFormatter;
-import org.parboiled.trees.GraphUtils;
-import org.pegdown.ast.RootNode;
 
 /**
- * Pegdown AST preview.
+ * Markdown AST preview.
  * Prints the AST tree to a text area.
  *
  * @author Karl Tauber
@@ -52,16 +49,17 @@ class ASTPreview
 		textArea.setEditable(false);
 	}
 
-	Node getNode() {
+	@Override
+	public javafx.scene.Node getNode() {
 		return textArea;
 	}
 
 	@Override
-	public void update(RootNode astRoot, Path path) {
+	public void update(Renderer renderer, Path path) {
 		double scrollTop = textArea.getScrollTop();
 		double scrollLeft = textArea.getScrollLeft();
 
-		textArea.setText(GraphUtils.printTree(astRoot, new ToStringFormatter<>()));
+		textArea.setText(renderer.getAST());
 
 		textArea.setScrollTop(scrollTop);
 		textArea.setScrollLeft(scrollLeft);

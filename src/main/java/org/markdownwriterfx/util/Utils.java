@@ -47,6 +47,10 @@ public class Utils
 		return o1.equals(o2);
 	}
 
+	public static String defaultIfEmpty(String value, String defaultValue) {
+		return isNullOrEmpty(value) ? defaultValue : value;
+	}
+
 	public static boolean isNullOrEmpty(String s) {
 		return s == null || s.isEmpty();
 	}
@@ -103,6 +107,25 @@ public class Utils
 
 		for (int i = strings.length; prefs.get(key + (i + 1), null) != null; i++)
 			prefs.remove(key + (i + 1));
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T extends Enum<T>> T getPrefsEnum(Preferences prefs, String key, T def) {
+		String s = prefs.get(key, null);
+		if (s == null)
+			return def;
+		try {
+			return (T) Enum.valueOf(def.getClass(), s);
+		} catch (IllegalArgumentException ex) {
+			return def;
+		}
+	}
+
+	public static <T extends Enum<T>> void putPrefsEnum(Preferences prefs, String key, T value, T def) {
+		if (value != def)
+			prefs.put(key, value.name());
+		else
+			prefs.remove(key);
 	}
 
 	public static ScrollBar findVScrollBar(Node node) {

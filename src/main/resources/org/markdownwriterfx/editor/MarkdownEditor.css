@@ -26,7 +26,7 @@
  */
 
 .markdown-editor {
-	-fx-font-size: 14px;
+	-mwfx-inline-background-color: #f6f6f6;
 }
 
 
@@ -46,7 +46,7 @@
 .markdown-editor .h5,
 .markdown-editor .h6 {
 	-fx-font-weight: bold;
-	-fx-fill: derive(crimson, -20%);
+	-fx-fill: #c62828;
 }
 
 
@@ -54,39 +54,50 @@
 
 .markdown-editor .strong {
 	-fx-font-weight: bold;
+	-rtfx-background-color: -mwfx-inline-background-color;
 }
 
 .markdown-editor .em {
 	-fx-font-style: italic;
+	-rtfx-background-color: -mwfx-inline-background-color;
 }
 
 .markdown-editor .del {
 	-fx-strikethrough: true;
+	-rtfx-background-color: -mwfx-inline-background-color;
 }
 
 .markdown-editor .a {
 	-fx-fill: #4183C4 !important;
+	-rtfx-background-color: -mwfx-inline-background-color;
 }
 
 .markdown-editor .img {
-	-fx-fill: #4183C4 !important;
+	-fx-fill: #BF360C !important;
+	-rtfx-background-color: -mwfx-inline-background-color;
 }
 
 .markdown-editor .code {
-	-fx-font-family: monospace;
-	-fx-fill: #090 !important;
+	-fx-fill: #388E3C !important;
+	-rtfx-background-color: -mwfx-inline-background-color;
+}
+
+.markdown-editor .br {
+	-rtfx-background-color: #c8eafb;
 }
 
 
 /*---- blocks ----*/
 
 .markdown-editor .pre {
-	-fx-font-family: monospace;
-	-fx-fill: #060 !important;
+	-fx-fill: #2E7D32 !important;
 }
 
 .markdown-editor .blockquote {
 	-fx-fill: #777;
+}
+.markdown-editor .aside {
+	-fx-fill: #BF360C;
 }
 
 
@@ -100,6 +111,16 @@
 
 .markdown-editor .li {
 	-fx-fill: #444;
+}
+
+.markdown-editor .liopen {
+	-fx-fill: #BF360C;
+	-fx-font-weight: bold;
+}
+
+.markdown-editor .liopentask {
+	-fx-fill: #283593;
+	-fx-font-weight: bold;
 }
 
 .markdown-editor .dl {
@@ -118,7 +139,6 @@
 /*---- table ----*/
 
 .markdown-editor .table {
-	-fx-font-family: monospace;
 }
 
 .markdown-editor .thead {
@@ -127,14 +147,11 @@
 .markdown-editor .tbody {
 }
 
-.markdown-editor .caption {
+.markdown-editor .tr {
 }
 
 .markdown-editor .th {
 	-fx-font-weight: bold;
-}
-
-.markdown-editor .tr {
 }
 
 .markdown-editor .td {
@@ -144,9 +161,14 @@
 /*---- misc ----*/
 
 .markdown-editor .html {
-	-fx-font-family: monospace;
 	-fx-fill: derive(crimson, -50%);
 }
-.markdown-editor .monospace {
-	-fx-font-family: monospace;
+
+.markdown-editor .reference {
+	-fx-fill: derive(#4183C4,30%) !important;
+}
+
+.markdown-editor .abbrdef,
+.markdown-editor .abbr {
+	-fx-fill: #004D40;
 }

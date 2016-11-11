@@ -43,28 +43,30 @@ import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.ReadOnlyStringProperty;
+import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.scene.Node;
 import javafx.scene.control.IndexRange;
 import javafx.scene.input.KeyEvent;
+import com.vladsch.flexmark.ast.Node;
+import com.vladsch.flexmark.parser.Parser;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.undo.UndoManager;
 import org.fxmisc.wellbehaved.event.Nodes;
 import org.markdownwriterfx.dialogs.ImageDialog;
 import org.markdownwriterfx.dialogs.LinkDialog;
+import org.markdownwriterfx.options.MarkdownExtensions;
 import org.markdownwriterfx.options.Options;
 import org.markdownwriterfx.spellchecker.SpellChecker;
 import org.markdownwriterfx.util.Utils;
-import org.pegdown.PegDownProcessor;
-import org.pegdown.ast.RootNode;
 
 /**
  * Markdown editor pane.
  *
- * Uses pegdown (https://github.com/sirthias/pegdown) for parsing markdown.
+ * Uses flexmark-java (https://github.com/vsch/flexmark-java) for parsing markdown.
  *
  * @author Karl Tauber
  */
@@ -77,9 +79,9 @@ public class MarkdownEditorPane
 	private final StyleClassedTextArea textArea;
 	private final ParagraphOverlayGraphicFactory overlayGraphicFactory;
 	private WhitespaceOverlayFactory whitespaceOverlayFactory;
+	private Parser parser;
 	@SuppressWarnings("unused")
 	private final SpellChecker spellChecker;
-	private PegDownProcessor pegDownProcessor;
 	private final InvalidationListener optionsListener;
 	private String lineSeparator = getLineSeparatorOrDefault();
 
@@ -94,9 +96,12 @@ public class MarkdownEditorPane
 		});
 
 		Nodes.addInputMap(textArea, sequence(
-			consume(keyPressed(ENTER),				this::enterPressed),
-			consume(keyPressed(D, SHORTCUT_DOWN),	this::deleteLine),
-			consume(keyPressed(W, ALT_DOWN),		this::showWhitespace)
+			consume(keyPressed(ENTER),					this::enterPressed),
+			consume(keyPressed(D, SHORTCUT_DOWN),		this::deleteLine),
+			consume(keyPressed(PLUS, SHORTCUT_DOWN),	this::increaseFontSize),
+			consume(keyPressed(MINUS, SHORTCUT_DOWN),	this::decreaseFontSize),
+			consume(keyPressed(DIGIT0, SHORTCUT_DOWN),	this::resetFontSize),
+			consume(keyPressed(W, ALT_DOWN),			this::showWhitespace)
 		));
 
 		// add listener to update 'scrollY' property
@@ -113,6 +118,7 @@ public class MarkdownEditorPane
 
 		overlayGraphicFactory = new ParagraphOverlayGraphicFactory(textArea);
 		textArea.setParagraphGraphicFactory(overlayGraphicFactory);
+		updateFont();
 		updateShowWhitespace();
 
 		spellChecker = new SpellChecker(textArea, overlayGraphicFactory);
@@ -122,19 +128,30 @@ public class MarkdownEditorPane
 			if (textArea.getScene() == null)
 				return; // editor closed but not yet GCed
 
-			if (e == Options.markdownExtensionsProperty()) {
-				// re-process markdown if markdown extensions option changes
-				pegDownProcessor = null;
-				textChanged(textArea.getText());
-			} else if (e == Options.showWhitespaceProperty())
+			if (e == Options.fontFamilyProperty() || e == Options.fontSizeProperty())
+				updateFont();
+			else if (e == Options.showWhitespaceProperty())
 				updateShowWhitespace();
+			else if (e == Options.markdownRendererProperty() || e == Options.markdownExtensionsProperty()) {
+				// re-process markdown if markdown extensions option changes
+				parser = null;
+				textChanged(textArea.getText());
+			}
 		};
 		WeakInvalidationListener weakOptionsListener = new WeakInvalidationListener(optionsListener);
+		Options.fontFamilyProperty().addListener(weakOptionsListener);
+		Options.fontSizeProperty().addListener(weakOptionsListener);
+		Options.markdownRendererProperty().addListener(weakOptionsListener);
 		Options.markdownExtensionsProperty().addListener(weakOptionsListener);
 		Options.showWhitespaceProperty().addListener(weakOptionsListener);
 	}
 
-	public Node getNode() {
+	private void updateFont() {
+		textArea.setStyle("-fx-font-family: '" + Options.getFontFamily()
+				+ "'; -fx-font-size: " + Options.getFontSize() );
+	}
+
+	public javafx.scene.Node getNode() {
 		return scrollPane;
 	}
 
@@ -175,10 +192,15 @@ public class MarkdownEditorPane
 	}
 	public ObservableValue<String> markdownProperty() { return textArea.textProperty(); }
 
+	// 'markdownText' property
+	private final ReadOnlyStringWrapper markdownText = new ReadOnlyStringWrapper();
+	public String getMarkdownText() { return markdownText.get(); }
+	public ReadOnlyStringProperty markdownTextProperty() { return markdownText.getReadOnlyProperty(); }
+
 	// 'markdownAST' property
-	private final ReadOnlyObjectWrapper<RootNode> markdownAST = new ReadOnlyObjectWrapper<>();
-	public RootNode getMarkdownAST() { return markdownAST.get(); }
-	public ReadOnlyObjectProperty<RootNode> markdownASTProperty() { return markdownAST.getReadOnlyProperty(); }
+	private final ReadOnlyObjectWrapper<Node> markdownAST = new ReadOnlyObjectWrapper<>();
+	public Node getMarkdownAST() { return markdownAST.get(); }
+	public ReadOnlyObjectProperty<Node> markdownASTProperty() { return markdownAST.getReadOnlyProperty(); }
 
 	// 'scrollY' property
 	private final ReadOnlyDoubleWrapper scrollY = new ReadOnlyDoubleWrapper();
@@ -197,18 +219,23 @@ public class MarkdownEditorPane
 	}
 
 	private void textChanged(String newText) {
-		RootNode astRoot = parseMarkdown(newText);
+		Node astRoot = parseMarkdown(newText);
 		applyHighlighting(astRoot);
+
+		markdownText.set(newText);
 		markdownAST.set(astRoot);
 	}
 
-	private RootNode parseMarkdown(String text) {
-		if(pegDownProcessor == null)
-			pegDownProcessor = new PegDownProcessor(Options.getMarkdownExtensions());
-		return pegDownProcessor.parseMarkdown(text.toCharArray());
+	private Node parseMarkdown(String text) {
+		if (parser == null) {
+			parser = Parser.builder()
+				.extensions(MarkdownExtensions.getFlexmarkExtensions(Options.getMarkdownRenderer()))
+				.build();
+		}
+		return parser.parse(text);
 	}
 
-	private void applyHighlighting(RootNode astRoot) {
+	private void applyHighlighting(Node astRoot) {
 		MarkdownSyntaxHighlighter.highlight(textArea, astRoot);
 	}
 
@@ -237,9 +264,20 @@ public class MarkdownEditorPane
 		textArea.deleteText(start, end);
 	}
 
+	private void increaseFontSize(KeyEvent e) {
+		Options.setFontSize(Options.getFontSize() + 1);
+	}
+
+	private void decreaseFontSize(KeyEvent e) {
+		Options.setFontSize(Options.getFontSize() - 1);
+	}
+
+	private void resetFontSize(KeyEvent e) {
+		Options.setFontSize(Options.DEF_FONT_SIZE);
+	}
+
 	private void showWhitespace(KeyEvent e) {
 		Options.setShowWhitespace(!Options.isShowWhitespace());
-		Options.save();
 	}
 
 	private void updateShowWhitespace() {

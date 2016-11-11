@@ -68,7 +68,7 @@ public class OptionsDialog
 
 		// select last tab
 		int tabIndex = MarkdownWriterFXApp.getState().getInt("lastOptionsTab", -1);
-		if (tabIndex > 0)
+		if (tabIndex > 0 && tabIndex < tabPane.getTabs().size())
 			tabPane.getSelectionModel().select(tabIndex);
 
 		// remember last selected tab
@@ -85,7 +85,6 @@ public class OptionsDialog
 	private void save() {
 		generalOptionsPane.save();
 		markdownOptionsPane.save();
-		Options.save();
 	}
 
 	private void initComponents() {
