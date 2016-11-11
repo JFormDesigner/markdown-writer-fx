@@ -78,7 +78,6 @@
 }
 
 .markdown-editor .code {
-	-fx-font-family: monospace;
 	-fx-fill: #090 !important;
 	-rtfx-background-color: -mwfx-inline-background-color;
 }
@@ -91,7 +90,6 @@
 /*---- blocks ----*/
 
 .markdown-editor .pre {
-	-fx-font-family: monospace;
 	-fx-fill: #060 !important;
 }
 
@@ -128,7 +126,6 @@
 /*---- table ----*/
 
 .markdown-editor .table {
-	-fx-font-family: monospace;
 }
 
 .markdown-editor .thead {
@@ -151,12 +148,7 @@
 /*---- misc ----*/
 
 .markdown-editor .html {
-	-fx-font-family: monospace;
 	-fx-fill: derive(crimson, -50%);
-}
-
-.markdown-editor .monospace {
-	-fx-font-family: monospace;
 }
 
 .markdown-editor .reference {

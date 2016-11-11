@@ -92,7 +92,6 @@ class MarkdownSyntaxHighlighter
 
 		// misc
 		html,
-		monospace,
 		reference,
 	};
 
@@ -216,10 +215,6 @@ class MarkdownSyntaxHighlighter
 			default: return;
 		}
 		setStyleClass(node, styleClass);
-
-		// use monospace font for underlined headers
-		if (node.isSetextHeading())
-			setStyleClass(node, StyleClass.monospace);
 	}
 
 	private void visit(TableCell node) {
