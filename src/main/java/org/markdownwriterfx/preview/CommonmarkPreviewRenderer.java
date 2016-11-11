@@ -47,6 +47,9 @@ class CommonmarkPreviewRenderer
 
 	@Override
 	public void update(String markdownText, com.vladsch.flexmark.ast.Node astRoot) {
+		if (this.markdownText == markdownText)
+			return;
+
 		this.markdownText = markdownText;
 
 		this.astRoot = null;

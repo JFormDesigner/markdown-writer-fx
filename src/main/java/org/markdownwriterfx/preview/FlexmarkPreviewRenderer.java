@@ -46,6 +46,9 @@ class FlexmarkPreviewRenderer
 
 	@Override
 	public void update(String markdownText, Node astRoot) {
+		if (this.astRoot == astRoot)
+			return;
+
 		this.astRoot = astRoot;
 
 		html = null;
