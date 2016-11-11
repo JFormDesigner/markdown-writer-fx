@@ -54,7 +54,9 @@ public class Options
 		"Lucida Console",
 	};
 
-	public static final int DEF_FONT_SIZE = 12;
+	public static final int DEF_FONT_SIZE = 13;
+	public static final int MIN_FONT_SIZE = 8;
+	public static final int MAX_FONT_SIZE = 36;
 	public static final String DEF_MARKDOWN_FILE_EXTENSIONS = "*.md,*.markdown,*.txt";
 	public enum RendererType { CommonMark, FlexMark };
 
@@ -121,7 +123,7 @@ public class Options
 	// 'fontSize' property
 	private static final IntegerProperty fontSize = new SimpleIntegerProperty(DEF_FONT_SIZE);
 	public static int getFontSize() { return fontSize.get(); }
-	public static void setFontSize(int fontSize) { Options.fontSize.set(fontSize); }
+	public static void setFontSize(int fontSize) { Options.fontSize.set(Math.min(Math.max(fontSize,  MIN_FONT_SIZE), MAX_FONT_SIZE)); }
 	public static IntegerProperty fontSizeProperty() { return fontSize; }
 
 	// 'lineSeparator' property

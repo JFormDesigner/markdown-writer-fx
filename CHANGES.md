@@ -13,6 +13,7 @@ Markdown Writer FX Change Log
 - Quickly enable/disable markdown extensions with popover window from toolbar.
 - Syntax highlighting improved.
 - Use monospaced font in editor.
+- Increase/decrease editor font size with `Ctrl++`/`Ctrl+-`. Reset with `Ctrl+0`.
 - Configurable editor font family and size in Options dialog.
 - Configurable Markdown filename extensions in Options dialog (fixes #2).
 - Support \*.svg in image chooser dialog.

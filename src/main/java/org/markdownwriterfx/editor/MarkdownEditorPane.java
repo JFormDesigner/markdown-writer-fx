@@ -93,9 +93,12 @@ public class MarkdownEditorPane
 		});
 
 		Nodes.addInputMap(textArea, sequence(
-			consume(keyPressed(ENTER),				this::enterPressed),
-			consume(keyPressed(D, SHORTCUT_DOWN),	this::deleteLine),
-			consume(keyPressed(W, ALT_DOWN),		this::showWhitespace)
+			consume(keyPressed(ENTER),					this::enterPressed),
+			consume(keyPressed(D, SHORTCUT_DOWN),		this::deleteLine),
+			consume(keyPressed(PLUS, SHORTCUT_DOWN),	this::increaseFontSize),
+			consume(keyPressed(MINUS, SHORTCUT_DOWN),	this::decreaseFontSize),
+			consume(keyPressed(DIGIT0, SHORTCUT_DOWN),	this::resetFontSize),
+			consume(keyPressed(W, ALT_DOWN),			this::showWhitespace)
 		));
 
 		// add listener to update 'scrollY' property
@@ -254,6 +257,18 @@ public class MarkdownEditorPane
 		int start = textArea.getCaretPosition() - textArea.getCaretColumn();
 		int end = start + textArea.getParagraph(textArea.getCurrentParagraph()).length() + 1;
 		textArea.deleteText(start, end);
+	}
+
+	private void increaseFontSize(KeyEvent e) {
+		Options.setFontSize(Options.getFontSize() + 1);
+	}
+
+	private void decreaseFontSize(KeyEvent e) {
+		Options.setFontSize(Options.getFontSize() - 1);
+	}
+
+	private void resetFontSize(KeyEvent e) {
+		Options.setFontSize(Options.DEF_FONT_SIZE);
 	}
 
 	private void showWhitespace(KeyEvent e) {

@@ -71,7 +71,7 @@ public class GeneralOptionsPane
 		fontFamilyField.setCellFactory(p -> new FontListCell());
 
 		// font size
-		fontSizeField.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(8, 36));
+		fontSizeField.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(Options.MIN_FONT_SIZE, Options.MAX_FONT_SIZE));
 
 		// line separator
 		String defaultLineSeparator = System.getProperty( "line.separator", "\n" );
