@@ -1,4 +1,4 @@
-version = '0.2'
+version = '0.3'
 
 apply plugin: 'java'
 apply plugin: 'java-library-distribution'
@@ -55,7 +55,7 @@ distributions {
 	main {
 		baseName = 'markdown-writer-fx'
 		contents {
-			from { ['LICENSE', 'README.md'] }
+			from { ['LICENSE', 'README.md', 'CHANGES.md'] }
 			into( 'images' ) {
 				from { 'images' }
 			}
