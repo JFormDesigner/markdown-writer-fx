@@ -149,13 +149,7 @@ class FileEditor
 		Platform.runLater(() -> {
 			updatePreviewTypePending = false;
 
-			MarkdownPreviewPane.Type previewType = Type.None;
-			if (fileEditorTabPane.previewVisible.get())
-				previewType = MarkdownPreviewPane.Type.Web;
-			if (fileEditorTabPane.htmlSourceVisible.get())
-				previewType = MarkdownPreviewPane.Type.Source;
-			if (fileEditorTabPane.markdownAstVisible.get())
-				previewType = MarkdownPreviewPane.Type.Ast;
+			MarkdownPreviewPane.Type previewType = getPreviewType();
 
 			markdownPreviewPane.setRendererType(Options.getMarkdownRenderer());
 			markdownPreviewPane.setType(previewType);
@@ -169,6 +163,17 @@ class FileEditor
 			} else
 				splitItems.remove(previewPane);
 		});
+	}
+
+	private MarkdownPreviewPane.Type getPreviewType() {
+		MarkdownPreviewPane.Type previewType = Type.None;
+		if (fileEditorTabPane.previewVisible.get())
+			previewType = MarkdownPreviewPane.Type.Web;
+		if (fileEditorTabPane.htmlSourceVisible.get())
+			previewType = MarkdownPreviewPane.Type.Source;
+		if (fileEditorTabPane.markdownAstVisible.get())
+			previewType = MarkdownPreviewPane.Type.Ast;
+		return previewType;
 	}
 
 	private void activated() {
@@ -205,7 +210,9 @@ class FileEditor
 		canUndo.bind(undoManager.undoAvailableProperty());
 		canRedo.bind(undoManager.redoAvailableProperty());
 
-		splitPane = new SplitPane(markdownEditorPane.getNode(), markdownPreviewPane.getNode());
+		splitPane = new SplitPane(markdownEditorPane.getNode());
+		if (getPreviewType() != MarkdownPreviewPane.Type.None)
+			splitPane.getItems().add(markdownPreviewPane.getNode());
 		tab.setContent(splitPane);
 
 		updatePreviewType();
