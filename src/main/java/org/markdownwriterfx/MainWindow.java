@@ -29,6 +29,7 @@ package org.markdownwriterfx;
 
 import java.text.MessageFormat;
 import java.util.function.Function;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
@@ -79,6 +80,7 @@ class MainWindow
 	private final FileEditorTabPane fileEditorTabPane;
 	private MenuBar menuBar;
 	private Node extensionsButton;
+	final BooleanProperty stageFocusedProperty = new SimpleBooleanProperty();
 
 	MainWindow() {
 		fileEditorTabPane = new FileEditorTabPane(this);
@@ -107,6 +109,8 @@ class MainWindow
 				}
 			});
 		});
+
+		Platform.runLater(() -> stageFocusedProperty.bind(scene.getWindow().focusedProperty()));
 	}
 
 	Scene getScene() {

@@ -1,6 +1,9 @@
 Markdown Writer FX Change Log
 =============================
 
+## 0.4
+- Automatically reload externally changed markdown files (on window activation).
+
 ## 0.3
 - Replaced Markdown processor [pegdown] with [commonmark-java]
   and [flexmark-java], which are much faster and implement the [CommonMark] specification.
