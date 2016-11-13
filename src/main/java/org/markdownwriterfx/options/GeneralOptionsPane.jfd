@@ -10,7 +10,7 @@ new FormModel {
 		add( new FormContainer( "org.tbee.javafx.scene.layout.fxml.MigPane", new FormLayoutManager( class org.tbee.javafx.scene.layout.fxml.MigPane ) {
 			"$layoutConstraints": ""
 			"$columnConstraints": "[indent,fill]0[fill][fill][grow,fill]"
-			"$rowConstraints": "[][][][]para[][][][]para"
+			"$rowConstraints": "[][][][][]para[][][][]para"
 		} ) {
 			name: "this"
 			add( new FormComponent( "javafx.scene.control.Label" ) {
@@ -51,16 +51,22 @@ new FormModel {
 				"value": "cell 2 2,alignx left,growx 0"
 			} )
 			add( new FormComponent( "javafx.scene.control.CheckBox" ) {
+				name: "showLineNoCheckBox"
+				"text": new FormMessage( null, "GeneralOptionsPane.showLineNoCheckBox.text" )
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 1 3 3 1"
+			} )
+			add( new FormComponent( "javafx.scene.control.CheckBox" ) {
 				name: "showWhitespaceCheckBox"
 				"text": new FormMessage( null, "GeneralOptionsPane.showWhitespaceCheckBox.text" )
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 1 3 3 1,alignx left,growx 0"
+				"value": "cell 1 4 3 1,alignx left,growx 0"
 			} )
 			add( new FormComponent( "javafx.scene.control.Label" ) {
 				name: "fileSettingsLabel"
 				"text": new FormMessage( null, "GeneralOptionsPane.fileSettingsLabel.text" )
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 4 2 1"
+				"value": "cell 0 5 2 1"
 			} )
 			add( new FormComponent( "javafx.scene.control.Label" ) {
 				name: "lineSeparatorLabel"
@@ -70,7 +76,7 @@ new FormModel {
 					"JavaCodeGenerator.variableLocal": true
 				}
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 1 5"
+				"value": "cell 1 6"
 			} )
 			add( new FormComponent( "javafx.scene.control.ComboBox" ) {
 				name: "lineSeparatorField"
@@ -78,7 +84,7 @@ new FormModel {
 					"JavaCodeGenerator.typeParameters": "Item<String>"
 				}
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 2 5"
+				"value": "cell 2 6"
 			} )
 			add( new FormComponent( "javafx.scene.control.Label" ) {
 				name: "lineSeparatorLabel2"
@@ -87,7 +93,7 @@ new FormModel {
 					"JavaCodeGenerator.variableLocal": true
 				}
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 3 5"
+				"value": "cell 3 6"
 			} )
 			add( new FormComponent( "javafx.scene.control.Label" ) {
 				name: "encodingLabel"
@@ -97,7 +103,7 @@ new FormModel {
 					"JavaCodeGenerator.variableLocal": true
 				}
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 1 6"
+				"value": "cell 1 7"
 			} )
 			add( new FormComponent( "javafx.scene.control.ComboBox" ) {
 				name: "encodingField"
@@ -106,7 +112,7 @@ new FormModel {
 					"JavaCodeGenerator.typeParameters": "Item<String>"
 				}
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 2 6"
+				"value": "cell 2 7"
 			} )
 			add( new FormComponent( "javafx.scene.control.Label" ) {
 				name: "markdownFileExtensionsLabel"
@@ -116,12 +122,12 @@ new FormModel {
 					"JavaCodeGenerator.variableLocal": true
 				}
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 1 7"
+				"value": "cell 1 8"
 			} )
 			add( new FormComponent( "javafx.scene.control.TextField" ) {
 				name: "markdownFileExtensionsField"
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 2 7 2 1"
+				"value": "cell 2 8 2 1"
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new javafx.geometry.Point2D( 0.0, 0.0 )

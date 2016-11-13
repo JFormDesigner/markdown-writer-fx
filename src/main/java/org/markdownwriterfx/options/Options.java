@@ -69,6 +69,7 @@ public class Options
 		setMarkdownFileExtensions(options.get("markdownFileExtensions", DEF_MARKDOWN_FILE_EXTENSIONS));
 		setMarkdownExtensions(Utils.getPrefsStrings(options, "markdownExtensions"));
 		setMarkdownRenderer(Utils.getPrefsEnum(options, "markdownRenderer", RendererType.CommonMark));
+		setShowLineNo(options.getBoolean("showLineNo", false));
 		setShowWhitespace(options.getBoolean("showWhitespace", false));
 
 		// save options on change
@@ -92,6 +93,9 @@ public class Options
 		});
 		markdownRendererProperty().addListener((ob, o, n) -> {
 			Utils.putPrefsEnum(options, "markdownRenderer", getMarkdownRenderer(), RendererType.CommonMark);
+		});
+		showLineNoProperty().addListener((ob, o, n) -> {
+			Utils.putPrefsBoolean(options, "showLineNo", isShowLineNo(), false);
 		});
 		showWhitespaceProperty().addListener((ob, o, n) -> {
 			Utils.putPrefsBoolean(options, "showWhitespace", isShowWhitespace(), false);
@@ -155,6 +159,12 @@ public class Options
 	public static RendererType getMarkdownRenderer() { return markdownRenderer.get(); }
 	public static void setMarkdownRenderer(RendererType markdownRenderer) { Options.markdownRenderer.set(markdownRenderer); }
 	public static ObjectProperty<RendererType> markdownRendererProperty() { return markdownRenderer; }
+
+	// 'showLineNo' property
+	private static final BooleanProperty showLineNo = new SimpleBooleanProperty();
+	public static boolean isShowLineNo() { return showLineNo.get(); }
+	public static void setShowLineNo(boolean showLineNo) { Options.showLineNo.set(showLineNo); }
+	public static BooleanProperty showLineNoProperty() { return showLineNo; }
 
 	// 'showWhitespace' property
 	private static final BooleanProperty showWhitespace = new SimpleBooleanProperty();

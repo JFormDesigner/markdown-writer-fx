@@ -77,6 +77,7 @@ public class MarkdownEditorPane
 	private final VirtualizedScrollPane<StyleClassedTextArea> scrollPane;
 	private final StyleClassedTextArea textArea;
 	private final ParagraphOverlayGraphicFactory overlayGraphicFactory;
+	private LineNumberGutterFactory lineNumberGutterFactory;
 	private WhitespaceOverlayFactory whitespaceOverlayFactory;
 	private Parser parser;
 	private final InvalidationListener optionsListener;
@@ -114,9 +115,9 @@ public class MarkdownEditorPane
 		scrollPane = new VirtualizedScrollPane<StyleClassedTextArea>(textArea);
 
 		overlayGraphicFactory = new ParagraphOverlayGraphicFactory(textArea);
-		overlayGraphicFactory.addGutterFactory(new LineNumberGutterFactory(textArea));
 		textArea.setParagraphGraphicFactory(overlayGraphicFactory);
 		updateFont();
+		updateShowLineNo();
 		updateShowWhitespace();
 
 		// listen to option changes
@@ -126,6 +127,8 @@ public class MarkdownEditorPane
 
 			if (e == Options.fontFamilyProperty() || e == Options.fontSizeProperty())
 				updateFont();
+			else if (e == Options.showLineNoProperty())
+				updateShowLineNo();
 			else if (e == Options.showWhitespaceProperty())
 				updateShowWhitespace();
 			else if (e == Options.markdownRendererProperty() || e == Options.markdownExtensionsProperty()) {
@@ -139,6 +142,7 @@ public class MarkdownEditorPane
 		Options.fontSizeProperty().addListener(weakOptionsListener);
 		Options.markdownRendererProperty().addListener(weakOptionsListener);
 		Options.markdownExtensionsProperty().addListener(weakOptionsListener);
+		Options.showLineNoProperty().addListener(weakOptionsListener);
 		Options.showWhitespaceProperty().addListener(weakOptionsListener);
 	}
 
@@ -284,6 +288,17 @@ public class MarkdownEditorPane
 
 	private void showWhitespace(KeyEvent e) {
 		Options.setShowWhitespace(!Options.isShowWhitespace());
+	}
+
+	private void updateShowLineNo() {
+		boolean showLineNo = Options.isShowLineNo();
+		if (showLineNo && lineNumberGutterFactory == null) {
+			lineNumberGutterFactory = new LineNumberGutterFactory(textArea);
+			overlayGraphicFactory.addGutterFactory(lineNumberGutterFactory);
+		} else if (!showLineNo && lineNumberGutterFactory != null) {
+			overlayGraphicFactory.removeGutterFactory(lineNumberGutterFactory);
+			lineNumberGutterFactory = null;
+		}
 	}
 
 	private void updateShowWhitespace() {
