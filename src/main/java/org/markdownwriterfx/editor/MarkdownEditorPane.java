@@ -114,6 +114,7 @@ public class MarkdownEditorPane
 		scrollPane = new VirtualizedScrollPane<StyleClassedTextArea>(textArea);
 
 		overlayGraphicFactory = new ParagraphOverlayGraphicFactory(textArea);
+		overlayGraphicFactory.addGutterFactory(new LineNumberGutterFactory(textArea));
 		textArea.setParagraphGraphicFactory(overlayGraphicFactory);
 		updateFont();
 		updateShowWhitespace();

@@ -33,10 +33,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.IntFunction;
 import javafx.collections.ObservableList;
+import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Rectangle2D;
+import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.shape.LineTo;
@@ -59,6 +62,7 @@ class ParagraphOverlayGraphicFactory
 {
 	private final StyleClassedTextArea textArea;
 	private final List<OverlayFactory> overlayFactories = new ArrayList<>();
+	private final List<IntFunction<Node>> gutterFactories = new ArrayList<>();
 
 	ParagraphOverlayGraphicFactory(StyleClassedTextArea textArea) {
 		this.textArea = textArea;
@@ -74,6 +78,16 @@ class ParagraphOverlayGraphicFactory
 		update();
 	}
 
+	void addGutterFactory(IntFunction<Node> gutterFactory) {
+		gutterFactories.add(gutterFactory);
+		update();
+	}
+
+	void removeGutterFactory(IntFunction<Node> gutterFactory) {
+		gutterFactories.remove(gutterFactory);
+		update();
+	}
+
 	void update() {
 		// temporary remove paragraph graphic factory to update the view
 		IntFunction<? extends Node> factory = textArea.getParagraphGraphicFactory();
@@ -83,7 +97,9 @@ class ParagraphOverlayGraphicFactory
 
 	@Override
 	public Node apply(int paragraphIndex) {
-		return overlayFactories.isEmpty() ? null : new ParagraphGraphic(paragraphIndex);
+		return overlayFactories.isEmpty() && gutterFactories.isEmpty()
+				? null
+				: new ParagraphGraphic(paragraphIndex);
 	}
 
 	//---- class ParagraphGraphic ---------------------------------------------
@@ -92,12 +108,25 @@ class ParagraphOverlayGraphicFactory
 		extends Pane
 	{
 		private final int paragraphIndex;
+		private final Node gutter;
 
 		ParagraphGraphic(int paragraphIndex) {
 			this.paragraphIndex = paragraphIndex;
 
-			setPrefWidth(0);
-			setPrefHeight(0);
+			getStyleClass().add("paragraph-graphic");
+
+			if (gutterFactories.size() > 0) {
+				if (gutterFactories.size() > 1) {
+					HBox gutterBox = new HBox();
+					for (IntFunction<Node> gutterFactory : gutterFactories)
+						gutterBox.getChildren().add(gutterFactory.apply(paragraphIndex));
+					gutter = gutterBox;
+				} else
+					gutter = gutterFactories.get(0).apply(paragraphIndex);
+				gutter.getStyleClass().add("gutter");
+				getChildren().add(gutter);
+			} else
+				gutter = null;
 
 			// make this node is the first child so that its nodes are rendered
 			// 'under' the paragraph text
@@ -109,6 +138,16 @@ class ParagraphOverlayGraphicFactory
 					children.add(0, this);
 				}
 			});
+		}
+
+		@Override
+		protected double computePrefWidth(double height) {
+			return (gutter != null) ? gutter.prefWidth(height) : 0;
+		}
+
+		@Override
+		protected double computePrefHeight(double width) {
+			return (gutter != null) ? gutter.prefHeight(width) : 0;
 		}
 
 		@Override
@@ -126,6 +165,14 @@ class ParagraphOverlayGraphicFactory
 			Insets insets = ((Region)paragraphTextNode).getInsets();
 			double leftInsets = insets.getLeft();
 			double topInsets = insets.getTop();
+
+			if (gutter != null) {
+				double prefGutterWidth = gutter.prefWidth(-1);
+				layoutInArea(gutter, 0, 0, prefGutterWidth, getHeight(), -1, null, true, true, HPos.LEFT, VPos.TOP);
+				getChildren().add(gutter);
+
+				leftInsets += prefGutterWidth;
+			}
 
 			for (OverlayFactory overlayFactory : overlayFactories) {
 				overlayFactory.init(textArea, paragraphTextNode);

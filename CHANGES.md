@@ -2,6 +2,7 @@ Markdown Writer FX Change Log
 =============================
 
 ## 0.4
+- Show line numbers in editor.
 - Automatically reload externally changed markdown files (on window activation).
 
 ## 0.3

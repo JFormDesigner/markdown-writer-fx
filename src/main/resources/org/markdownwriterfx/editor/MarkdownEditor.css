@@ -30,6 +30,18 @@
 }
 
 
+/*---- gutter ----*/
+
+.markdown-editor .paragraph-graphic .gutter {
+	-fx-border-width: 0 1 0 0;
+	-fx-border-color: #eee;
+}
+
+.markdown-editor .paragraph-graphic .lineno {
+	-fx-text-fill: #aaa;
+}
+
+
 /*---- headers ----*/
 
 .markdown-editor .h1 { -fx-font-size: 2em; }
