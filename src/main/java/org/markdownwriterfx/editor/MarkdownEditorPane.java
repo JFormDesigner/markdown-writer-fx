@@ -33,8 +33,6 @@ import static org.fxmisc.wellbehaved.event.EventPattern.keyPressed;
 import static org.fxmisc.wellbehaved.event.InputMap.*;
 
 import java.nio.file.Path;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.WeakInvalidationListener;
@@ -56,11 +54,8 @@ import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.undo.UndoManager;
 import org.fxmisc.wellbehaved.event.Nodes;
-import org.markdownwriterfx.dialogs.ImageDialog;
-import org.markdownwriterfx.dialogs.LinkDialog;
 import org.markdownwriterfx.options.MarkdownExtensions;
 import org.markdownwriterfx.options.Options;
-import org.markdownwriterfx.util.Utils;
 
 /**
  * Markdown editor pane.
@@ -71,14 +66,12 @@ import org.markdownwriterfx.util.Utils;
  */
 public class MarkdownEditorPane
 {
-	private static final Pattern AUTO_INDENT_PATTERN = Pattern.compile(
-			"(\\s*[*+-]\\s+|\\s*[0-9]+\\.\\s+|\\s+)(.*)");
-
 	private final VirtualizedScrollPane<StyleClassedTextArea> scrollPane;
 	private final StyleClassedTextArea textArea;
 	private final ParagraphOverlayGraphicFactory overlayGraphicFactory;
 	private LineNumberGutterFactory lineNumberGutterFactory;
 	private WhitespaceOverlayFactory whitespaceOverlayFactory;
+	private final SmartEdit smartEdit;
 	private Parser parser;
 	private final InvalidationListener optionsListener;
 	private String lineSeparator = getLineSeparatorOrDefault();
@@ -93,9 +86,11 @@ public class MarkdownEditorPane
 			textChanged(newText);
 		});
 
+		smartEdit = new SmartEdit(this, textArea);
+
 		Nodes.addInputMap(textArea, sequence(
-			consume(keyPressed(ENTER),					this::enterPressed),
-			consume(keyPressed(D, SHORTCUT_DOWN),		this::deleteLine),
+			consume(keyPressed(ENTER),					smartEdit::enterPressed),
+			consume(keyPressed(D, SHORTCUT_DOWN),		smartEdit::deleteLine),
 			consume(keyPressed(PLUS, SHORTCUT_DOWN),	this::increaseFontSize),
 			consume(keyPressed(MINUS, SHORTCUT_DOWN),	this::decreaseFontSize),
 			consume(keyPressed(DIGIT0, SHORTCUT_DOWN),	this::resetFontSize),
@@ -157,6 +152,10 @@ public class MarkdownEditorPane
 
 	public UndoManager getUndoManager() {
 		return textArea.getUndoManager();
+	}
+
+	public SmartEdit getSmartEdit() {
+		return smartEdit;
 	}
 
 	public void requestFocus() {
@@ -223,7 +222,7 @@ public class MarkdownEditorPane
 	public void setPath(Path path) { this.path.set(path); }
 	public ObjectProperty<Path> pathProperty() { return path; }
 
-	private Path getParentPath() {
+	Path getParentPath() {
 		Path path = getPath();
 		return (path != null) ? path.getParent() : null;
 	}
@@ -247,31 +246,6 @@ public class MarkdownEditorPane
 
 	private void applyHighlighting(Node astRoot) {
 		MarkdownSyntaxHighlighter.highlight(textArea, astRoot);
-	}
-
-	private void enterPressed(KeyEvent e) {
-		String currentLine = textArea.getText(textArea.getCurrentParagraph());
-
-		String newText = "\n";
-		Matcher matcher = AUTO_INDENT_PATTERN.matcher(currentLine);
-		if (matcher.matches()) {
-			if (!matcher.group(2).isEmpty()) {
-				// indent new line with same whitespace characters and list markers as current line
-				newText = newText.concat(matcher.group(1));
-			} else {
-				// current line contains only whitespace characters and list markers
-				// --> empty current line
-				int caretPosition = textArea.getCaretPosition();
-				textArea.selectRange(caretPosition - currentLine.length(), caretPosition);
-			}
-		}
-		textArea.replaceSelection(newText);
-	}
-
-	private void deleteLine(KeyEvent e) {
-		int start = textArea.getCaretPosition() - textArea.getCaretColumn();
-		int end = start + textArea.getParagraph(textArea.getCurrentParagraph()).length() + 1;
-		textArea.deleteText(start, end);
 	}
 
 	private void increaseFontSize(KeyEvent e) {
@@ -318,91 +292,5 @@ public class MarkdownEditorPane
 
 	public void redo() {
 		textArea.getUndoManager().redo();
-	}
-
-	public void surroundSelection(String leading, String trailing) {
-		surroundSelection(leading, trailing, null);
-	}
-
-	public void surroundSelection(String leading, String trailing, String hint) {
-		// Note: not using textArea.insertText() to insert leading and trailing
-		//       because this would add two changes to undo history
-
-		IndexRange selection = textArea.getSelection();
-		int start = selection.getStart();
-		int end = selection.getEnd();
-
-		String selectedText = textArea.getSelectedText();
-
-		// remove leading and trailing whitespaces from selected text
-		String trimmedSelectedText = selectedText.trim();
-		if (trimmedSelectedText.length() < selectedText.length()) {
-			start += selectedText.indexOf(trimmedSelectedText);
-			end = start + trimmedSelectedText.length();
-		}
-
-		// remove leading whitespaces from leading text if selection starts at zero
-		if (start == 0)
-			leading = Utils.ltrim(leading);
-
-		// remove trailing whitespaces from trailing text if selection ends at text end
-		if (end == textArea.getLength())
-			trailing = Utils.rtrim(trailing);
-
-		// remove leading line separators from leading text
-		// if there are line separators before the selected text
-		if (leading.startsWith("\n")) {
-			for (int i = start - 1; i >= 0 && leading.startsWith("\n"); i--) {
-				if (!"\n".equals(textArea.getText(i, i + 1)))
-					break;
-				leading = leading.substring(1);
-			}
-		}
-
-		// remove trailing line separators from trailing or leading text
-		// if there are line separators after the selected text
-		boolean trailingIsEmpty = trailing.isEmpty();
-		String str = trailingIsEmpty ? leading : trailing;
-		if (str.endsWith("\n")) {
-			for (int i = end; i < textArea.getLength() && str.endsWith("\n"); i++) {
-				if (!"\n".equals(textArea.getText(i, i + 1)))
-					break;
-				str = str.substring(0, str.length() - 1);
-			}
-			if (trailingIsEmpty)
-				leading = str;
-			else
-				trailing = str;
-		}
-
-		int selStart = start + leading.length();
-		int selEnd = end + leading.length();
-
-		// insert hint text if selection is empty
-		if (hint != null && trimmedSelectedText.isEmpty()) {
-			trimmedSelectedText = hint;
-			selEnd = selStart + hint.length();
-		}
-
-		// prevent undo merging with previous text entered by user
-		textArea.getUndoManager().preventMerge();
-
-		// replace text and update selection
-		textArea.replaceText(start, end, leading + trimmedSelectedText + trailing);
-		textArea.selectRange(selStart, selEnd);
-	}
-
-	public void insertLink() {
-		LinkDialog dialog = new LinkDialog(getNode().getScene().getWindow(), getParentPath());
-		dialog.showAndWait().ifPresent(result -> {
-			textArea.replaceSelection(result);
-		});
-	}
-
-	public void insertImage() {
-		ImageDialog dialog = new ImageDialog(getNode().getScene().getWindow(), getParentPath());
-		dialog.showAndWait().ifPresent(result -> {
-			textArea.replaceSelection(result);
-		});
 	}
 }
