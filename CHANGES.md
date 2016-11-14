@@ -4,6 +4,8 @@ Markdown Writer FX Change Log
 ## 0.4
 - Show line numbers in editor (if enabled in Options dialog).
 - Automatically reload externally changed markdown files (on window activation).
+- Smarter "Insert Bold/Italic/Strikethrough": if used within inline code
+  block, then backticks will be changed to `<code>` and `</code>`.
 
 ## 0.3
 - Replaced Markdown processor [pegdown] with [commonmark-java]

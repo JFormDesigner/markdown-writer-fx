@@ -150,13 +150,13 @@ class MainWindow
 
 		// Insert actions
 		Action insertBoldAction = new Action(Messages.get("MainWindow.insertBoldAction"), "Shortcut+B", BOLD,
-				e -> getActiveSmartEdit().surroundSelection("**", "**"),
+				e -> getActiveSmartEdit().insertBold(),
 				activeFileEditorIsNull);
 		Action insertItalicAction = new Action(Messages.get("MainWindow.insertItalicAction"), "Shortcut+I", ITALIC,
-				e -> getActiveSmartEdit().surroundSelection("*", "*"),
+				e -> getActiveSmartEdit().insertItalic(),
 				activeFileEditorIsNull);
 		Action insertStrikethroughAction = new Action(Messages.get("MainWindow.insertStrikethroughAction"), "Shortcut+T", STRIKETHROUGH,
-				e -> getActiveSmartEdit().surroundSelection("~~", "~~"),
+				e -> getActiveSmartEdit().insertStrikethrough(),
 				activeFileEditorIsNull);
 		Action insertBlockquoteAction = new Action(Messages.get("MainWindow.insertBlockquoteAction"), "Ctrl+Q", QUOTE_LEFT, // not Shortcut+Q because of conflict on Mac
 				e -> getActiveSmartEdit().surroundSelection("\n\n> ", ""),

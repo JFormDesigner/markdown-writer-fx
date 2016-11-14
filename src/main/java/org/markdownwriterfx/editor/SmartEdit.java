@@ -27,6 +27,9 @@
 
 package org.markdownwriterfx.editor;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javafx.scene.control.IndexRange;
@@ -35,6 +38,11 @@ import org.fxmisc.richtext.StyleClassedTextArea;
 import org.markdownwriterfx.dialogs.ImageDialog;
 import org.markdownwriterfx.dialogs.LinkDialog;
 import org.markdownwriterfx.util.Utils;
+import com.vladsch.flexmark.ast.Code;
+import com.vladsch.flexmark.ast.DelimitedNode;
+import com.vladsch.flexmark.ast.Node;
+import com.vladsch.flexmark.ast.NodeVisitor;
+import com.vladsch.flexmark.util.sequence.BasedSequence;
 
 /**
  * Smart Markdown text edit methods.
@@ -151,6 +159,60 @@ public class SmartEdit
 		textArea.selectRange(selStart, selEnd);
 	}
 
+	private void surroundSelectionAndReplaceMarker(String leading, String trailing,
+			DelimitedNode node, String newOpeningMarker, String newClosingMarker)
+	{
+		IndexRange selection = textArea.getSelection();
+		int start = selection.getStart();
+		int end = selection.getEnd();
+
+		String selectedText = textArea.getSelectedText();
+
+		// remove leading and trailing whitespaces from selected text
+		String trimmedSelectedText = selectedText.trim();
+		if (trimmedSelectedText.length() < selectedText.length()) {
+			start += selectedText.indexOf(trimmedSelectedText);
+			end = start + trimmedSelectedText.length();
+		}
+
+		BasedSequence openingMarker = node.getOpeningMarker();
+		BasedSequence closingMarker = node.getClosingMarker();
+
+		int selStart = start + leading.length() + (newOpeningMarker.length() - openingMarker.length());
+		int selEnd = selStart + trimmedSelectedText.length();
+
+		// prevent undo merging with previous text entered by user
+		textArea.getUndoManager().preventMerge();
+
+		// replace text and update selection
+		// Note: using single textArea.replaceText() to avoid multiple changes to undo history
+		String before = textArea.getText(openingMarker.getEndOffset(), start);
+		String after = textArea.getText(end, closingMarker.getStartOffset());
+		textArea.replaceText(openingMarker.getStartOffset(), closingMarker.getEndOffset(),
+				newOpeningMarker + before + leading + trimmedSelectedText + trailing + after + newClosingMarker );
+		textArea.selectRange(selStart, selEnd);
+	}
+
+	private void surroundSelectionInCode(String openCloseMarker) {
+		Code codeNode = findNodeAtSelection(Code.class);
+		if (codeNode != null)
+			surroundSelectionAndReplaceMarker(openCloseMarker, openCloseMarker, codeNode, "<code>", "</code>");
+		else
+			surroundSelection(openCloseMarker, openCloseMarker);
+	}
+
+	public void insertBold() {
+		surroundSelectionInCode("**");
+	}
+
+	public void insertItalic() {
+		surroundSelectionInCode("_");
+	}
+
+	public void insertStrikethrough() {
+		surroundSelectionInCode("~~");
+	}
+
 	public void insertLink() {
 		LinkDialog dialog = new LinkDialog(editor.getNode().getScene().getWindow(), editor.getParentPath());
 		dialog.showAndWait().ifPresent(result -> {
@@ -163,5 +225,52 @@ public class SmartEdit
 		dialog.showAndWait().ifPresent(result -> {
 			textArea.replaceSelection(result);
 		});
+	}
+
+	/**
+	 * Find single node (of a specific class) that completely encloses the current selection.
+	 */
+	private <T extends Node> T findNodeAtSelection(Class<T> nodeClass) {
+		IndexRange selection = textArea.getSelection();
+		int start = selection.getStart();
+		int end = selection.getEnd();
+		List<T> nodes = findNodes(start, end, nodeClass);
+		if (nodes.size() != 1)
+			return null;
+
+		T node = nodes.get(0);
+		BasedSequence text = (node instanceof DelimitedNode) ? ((DelimitedNode)node).getText() : node.getChars();
+		return (start >= text.getStartOffset() && end <= text.getEndOffset()) ? node : null;
+	}
+
+	/**
+	 * Find all nodes of a specific class that are within the current selection.
+	 */
+	private <T> List<T> findNodesAtSelection(Class<T> nodeClass) {
+		IndexRange selection = textArea.getSelection();
+		return findNodes(selection.getStart(), selection.getEnd(), nodeClass);
+	}
+
+	/**
+	 * Find all nodes of a specific class that are within the given range.
+	 */
+	private <T> List<T> findNodes(int start, int end, Class<T> nodeClass) {
+		Node markdownAST = editor.getMarkdownAST();
+		if (markdownAST == null)
+			return Collections.emptyList();
+
+		ArrayList<T> nodes = new ArrayList<>();
+		NodeVisitor visitor = new NodeVisitor(Collections.emptyList()) {
+			@SuppressWarnings("unchecked")
+			@Override
+			public void visit(Node node) {
+				if (start <= node.getEndOffset() && end >= node.getStartOffset() && nodeClass.isInstance(node))
+					nodes.add((T) node);
+				else
+					visitChildren(node);
+			}
+		};
+		visitor.visit(markdownAST);
+		return nodes;
 	}
 }
