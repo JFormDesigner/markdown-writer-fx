@@ -33,6 +33,8 @@ import static org.fxmisc.wellbehaved.event.EventPattern.keyPressed;
 import static org.fxmisc.wellbehaved.event.InputMap.*;
 
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.WeakInvalidationListener;
@@ -48,12 +50,14 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.IndexRange;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.BorderPane;
 import com.vladsch.flexmark.ast.Node;
 import com.vladsch.flexmark.parser.Parser;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.undo.UndoManager;
 import org.fxmisc.wellbehaved.event.Nodes;
+import org.markdownwriterfx.editor.MarkdownSyntaxHighlighter.ExtraStyledRanges;
 import org.markdownwriterfx.options.MarkdownExtensions;
 import org.markdownwriterfx.options.Options;
 
@@ -66,12 +70,13 @@ import org.markdownwriterfx.options.Options;
  */
 public class MarkdownEditorPane
 {
-	private final VirtualizedScrollPane<StyleClassedTextArea> scrollPane;
+	private final BorderPane borderPane;
 	private final StyleClassedTextArea textArea;
 	private final ParagraphOverlayGraphicFactory overlayGraphicFactory;
 	private LineNumberGutterFactory lineNumberGutterFactory;
 	private WhitespaceOverlayFactory whitespaceOverlayFactory;
 	private final SmartEdit smartEdit;
+	private final FindReplacePane findReplacePane;
 	private Parser parser;
 	private final InvalidationListener optionsListener;
 	private String lineSeparator = getLineSeparatorOrDefault();
@@ -107,13 +112,24 @@ public class MarkdownEditorPane
 		textArea.totalHeightEstimateProperty().addListener(scrollYListener);
 
 		// create scroll pane
-		scrollPane = new VirtualizedScrollPane<StyleClassedTextArea>(textArea);
+		VirtualizedScrollPane<StyleClassedTextArea> scrollPane = new VirtualizedScrollPane<StyleClassedTextArea>(textArea);
+
+		// create border pane
+		borderPane = new BorderPane(scrollPane);
 
 		overlayGraphicFactory = new ParagraphOverlayGraphicFactory(textArea);
 		textArea.setParagraphGraphicFactory(overlayGraphicFactory);
 		updateFont();
 		updateShowLineNo();
 		updateShowWhitespace();
+
+		// find/replace
+		findReplacePane = new FindReplacePane(textArea);
+		findReplacePane.addListener(this::findHitsChanged);
+		findReplacePane.visibleProperty().addListener((ov, oldVisible, newVisible) -> {
+			if (!newVisible)
+				borderPane.setTop(null);
+		});
 
 		// listen to option changes
 		optionsListener = e -> {
@@ -147,7 +163,7 @@ public class MarkdownEditorPane
 	}
 
 	public javafx.scene.Node getNode() {
-		return scrollPane;
+		return borderPane;
 	}
 
 	public UndoManager getUndoManager() {
@@ -228,6 +244,9 @@ public class MarkdownEditorPane
 	}
 
 	private void textChanged(String newText) {
+		if (borderPane.getTop() != null)
+			findReplacePane.textChanged();
+
 		Node astRoot = parseMarkdown(newText);
 		applyHighlighting(astRoot);
 
@@ -245,7 +264,13 @@ public class MarkdownEditorPane
 	}
 
 	private void applyHighlighting(Node astRoot) {
-		MarkdownSyntaxHighlighter.highlight(textArea, astRoot);
+		List<ExtraStyledRanges> extraStyledRanges = findReplacePane.hasHits()
+			? Arrays.asList(
+				new ExtraStyledRanges("hit", findReplacePane.getHits()),
+				new ExtraStyledRanges("hit-active", Arrays.asList(findReplacePane.getActiveHit())))
+			: null;
+
+		MarkdownSyntaxHighlighter.highlight(textArea, astRoot, extraStyledRanges);
 	}
 
 	private void increaseFontSize(KeyEvent e) {
@@ -292,5 +317,16 @@ public class MarkdownEditorPane
 
 	public void redo() {
 		textArea.getUndoManager().redo();
+	}
+
+	public void find() {
+		if (borderPane.getTop() == null)
+			borderPane.setTop(findReplacePane.getNode());
+
+		findReplacePane.show();
+	}
+
+	private void findHitsChanged() {
+		applyHighlighting(markdownAST.get());
 	}
 }

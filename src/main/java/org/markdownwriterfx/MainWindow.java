@@ -139,6 +139,9 @@ class MainWindow
 		Action editRedoAction = new Action(Messages.get("MainWindow.editRedoAction"), "Shortcut+Y", REPEAT,
 				e -> getActiveEditor().redo(),
 				createActiveBooleanProperty(FileEditor::canRedoProperty).not());
+		Action editFindAction = new Action(Messages.get("MainWindow.editFindAction"), "Shortcut+F", SEARCH,
+				e -> getActiveEditor().find(),
+				activeFileEditorIsNull);
 
 		// View actions
 		Action viewPreviewAction = new Action(Messages.get("MainWindow.viewPreviewAction"), null, EYE,
@@ -227,7 +230,9 @@ class MainWindow
 
 		Menu editMenu = ActionUtils.createMenu(Messages.get("MainWindow.editMenu"),
 				editUndoAction,
-				editRedoAction);
+				editRedoAction,
+				null,
+				editFindAction);
 
 		Menu viewMenu = ActionUtils.createMenu(Messages.get("MainWindow.viewMenu"),
 				viewPreviewAction,

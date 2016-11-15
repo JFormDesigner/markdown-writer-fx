@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import javafx.application.Platform;
 import com.vladsch.flexmark.ast.*;
 import com.vladsch.flexmark.ext.abbreviation.Abbreviation;
@@ -48,6 +49,7 @@ import com.vladsch.flexmark.util.sequence.BasedSequence;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
+import org.markdownwriterfx.util.Range;
 
 /**
  * Markdown syntax highlighter.
@@ -150,18 +152,18 @@ class MarkdownSyntaxHighlighter
 
 	private ArrayList<StyleRange> styleRanges;
 
-	static void highlight(StyleClassedTextArea textArea, Node astRoot) {
+	static void highlight(StyleClassedTextArea textArea, Node astRoot, List<ExtraStyledRanges> extraStyledRanges) {
 		assert Platform.isFxApplicationThread();
 
 		assert textArea.getText().length() == textArea.getLength();
 		textArea.setStyleSpans(0, new MarkdownSyntaxHighlighter()
-				.computeHighlighting(astRoot, textArea.getText()));
+				.computeHighlighting(astRoot, extraStyledRanges, textArea.getText()));
 	}
 
 	private MarkdownSyntaxHighlighter() {
 	}
 
-	private StyleSpans<Collection<String>> computeHighlighting(Node astRoot, String text) {
+	private StyleSpans<Collection<String>> computeHighlighting(Node astRoot, List<ExtraStyledRanges> extraStyledRanges, String text) {
 		styleRanges = new ArrayList<>();
 
 		// visit all nodes
@@ -188,6 +190,20 @@ class MarkdownSyntaxHighlighter
 		};
 		visitor.visit(astRoot);
 
+		// add extra styled ranges
+		if (extraStyledRanges != null) {
+			long extraStyleBits = 1L << StyleClass.values().length;
+			for (ExtraStyledRanges extraStyledRange : extraStyledRanges) {
+				for (Range extraRange : extraStyledRange.ranges) {
+					addStyledRange(styleRanges, extraRange.start, extraRange.end, extraStyleBits);
+				}
+				extraStyleBits <<= 1;
+			}
+
+			// need to clear cache
+			styleClassesCache.clear();
+		}
+
 		// build style spans
 		StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
 		int textLength = text.length();
@@ -196,7 +212,7 @@ class MarkdownSyntaxHighlighter
 			for (StyleRange range : styleRanges) {
 				if (range.begin > spanStart)
 					spansBuilder.add(Collections.emptyList(), range.begin - spanStart);
-				spansBuilder.add(toStyleClasses(range.styleBits), range.end - range.begin);
+				spansBuilder.add(toStyleClasses(range.styleBits, extraStyledRanges), range.end - range.begin);
 				spanStart = range.end;
 			}
 			if (spanStart < textLength)
@@ -206,7 +222,7 @@ class MarkdownSyntaxHighlighter
 		return spansBuilder.create();
 	}
 
-	private Collection<String> toStyleClasses(long bits) {
+	private Collection<String> toStyleClasses(long bits, List<ExtraStyledRanges> extraStyledRanges) {
 		if (bits == 0)
 			return Collections.emptyList();
 
@@ -218,6 +234,14 @@ class MarkdownSyntaxHighlighter
 		for (StyleClass styleClass : StyleClass.values()) {
 			if ((bits & (1L << styleClass.ordinal())) != 0)
 				styleClasses.add(styleClass.name());
+		}
+		if (extraStyledRanges != null) {
+			long extraStyleBits = 1L << StyleClass.values().length;
+			for (ExtraStyledRanges extraStyledRange : extraStyledRanges) {
+				if ((bits & extraStyleBits) != 0)
+					styleClasses.add(extraStyledRange.styleClass);
+				extraStyleBits <<= 1;
+			}
 		}
 		styleClassesCache.put(bits, styleClasses);
 		return styleClasses;
@@ -272,7 +296,11 @@ class MarkdownSyntaxHighlighter
 	 * @param end   the ending index, exclusive
 	 */
 	/*private*/ static void addStyledRange(ArrayList<StyleRange> styleRanges, int begin, int end, StyleClass styleClass) {
-		final long styleBits = 1L << styleClass.ordinal();
+		long styleBits = 1L << styleClass.ordinal();
+		addStyledRange(styleRanges, begin, end, styleBits);
+	}
+
+	private static void addStyledRange(ArrayList<StyleRange> styleRanges, int begin, int end, long styleBits) {
 		final int lastIndex = styleRanges.size() - 1;
 
 		// check whether list is empty
@@ -358,6 +386,18 @@ class MarkdownSyntaxHighlighter
 			this.begin = begin;
 			this.end = end;
 			this.styleBits = styleBits;
+		}
+	}
+
+	//---- class ExtraStyledRanges --------------------------------------------
+
+	static class ExtraStyledRanges {
+		final String styleClass;
+		final List<Range> ranges;
+
+		ExtraStyledRanges(String styleClass, List<Range> ranges) {
+			this.styleClass = styleClass;
+			this.ranges = ranges;
 		}
 	}
 }

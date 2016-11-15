@@ -185,7 +185,50 @@
 }
 
 /* remove text area round edges */
-.main .text-input {
+.main .preview-pane .text-input {
 	-fx-background-insets: 0;
 	-fx-background-radius: 0;
+}
+
+
+/*---- find/replace ----*/
+
+.find-replace {
+	-fx-padding: 0.25em;
+	-fx-background-color: -mwfx-tab-background;
+	-fx-border-color: -fx-outer-border;
+	-fx-border-width: 0 0 1 0;
+}
+
+.find-replace .custom-text-field .left-pane {
+	-fx-padding: 0 0.25em 0 0.5em;
+}
+.find-replace .custom-text-field .right-pane {
+	-fx-padding: 0 0.5em 0 0.25em;
+}
+.find-replace .custom-text-field .glyph-icon {
+	-fx-fill: #aaa;
+}
+.find-replace .custom-text-field .label {
+	-fx-text-fill: #888;
+	-fx-font-size: 0.9em;
+}
+
+.find-replace .flat-button {
+	-fx-background-color: transparent;
+}
+.find-replace .flat-button:hover {
+	-fx-background-color: -fx-shadow-highlight-color, -fx-outer-border, -fx-inner-border, -fx-body-color;
+	-fx-color: -fx-hover-base;
+}
+
+.find-replace .flat-button:armed {
+	-fx-color: -fx-pressed-base;
+}
+
+.markdown-editor .hit {
+	-rtfx-background-color: #FFF59D !important;
+}
+.markdown-editor .hit-active {
+	-rtfx-background-color: #F9A825 !important;
 }

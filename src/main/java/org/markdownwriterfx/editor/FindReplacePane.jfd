@@ -1,0 +1,51 @@
+JFDML JFormDesigner: "9.9.9.9.9999" Java: "1.8.0_102" encoding: "UTF-8"
+
+new FormModel {
+	"i18n.bundlePackage": "org.markdownwriterfx"
+	"i18n.bundleName": "messages"
+	"i18n.autoExternalize": true
+	"i18n.keyPrefix": "FindReplacePane"
+	contentType: "form/javafx"
+	root: new FormRoot {
+		add( new FormContainer( "org.tbee.javafx.scene.layout.fxml.MigPane", new FormLayoutManager( class org.tbee.javafx.scene.layout.fxml.MigPane ) {
+			"$layoutConstraints": "insets 0,hidemode 3"
+			"$columnConstraints": "[fill]0[fill]0[fill][grow,fill][fill]"
+			"$rowConstraints": "[fill]"
+		} ) {
+			name: "pane"
+			add( new FormComponent( "org.controlsfx.control.textfield.CustomTextField" ) {
+				name: "findField"
+				"focusTraversable": false
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 0,width :250:250"
+			} )
+			add( new FormComponent( "javafx.scene.control.Button" ) {
+				name: "previousButton"
+				"focusTraversable": false
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 1 0"
+			} )
+			add( new FormComponent( "javafx.scene.control.Button" ) {
+				name: "nextButton"
+				"focusTraversable": false
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 2 0"
+			} )
+			add( new FormComponent( "javafx.scene.control.Button" ) {
+				name: "closeButton"
+				"focusTraversable": false
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 4 0"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new javafx.geometry.Point2D( 0.0, 0.0 )
+			"size": new javafx.geometry.Dimension2D( 400.0, 300.0 )
+		} )
+		add( new FormComponent( "javafx.scene.control.Label" ) {
+			name: "nOfHitCountLabel"
+			"text": new FormMessage( null, "FindReplacePane.nOfHitCountLabel.text" )
+		}, new FormLayoutConstraints( null ) {
+			"location": new javafx.geometry.Point2D( 419.0, 4.0 )
+		} )
+	}
+}
