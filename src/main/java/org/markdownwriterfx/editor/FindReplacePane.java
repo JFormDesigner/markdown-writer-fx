@@ -36,6 +36,7 @@ import static org.fxmisc.wellbehaved.event.InputMap.consume;
 import static org.fxmisc.wellbehaved.event.InputMap.sequence;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -123,7 +124,23 @@ class FindReplacePane
 			hits.add(new Range(hitIndex, hitIndex + find.length()));
 			fromIndex = hitIndex + find.length();
 		}
-		setActiveHitIndex(hits.isEmpty() ? -1 : 0, selectActiveHit);
+
+		if (hits.isEmpty()) {
+			setActiveHitIndex(-1, selectActiveHit);
+			return;
+		}
+
+		// find active hit index after current selection
+		int anchor = textArea.getAnchor();
+		int index = Collections.binarySearch(hits, new Range(anchor, anchor), (r1, r2) -> {
+			return r1.end - r2.start;
+		});
+		if (index < 0) {
+			index = -index - 1;
+			if (index >= hits.size())
+				index = 0; // wrap
+		}
+		setActiveHitIndex(index, selectActiveHit);
 	}
 
 	private void clearHits() {
