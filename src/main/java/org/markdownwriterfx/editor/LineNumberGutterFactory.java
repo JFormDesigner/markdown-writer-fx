@@ -28,7 +28,6 @@
 package org.markdownwriterfx.editor;
 
 import java.util.function.IntFunction;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
@@ -42,8 +41,6 @@ import org.reactfx.value.Val;
 class LineNumberGutterFactory
 	implements IntFunction<Node>
 {
-	private static final Insets INSETS = new Insets(0.0, 5.0, 0.0, 5.0);
-
     private final StyleClassedTextArea textArea;
     private final Val<Integer> lineCount;
 
@@ -56,13 +53,12 @@ class LineNumberGutterFactory
 	public Node apply(int paragraphIndex) {
 		int lineNo = paragraphIndex + 1;
 		Val<String> text = lineCount.map(n -> {
-			int digits = (int) Math.floor(Math.log10(textArea.getParagraphs().size())) + 1;
+			int digits = Math.max(3, (int) Math.floor(Math.log10(textArea.getParagraphs().size())) + 1);
 			return String.format("%" + digits + "d", lineNo);
 		});
 
 		Label label = new Label();
 		label.textProperty().bind(text.conditionOnShowing(label));
-		label.setPadding(INSETS);
 		label.setAlignment(Pos.TOP_RIGHT);
 		label.setMaxHeight(Double.MAX_VALUE);
 		label.getStyleClass().add("lineno");

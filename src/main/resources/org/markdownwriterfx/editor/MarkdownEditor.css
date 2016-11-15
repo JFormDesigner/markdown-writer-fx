@@ -39,6 +39,7 @@
 
 .markdown-editor .paragraph-graphic .lineno {
 	-fx-text-fill: #aaa;
+	-fx-padding: 0 0.25em 0 0.25em;
 }
 
 
