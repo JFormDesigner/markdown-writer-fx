@@ -43,6 +43,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
+import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.control.textfield.CustomTextField;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.wellbehaved.event.Nodes;
@@ -114,11 +115,11 @@ class FindReplacePane
 			return;
 		}
 
-		//TODO ignore case
+		//TODO support match case and regex
 		hits.clear();
 		int fromIndex = 0;
 		int hitIndex;
-		while ((hitIndex = text.indexOf(find, fromIndex)) >= 0) {
+		while ((hitIndex = StringUtils.indexOfIgnoreCase(text, find, fromIndex)) >= 0) {
 			hits.add(new Range(hitIndex, hitIndex + find.length()));
 			fromIndex = hitIndex + find.length();
 		}
