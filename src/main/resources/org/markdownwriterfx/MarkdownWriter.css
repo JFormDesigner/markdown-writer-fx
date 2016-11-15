@@ -200,6 +200,10 @@
 	-fx-border-width: 0 0 1 0;
 }
 
+.find-replace .find:not-found {
+	-fx-text-fill: #c62828;
+}
+
 .find-replace .custom-text-field .left-pane {
 	-fx-padding: 0 0.25em 0 0.5em;
 }

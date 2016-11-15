@@ -40,6 +40,7 @@ import java.util.Collections;
 import java.util.List;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.css.PseudoClass;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -144,9 +145,6 @@ class FindReplacePane
 	}
 
 	private void clearHits() {
-		if (hits.isEmpty())
-			return;
-
 		hits.clear();
 		setActiveHitIndex(-1, false);
 	}
@@ -174,17 +172,26 @@ class FindReplacePane
 	}
 
 	private void setActiveHitIndex(int index, boolean selectActiveHit) {
+		int oldActiveHitIndex = activeHitIndex;
 		activeHitIndex = index;
 
 		update();
+
 		if (selectActiveHit && activeHitIndex >= 0) {
 			Range activeHit = getActiveHit();
 			textArea.selectRange(activeHit.start, activeHit.end);
 		}
+
+		if (oldActiveHitIndex < 0 && activeHitIndex < 0)
+			return; // not necessary to fire event
+
 		fireHitsChanged();
 	}
 
 	private void update() {
+		findField.pseudoClassStateChanged(PseudoClass.getPseudoClass("not-found"),
+				activeHitIndex < 0 && !findField.getText().isEmpty());
+
 		nOfHitCountLabel.setText(findField.getText().isEmpty()
 				? ""
 				: MessageFormat.format(nOfCountFormat, activeHitIndex + 1, hits.size()));
@@ -201,6 +208,7 @@ class FindReplacePane
 		initComponents();
 
 		pane.getStyleClass().add("find-replace");
+		findField.getStyleClass().add("find");
 		previousButton.getStyleClass().addAll("previous", "flat-button");
 		nextButton.getStyleClass().addAll("next", "flat-button");
 		closeButton.getStyleClass().addAll("close", "flat-button");
