@@ -289,14 +289,15 @@ class FileEditor
 	}
 
 	private void reload() {
-		if (lastModified == path.get().toFile().lastModified())
+		Path path = this.path.get();
+		if (path == null || lastModified == path.toFile().lastModified())
 			return;
-		lastModified = path.get().toFile().lastModified();
+		lastModified = path.toFile().lastModified();
 
 		if( isModified() ) {
 			Alert alert = mainWindow.createAlert(AlertType.WARNING,
 				Messages.get("FileEditor.reloadAlert.title"),
-				Messages.get("FileEditor.reloadAlert.message", path.get()));
+				Messages.get("FileEditor.reloadAlert.message", path));
 			alert.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
 
 			ButtonType result = alert.showAndWait().get();
