@@ -50,13 +50,13 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.IndexRange;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.BorderPane;
 import com.vladsch.flexmark.ast.Node;
 import com.vladsch.flexmark.parser.Parser;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.undo.UndoManager;
 import org.fxmisc.wellbehaved.event.Nodes;
+import org.markdownwriterfx.controls.BottomSlidePane;
 import org.markdownwriterfx.editor.FindReplacePane.HitsChangeListener;
 import org.markdownwriterfx.editor.MarkdownSyntaxHighlighter.ExtraStyledRanges;
 import org.markdownwriterfx.options.MarkdownExtensions;
@@ -71,7 +71,7 @@ import org.markdownwriterfx.options.Options;
  */
 public class MarkdownEditorPane
 {
-	private final BorderPane borderPane;
+	private final BottomSlidePane borderPane;
 	private final StyleClassedTextArea textArea;
 	private final ParagraphOverlayGraphicFactory overlayGraphicFactory;
 	private LineNumberGutterFactory lineNumberGutterFactory;
@@ -118,7 +118,7 @@ public class MarkdownEditorPane
 		VirtualizedScrollPane<StyleClassedTextArea> scrollPane = new VirtualizedScrollPane<StyleClassedTextArea>(textArea);
 
 		// create border pane
-		borderPane = new BorderPane(scrollPane);
+		borderPane = new BottomSlidePane(scrollPane);
 
 		overlayGraphicFactory = new ParagraphOverlayGraphicFactory(textArea);
 		textArea.setParagraphGraphicFactory(overlayGraphicFactory);
