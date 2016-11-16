@@ -197,7 +197,7 @@
 	-fx-padding: 0.25em;
 	-fx-background-color: -mwfx-tab-background;
 	-fx-border-color: -fx-outer-border;
-	-fx-border-width: 0 0 1 0;
+	-fx-border-width: 1 0 0 0;
 }
 
 .find-replace .find:not-found {

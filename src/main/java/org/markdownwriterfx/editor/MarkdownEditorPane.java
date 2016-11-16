@@ -132,7 +132,7 @@ public class MarkdownEditorPane
 		findReplacePane.addListener(findHitsChangeListener);
 		findReplacePane.visibleProperty().addListener((ov, oldVisible, newVisible) -> {
 			if (!newVisible)
-				borderPane.setTop(null);
+				borderPane.setBottom(null);
 		});
 
 		// listen to option changes
@@ -248,7 +248,7 @@ public class MarkdownEditorPane
 	}
 
 	private void textChanged(String newText) {
-		if (borderPane.getTop() != null) {
+		if (borderPane.getBottom() != null) {
 			findReplacePane.removeListener(findHitsChangeListener);
 			findReplacePane.textChanged();
 			findReplacePane.addListener(findHitsChangeListener);
@@ -331,8 +331,8 @@ public class MarkdownEditorPane
 	}
 
 	public void find(boolean replace) {
-		if (borderPane.getTop() == null)
-			borderPane.setTop(findReplacePane.getNode());
+		if (borderPane.getBottom() == null)
+			borderPane.setBottom(findReplacePane.getNode());
 
 		findReplacePane.show(replace);
 	}
