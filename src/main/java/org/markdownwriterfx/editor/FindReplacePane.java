@@ -30,7 +30,9 @@ package org.markdownwriterfx.editor;
 import static javafx.scene.input.KeyCode.DOWN;
 import static javafx.scene.input.KeyCode.ENTER;
 import static javafx.scene.input.KeyCode.ESCAPE;
+import static javafx.scene.input.KeyCode.H;
 import static javafx.scene.input.KeyCode.UP;
+import static javafx.scene.input.KeyCombination.SHORTCUT_DOWN;
 import static org.fxmisc.wellbehaved.event.EventPattern.keyPressed;
 import static org.fxmisc.wellbehaved.event.InputMap.consume;
 import static org.fxmisc.wellbehaved.event.InputMap.sequence;
@@ -177,15 +179,58 @@ class FindReplacePane
 
 		update();
 
-		if (selectActiveHit && activeHitIndex >= 0) {
-			Range activeHit = getActiveHit();
-			textArea.selectRange(activeHit.start, activeHit.end);
-		}
+		if (selectActiveHit)
+			selectActiveHit();
 
 		if (oldActiveHitIndex < 0 && activeHitIndex < 0)
 			return; // not necessary to fire event
 
 		fireHitsChanged();
+	}
+
+	private void selectActiveHit() {
+		if (activeHitIndex < 0)
+			return;
+
+		Range activeHit = getActiveHit();
+		textArea.selectRange(activeHit.start, activeHit.end);
+	}
+
+	private void replace() {
+		Range activeHit = getActiveHit();
+		if (activeHit == null)
+			return;
+
+		textArea.replaceText(activeHit.start, activeHit.end, replaceField.getText());
+
+		selectActiveHit();
+	}
+
+	private void replaceAll() {
+		if (hits.isEmpty())
+			return;
+
+		// Note: using single textArea.replaceText() to avoid multiple changes to undo history
+
+		String replace = replaceField.getText();
+		Range first = hits.get(0);
+		Range last = hits.get(hits.size() - 1);
+
+		int estimatedSize = last.end - first.start + (replace.length() * hits.size());
+		StringBuilder buf = new StringBuilder(estimatedSize);
+		Range prev = null;
+		for (Range hit : hits) {
+			if (prev != null)
+				buf.append(textArea.getText(prev.end, hit.start));
+			buf.append(replace);
+			prev = hit;
+		}
+
+		textArea.replaceText(first.start, last.end, buf.toString());
+
+		int caret = first.start + buf.length();
+		textArea.selectRange(caret, caret);
+		textArea.requestFocus();
 	}
 
 	private void update() {
@@ -225,6 +270,8 @@ class FindReplacePane
 		findField.setRight(nOfHitCountLabel);
 		findField.textProperty().addListener((ov, o, n) -> findAll(textArea.getText(), n, true));
 		Nodes.addInputMap(findField, sequence(
+				// don't know why, but Ctrl+H (set in menubar) does not work if findField has focus
+				consume(keyPressed(H, SHORTCUT_DOWN), e -> show(true)),
 				consume(keyPressed(UP),		e -> findPrevious()),
 				consume(keyPressed(DOWN),	e -> findNext()),
 				consume(keyPressed(ENTER),	e -> findNext()),
@@ -235,15 +282,30 @@ class FindReplacePane
 
 		nOfCountFormat = nOfHitCountLabel.getText();
 
+
+		replaceField.setLeft(FontAwesomeIconFactory.get().createIcon(FontAwesomeIcon.RETWEET));
+		Nodes.addInputMap(replaceField, sequence(
+				consume(keyPressed(UP),		e -> findPrevious()),
+				consume(keyPressed(DOWN),	e -> findNext()),
+				consume(keyPressed(ENTER),	e -> replace()),
+				consume(keyPressed(ENTER, SHORTCUT_DOWN), e -> replaceAll()),
+				consume(keyPressed(ESCAPE),	e -> hide())));
+		replaceButton.setOnAction(e -> replace());
+		replaceAllButton.setOnAction(e -> replaceAll());
+
 		update();
 
 		return pane;
 	}
 
-	void show() {
+	void show(boolean replace) {
 		visible.set(true);
 		textChanged();
-		findField.requestFocus();
+
+		if (replace)
+			replaceField.requestFocus();
+		else
+			findField.requestFocus();
 	}
 
 	void hide() {
@@ -258,16 +320,19 @@ class FindReplacePane
 		previousButton = new Button();
 		nextButton = new Button();
 		closeButton = new Button();
+		replaceField = new CustomTextField();
+		replaceButton = new Button();
+		replaceAllButton = new Button();
 		nOfHitCountLabel = new Label();
 
 		//======== pane ========
 		{
 			pane.setLayout("insets 0,hidemode 3");
-			pane.setCols("[fill]0[fill]0[fill][grow,fill][fill]");
-			pane.setRows("[fill]");
+			pane.setCols("[fill][left]0[fill][grow,fill][fill]");
+			pane.setRows("[fill][]");
 
 			//---- findField ----
-			findField.setFocusTraversable(false);
+			findField.setPromptText(Messages.get("FindReplacePane.findField.promptText"));
 			pane.add(findField, "cell 0 0,width :250:250");
 
 			//---- previousButton ----
@@ -281,6 +346,20 @@ class FindReplacePane
 			//---- closeButton ----
 			closeButton.setFocusTraversable(false);
 			pane.add(closeButton, "cell 4 0");
+
+			//---- replaceField ----
+			replaceField.setPromptText(Messages.get("FindReplacePane.replaceField.promptText"));
+			pane.add(replaceField, "cell 0 1");
+
+			//---- replaceButton ----
+			replaceButton.setText(Messages.get("FindReplacePane.replaceButton.text"));
+			replaceButton.setFocusTraversable(false);
+			pane.add(replaceButton, "cell 1 1 3 1");
+
+			//---- replaceAllButton ----
+			replaceAllButton.setText(Messages.get("FindReplacePane.replaceAllButton.text"));
+			replaceAllButton.setFocusTraversable(false);
+			pane.add(replaceAllButton, "cell 1 1 3 1");
 		}
 
 		//---- nOfHitCountLabel ----
@@ -294,6 +373,9 @@ class FindReplacePane
 	private Button previousButton;
 	private Button nextButton;
 	private Button closeButton;
+	private CustomTextField replaceField;
+	private Button replaceButton;
+	private Button replaceAllButton;
 	private Label nOfHitCountLabel;
 	// JFormDesigner - End of variables declaration  //GEN-END:variables
 }

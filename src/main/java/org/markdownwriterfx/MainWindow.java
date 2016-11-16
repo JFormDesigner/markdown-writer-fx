@@ -140,7 +140,10 @@ class MainWindow
 				e -> getActiveEditor().redo(),
 				createActiveBooleanProperty(FileEditor::canRedoProperty).not());
 		Action editFindAction = new Action(Messages.get("MainWindow.editFindAction"), "Shortcut+F", SEARCH,
-				e -> getActiveEditor().find(),
+				e -> getActiveEditor().find(false),
+				activeFileEditorIsNull);
+		Action editReplaceAction = new Action(Messages.get("MainWindow.editReplaceAction"), "Shortcut+H", RETWEET,
+				e -> getActiveEditor().find(true),
 				activeFileEditorIsNull);
 
 		// View actions
@@ -203,7 +206,7 @@ class MainWindow
 		Action insertOrderedListAction = new Action(Messages.get("MainWindow.insertOrderedListAction"), "Shortcut+Shift+O", LIST_OL,
 				e -> getActiveSmartEdit().surroundSelection("\n\n1. ", ""),
 				activeFileEditorIsNull);
-		Action insertHorizontalRuleAction = new Action(Messages.get("MainWindow.insertHorizontalRuleAction"), "Shortcut+H", null,
+		Action insertHorizontalRuleAction = new Action(Messages.get("MainWindow.insertHorizontalRuleAction"), null, null,
 				e -> getActiveSmartEdit().surroundSelection("\n\n---\n\n", ""),
 				activeFileEditorIsNull);
 
@@ -232,7 +235,8 @@ class MainWindow
 				editUndoAction,
 				editRedoAction,
 				null,
-				editFindAction);
+				editFindAction,
+				editReplaceAction);
 
 		Menu viewMenu = ActionUtils.createMenu(Messages.get("MainWindow.viewMenu"),
 				viewPreviewAction,

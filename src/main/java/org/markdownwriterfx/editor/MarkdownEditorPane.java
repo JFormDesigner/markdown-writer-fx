@@ -330,10 +330,10 @@ public class MarkdownEditorPane
 		textArea.getUndoManager().redo();
 	}
 
-	public void find() {
+	public void find(boolean replace) {
 		if (borderPane.getTop() == null)
 			borderPane.setTop(findReplacePane.getNode());
 
-		findReplacePane.show();
+		findReplacePane.show(replace);
 	}
 }

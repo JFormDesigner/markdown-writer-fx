@@ -16,6 +16,7 @@ Features
   * Syntax highlighting in editor
   * Keyboard shortcuts to insert Markdown (Bold, Italic, Code, Links, Images, Header, Lists, ...)
   * Auto-indent lists
+  * search and replace
   * HTML preview
   * HTML source preview
   * Markdown AST view
@@ -25,7 +26,6 @@ TODO
 ----
 
   * auto-complete
-  * search and replace
   * improved syntax highlighting (HTML, ...)
   * more options
   * directory tree view

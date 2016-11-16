@@ -2,6 +2,7 @@ Markdown Writer FX Change Log
 =============================
 
 ## 0.4
+- Find and Replace added.
 - Show line numbers in editor (if enabled in Options dialog).
 - Automatically reload externally changed markdown files (on window activation).
 - Smarter "Insert Bold/Italic/Strikethrough": if used within inline code
