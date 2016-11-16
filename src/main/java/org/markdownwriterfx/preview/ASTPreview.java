@@ -47,6 +47,7 @@ class ASTPreview
 
 	ASTPreview() {
 		textArea.setEditable(false);
+		textArea.setFocusTraversable(false);
 	}
 
 	@Override

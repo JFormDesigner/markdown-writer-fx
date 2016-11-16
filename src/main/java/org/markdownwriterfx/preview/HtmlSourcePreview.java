@@ -46,6 +46,7 @@ class HtmlSourcePreview
 
 	HtmlSourcePreview() {
 		textArea.setEditable(false);
+		textArea.setFocusTraversable(false);
 		textArea.setWrapText(true);
 	}
 
