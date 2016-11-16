@@ -30,6 +30,7 @@ package org.markdownwriterfx.editor;
 import static javafx.scene.input.KeyCode.DOWN;
 import static javafx.scene.input.KeyCode.ENTER;
 import static javafx.scene.input.KeyCode.ESCAPE;
+import static javafx.scene.input.KeyCode.F3;
 import static javafx.scene.input.KeyCode.H;
 import static javafx.scene.input.KeyCode.UP;
 import static javafx.scene.input.KeyCombination.SHORTCUT_DOWN;
@@ -151,7 +152,7 @@ class FindReplacePane
 		setActiveHitIndex(-1, false);
 	}
 
-	private void findPrevious() {
+	void findPrevious() {
 		if (hits.size() < 1)
 			return;
 
@@ -162,7 +163,7 @@ class FindReplacePane
 		setActiveHitIndex(previous, true);
 	}
 
-	private void findNext() {
+	void findNext() {
 		if (hits.size() < 1)
 			return;
 
@@ -272,6 +273,9 @@ class FindReplacePane
 		Nodes.addInputMap(findField, sequence(
 				// don't know why, but Ctrl+H (set in menubar) does not work if findField has focus
 				consume(keyPressed(H, SHORTCUT_DOWN), e -> show(true)),
+				// don't know why, but F3 (set in menubar) does not work if findField has focus
+				consume(keyPressed(F3),		e -> findNext()),
+
 				consume(keyPressed(UP),		e -> findPrevious()),
 				consume(keyPressed(DOWN),	e -> findNext()),
 				consume(keyPressed(ENTER),	e -> findNext()),
@@ -287,6 +291,9 @@ class FindReplacePane
 
 		replaceField.setLeft(FontAwesomeIconFactory.get().createIcon(FontAwesomeIcon.RETWEET));
 		Nodes.addInputMap(replaceField, sequence(
+				// don't know why, but F3 (set in menubar) does not work if replaceField has focus
+				consume(keyPressed(F3),		e -> findNext()),
+
 				consume(keyPressed(UP),		e -> findPrevious()),
 				consume(keyPressed(DOWN),	e -> findNext()),
 				consume(keyPressed(ENTER),	e -> replace()),
@@ -304,10 +311,11 @@ class FindReplacePane
 		if (replace)
 			replacePane.setVisible(true);
 
+		boolean oldVisible = visible.get();
 		visible.set(true);
 		textChanged();
 
-		if (replace)
+		if (replace && oldVisible)
 			replaceField.requestFocus();
 		else
 			findField.requestFocus();

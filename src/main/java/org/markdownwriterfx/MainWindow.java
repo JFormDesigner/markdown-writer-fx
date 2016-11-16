@@ -145,6 +145,12 @@ class MainWindow
 		Action editReplaceAction = new Action(Messages.get("MainWindow.editReplaceAction"), "Shortcut+H", RETWEET,
 				e -> getActiveEditor().find(true),
 				activeFileEditorIsNull);
+		Action editFindNextAction = new Action(Messages.get("MainWindow.editFindNextAction"), "F3", null,
+				e -> getActiveEditor().findNextPrevious(true),
+				activeFileEditorIsNull);
+		Action editFindPreviousAction = new Action(Messages.get("MainWindow.editFindPreviousAction"), "Shift+F3", null,
+				e -> getActiveEditor().findNextPrevious(false),
+				activeFileEditorIsNull);
 
 		// View actions
 		Action viewPreviewAction = new Action(Messages.get("MainWindow.viewPreviewAction"), null, EYE,
@@ -236,7 +242,10 @@ class MainWindow
 				editRedoAction,
 				null,
 				editFindAction,
-				editReplaceAction);
+				editReplaceAction,
+				null,
+				editFindNextAction,
+				editFindPreviousAction);
 
 		Menu viewMenu = ActionUtils.createMenu(Messages.get("MainWindow.viewMenu"),
 				viewPreviewAction,
