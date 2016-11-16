@@ -283,6 +283,8 @@ class FindReplacePane
 		nOfCountFormat = nOfHitCountLabel.getText();
 
 
+		replacePane.setVisible(false);
+
 		replaceField.setLeft(FontAwesomeIconFactory.get().createIcon(FontAwesomeIcon.RETWEET));
 		Nodes.addInputMap(replaceField, sequence(
 				consume(keyPressed(UP),		e -> findPrevious()),
@@ -299,6 +301,9 @@ class FindReplacePane
 	}
 
 	void show(boolean replace) {
+		if (replace)
+			replacePane.setVisible(true);
+
 		visible.set(true);
 		textChanged();
 
@@ -310,6 +315,7 @@ class FindReplacePane
 
 	void hide() {
 		visible.set(false);
+		replacePane.setVisible(false);
 		clearHits();
 	}
 
@@ -320,6 +326,7 @@ class FindReplacePane
 		previousButton = new Button();
 		nextButton = new Button();
 		closeButton = new Button();
+		replacePane = new MigPane();
 		replaceField = new CustomTextField();
 		replaceButton = new Button();
 		replaceAllButton = new Button();
@@ -329,11 +336,11 @@ class FindReplacePane
 		{
 			pane.setLayout("insets 0,hidemode 3");
 			pane.setCols("[fill][left]0[fill][grow,fill][fill]");
-			pane.setRows("[fill][]");
+			pane.setRows("[fill]0[]");
 
 			//---- findField ----
 			findField.setPromptText(Messages.get("FindReplacePane.findField.promptText"));
-			pane.add(findField, "cell 0 0,width :250:250");
+			pane.add(findField, "cell 0 0,width :200:200");
 
 			//---- previousButton ----
 			previousButton.setFocusTraversable(false);
@@ -347,19 +354,27 @@ class FindReplacePane
 			closeButton.setFocusTraversable(false);
 			pane.add(closeButton, "cell 4 0");
 
-			//---- replaceField ----
-			replaceField.setPromptText(Messages.get("FindReplacePane.replaceField.promptText"));
-			pane.add(replaceField, "cell 0 1");
+			//======== replacePane ========
+			{
+				replacePane.setLayout("insets rel 0 0 0");
+				replacePane.setCols("[][fill][fill]");
+				replacePane.setRows("[]");
 
-			//---- replaceButton ----
-			replaceButton.setText(Messages.get("FindReplacePane.replaceButton.text"));
-			replaceButton.setFocusTraversable(false);
-			pane.add(replaceButton, "cell 1 1 3 1");
+				//---- replaceField ----
+				replaceField.setPromptText(Messages.get("FindReplacePane.replaceField.promptText"));
+				replacePane.add(replaceField, "cell 0 0,width :200:200");
 
-			//---- replaceAllButton ----
-			replaceAllButton.setText(Messages.get("FindReplacePane.replaceAllButton.text"));
-			replaceAllButton.setFocusTraversable(false);
-			pane.add(replaceAllButton, "cell 1 1 3 1");
+				//---- replaceButton ----
+				replaceButton.setText(Messages.get("FindReplacePane.replaceButton.text"));
+				replaceButton.setFocusTraversable(false);
+				replacePane.add(replaceButton, "cell 1 0");
+
+				//---- replaceAllButton ----
+				replaceAllButton.setText(Messages.get("FindReplacePane.replaceAllButton.text"));
+				replaceAllButton.setFocusTraversable(false);
+				replacePane.add(replaceAllButton, "cell 2 0");
+			}
+			pane.add(replacePane, "cell 0 1 5 1");
 		}
 
 		//---- nOfHitCountLabel ----
@@ -373,6 +388,7 @@ class FindReplacePane
 	private Button previousButton;
 	private Button nextButton;
 	private Button closeButton;
+	private MigPane replacePane;
 	private CustomTextField replaceField;
 	private Button replaceButton;
 	private Button replaceAllButton;
