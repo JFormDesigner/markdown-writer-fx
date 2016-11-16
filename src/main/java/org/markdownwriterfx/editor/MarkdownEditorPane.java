@@ -57,6 +57,7 @@ import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.undo.UndoManager;
 import org.fxmisc.wellbehaved.event.Nodes;
+import org.markdownwriterfx.editor.FindReplacePane.HitsChangeListener;
 import org.markdownwriterfx.editor.MarkdownSyntaxHighlighter.ExtraStyledRanges;
 import org.markdownwriterfx.options.MarkdownExtensions;
 import org.markdownwriterfx.options.Options;
@@ -76,7 +77,9 @@ public class MarkdownEditorPane
 	private LineNumberGutterFactory lineNumberGutterFactory;
 	private WhitespaceOverlayFactory whitespaceOverlayFactory;
 	private final SmartEdit smartEdit;
+
 	private final FindReplacePane findReplacePane;
+	private final HitsChangeListener findHitsChangeListener;
 	private Parser parser;
 	private final InvalidationListener optionsListener;
 	private String lineSeparator = getLineSeparatorOrDefault();
@@ -125,7 +128,8 @@ public class MarkdownEditorPane
 
 		// find/replace
 		findReplacePane = new FindReplacePane(textArea);
-		findReplacePane.addListener(this::findHitsChanged);
+		findHitsChangeListener = this::findHitsChanged;
+		findReplacePane.addListener(findHitsChangeListener);
 		findReplacePane.visibleProperty().addListener((ov, oldVisible, newVisible) -> {
 			if (!newVisible)
 				borderPane.setTop(null);
@@ -244,14 +248,21 @@ public class MarkdownEditorPane
 	}
 
 	private void textChanged(String newText) {
-		if (borderPane.getTop() != null)
+		if (borderPane.getTop() != null) {
+			findReplacePane.removeListener(findHitsChangeListener);
 			findReplacePane.textChanged();
+			findReplacePane.addListener(findHitsChangeListener);
+		}
 
 		Node astRoot = parseMarkdown(newText);
 		applyHighlighting(astRoot);
 
 		markdownText.set(newText);
 		markdownAST.set(astRoot);
+	}
+
+	private void findHitsChanged() {
+		applyHighlighting(markdownAST.get());
 	}
 
 	private Node parseMarkdown(String text) {
@@ -324,9 +335,5 @@ public class MarkdownEditorPane
 			borderPane.setTop(findReplacePane.getNode());
 
 		findReplacePane.show();
-	}
-
-	private void findHitsChanged() {
-		applyHighlighting(markdownAST.get());
 	}
 }
