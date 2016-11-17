@@ -40,6 +40,11 @@
     -fx-padding: 0 1em 1em 1em;
 }
 
+/* highlight current line */
+.markdown-editor .paragraph-box:has-caret {
+    -fx-background-color: #f2f9fc;
+}
+
 
 /*---- gutter ----*/
 
