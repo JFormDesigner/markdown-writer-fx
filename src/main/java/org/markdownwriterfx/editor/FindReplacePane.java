@@ -47,13 +47,17 @@ import javafx.css.PseudoClass;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollBar;
 import javafx.scene.control.Tooltip;
+import javafx.scene.layout.Region;
 import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.control.textfield.CustomTextField;
 import org.fxmisc.richtext.StyleClassedTextArea;
+import org.fxmisc.richtext.model.TwoDimensional.Bias;
 import org.fxmisc.wellbehaved.event.Nodes;
 import org.markdownwriterfx.Messages;
 import org.markdownwriterfx.util.Range;
+import org.markdownwriterfx.util.Utils;
 import org.tbee.javafx.scene.layout.fxml.MigPane;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.utils.FontAwesomeIconFactory;
@@ -72,6 +76,8 @@ class FindReplacePane
 	private final List<Range> hits = new ArrayList<>();
 	private int activeHitIndex = -1;
 	private String nOfCountFormat;
+
+	private Region overviewRuler;
 
 	FindReplacePane(StyleClassedTextArea textArea) {
 		this.textArea = textArea;
@@ -131,6 +137,7 @@ class FindReplacePane
 
 		if (hits.isEmpty()) {
 			setActiveHitIndex(-1, selectActiveHit);
+			updateOverviewRuler();
 			return;
 		}
 
@@ -145,11 +152,13 @@ class FindReplacePane
 				index = 0; // wrap
 		}
 		setActiveHitIndex(index, selectActiveHit);
+		updateOverviewRuler();
 	}
 
 	private void clearHits() {
 		hits.clear();
 		setActiveHitIndex(-1, false);
+		updateOverviewRuler();
 	}
 
 	void findPrevious() {
@@ -232,6 +241,65 @@ class FindReplacePane
 		int caret = first.start + buf.length();
 		textArea.selectRange(caret, caret);
 		textArea.requestFocus();
+	}
+
+	private void updateOverviewRuler() {
+		if (overviewRuler == null) {
+			if (hits.isEmpty())
+				return;
+
+			ScrollBar vScrollBar = Utils.findVScrollBar(textArea.getParent());
+			if (vScrollBar == null)
+				return;
+
+			overviewRuler = (Region) vScrollBar.lookup(".track");
+			if (overviewRuler == null)
+				return;
+
+			overviewRuler.heightProperty().addListener((ob) -> updateOverviewRuler());
+		}
+
+		if (hits.isEmpty()) {
+			overviewRuler.setStyle(null);
+			return;
+		}
+
+		int hitCount = hits.size();
+		double height = overviewRuler.getHeight();
+		int lineCount = textArea.getParagraphs().size();
+
+		// compute top insets of hits
+		int[] topInsets = new int[hitCount];
+		int topInsetsCount = 0;
+		int previousTopInset = -1;
+		for (Range hit : hits) {
+			int line = textArea.offsetToPosition(hit.start, Bias.Backward).getMajor();
+			int topInset = (int) (height * line / lineCount);
+			if (topInset == previousTopInset)
+				continue; // avoid duplicates
+			previousTopInset = topInset;
+
+			topInsets[topInsetsCount++] = topInset;
+		}
+
+		// build CSS border width and colors
+		StringBuilder buf = new StringBuilder();
+		buf.append("-fx-border-width: 1 0 0 0; -fx-border-color: ");
+		for (int i = 0; i < topInsetsCount; i++) {
+			if (i > 0)
+				buf.append(',');
+			buf.append("-mwfx-hit");
+		}
+
+		// build CSS border insets
+		buf.append("; -fx-border-insets: ");
+		for (int i = 0; i < topInsetsCount; i++) {
+			if (i > 0)
+				buf.append(',');
+			buf.append(topInsets[i]).append(" 0 0 0");
+		}
+
+		overviewRuler.setStyle(buf.toString());
 	}
 
 	private void update() {

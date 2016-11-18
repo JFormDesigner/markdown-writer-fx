@@ -129,6 +129,11 @@
 
 /*---- scroll bars ----*/
 
+.scroll-bar {
+    -fx-background-color: -fx-base;
+	-fx-background-insets: 0;
+}
+
 /* make horizontal increment/decrement buttons square */
 .scroll-bar:horizontal > .increment-button, 
 .scroll-bar:horizontal > .decrement-button {
@@ -154,15 +159,15 @@
 
 /* make thumb flat */
 .scroll-bar > .thumb {
-	-fx-background-color: #ccc;
+	-fx-background-color: #00000022;
 	-fx-background-insets: 0;
 	-fx-background-radius: 0;
 }
 .scroll-bar > .thumb:hover {
-	-fx-background-color: #aaa;
+	-fx-background-color: #00000044;
 }
 .scroll-bar > .thumb:pressed {
-	-fx-background-color: #888;
+	-fx-background-color: #00000066;
 }
 
 
@@ -235,4 +240,8 @@
 }
 .markdown-editor .hit-active {
 	-rtfx-background-color: #F9A825 !important;
+}
+
+.scroll-bar > .track {
+	-mwfx-hit: #FBC02D;
 }
