@@ -27,6 +27,7 @@
 
 package org.markdownwriterfx.editor;
 
+import javafx.scene.control.ToggleButton;
 import static javafx.scene.input.KeyCode.DOWN;
 import static javafx.scene.input.KeyCode.ENTER;
 import static javafx.scene.input.KeyCode.ESCAPE;
@@ -41,9 +42,11 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.css.PseudoClass;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -55,7 +58,9 @@ import org.controlsfx.control.textfield.CustomTextField;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.richtext.model.TwoDimensional.Bias;
 import org.fxmisc.wellbehaved.event.Nodes;
+import org.markdownwriterfx.MarkdownWriterFXApp;
 import org.markdownwriterfx.Messages;
+import org.markdownwriterfx.util.PrefsBooleanProperty;
 import org.markdownwriterfx.util.Range;
 import org.markdownwriterfx.util.Utils;
 import org.tbee.javafx.scene.layout.fxml.MigPane;
@@ -70,6 +75,11 @@ class FindReplacePane
 	interface HitsChangeListener {
 		void hitsChanged();
 	}
+
+	private static PrefsBooleanProperty matchCase = new PrefsBooleanProperty(
+			MarkdownWriterFXApp.getState(), "findMatchCase", false);
+	private static PrefsBooleanProperty regex = new PrefsBooleanProperty(
+			MarkdownWriterFXApp.getState(), "findRegex", false);
 
 	private final List<HitsChangeListener> listeners = new ArrayList<>();
 	private final StyleClassedTextArea textArea;
@@ -117,22 +127,46 @@ class FindReplacePane
 	}
 
 	void textChanged() {
-		findAll(textArea.getText(), findField.getText(), false);
+		findAll(false);
+	}
+
+	private void findAll(boolean selectActiveHit) {
+		findAll(textArea.getText(), findField.getText(), selectActiveHit);
 	}
 
 	private void findAll(String text, String find, boolean selectActiveHit) {
+		findInfoLabel.setText(null);
+
 		if (find.isEmpty()) {
 			clearHits();
 			return;
 		}
 
-		//TODO support match case and regex
+		boolean matchCase = matchCaseButton.isSelected();
+		boolean regex = regexButton.isSelected();
+
 		hits.clear();
-		int fromIndex = 0;
-		int hitIndex;
-		while ((hitIndex = StringUtils.indexOfIgnoreCase(text, find, fromIndex)) >= 0) {
-			hits.add(new Range(hitIndex, hitIndex + find.length()));
-			fromIndex = hitIndex + find.length();
+
+		// find
+		if (regex) {
+			String pattern = matchCase ? find : ("(?i)" + find);
+			try {
+				Matcher matcher = Pattern.compile(pattern).matcher(text);
+				while (matcher.find())
+					hits.add(new Range(matcher.start(), matcher.end()));
+			} catch (PatternSyntaxException ex) {
+				findInfoLabel.setText(Messages.get("FindReplacePane.infoLabel.regexError"));
+			}
+		} else {
+			int fromIndex = 0;
+			int hitIndex;
+			while ((hitIndex = matchCase
+					? text.indexOf(find, fromIndex)
+					: StringUtils.indexOfIgnoreCase(text, find, fromIndex)) >= 0)
+			{
+				hits.add(new Range(hitIndex, hitIndex + find.length()));
+				fromIndex = hitIndex + find.length();
+			}
 		}
 
 		if (hits.isEmpty()) {
@@ -207,16 +241,29 @@ class FindReplacePane
 	}
 
 	private void replace() {
+		Utils.error(replaceField, false);
+		replaceInfoLabel.setText(null);
+
 		Range activeHit = getActiveHit();
 		if (activeHit == null)
 			return;
 
-		textArea.replaceText(activeHit.start, activeHit.end, replaceField.getText());
+		String replace = replaceField.getText();
+		Pattern regexReplacePattern = regexReplacePattern();
+		if (regexReplacePattern != null) {
+			replace = regexReplace(regexReplacePattern, activeHit, replace);
+			if (replace == null)
+				return; // error
+		}
+		textArea.replaceText(activeHit.start, activeHit.end, replace);
 
 		selectActiveHit();
 	}
 
 	private void replaceAll() {
+		Utils.error(replaceField, false);
+		replaceInfoLabel.setText(null);
+
 		if (hits.isEmpty())
 			return;
 
@@ -225,6 +272,7 @@ class FindReplacePane
 		String replace = replaceField.getText();
 		Range first = hits.get(0);
 		Range last = hits.get(hits.size() - 1);
+		Pattern regexReplacePattern = regexReplacePattern();
 
 		int estimatedSize = last.end - first.start + (replace.length() * hits.size());
 		StringBuilder buf = new StringBuilder(estimatedSize);
@@ -232,6 +280,11 @@ class FindReplacePane
 		for (Range hit : hits) {
 			if (prev != null)
 				buf.append(textArea.getText(prev.end, hit.start));
+			if (regexReplacePattern != null) {
+				replace = regexReplace(regexReplacePattern, hit, replace);
+				if (replace == null)
+					return; // error
+			}
 			buf.append(replace);
 			prev = hit;
 		}
@@ -241,6 +294,37 @@ class FindReplacePane
 		int caret = first.start + buf.length();
 		textArea.selectRange(caret, caret);
 		textArea.requestFocus();
+	}
+
+	private Pattern regexReplacePattern() {
+		if (!regexButton.isSelected())
+			return null;
+
+		String replace = replaceField.getText();
+		if (replace.indexOf('$') < 0 && replace.indexOf('\\') < 0) {
+			// replacement does not contain special characters
+			// --> no need to do regex replace
+			return null;
+		}
+
+		String find = findField.getText();
+		String pattern = matchCaseButton.isSelected() ? find : ("(?i)" + find);
+		try {
+			return Pattern.compile(pattern);
+		} catch (PatternSyntaxException ex) {
+			return null;
+		}
+	}
+
+	private String regexReplace(Pattern regexReplacePattern, Range hit, String replace) {
+		try {
+			String text = textArea.getText(hit.start, hit.end);
+			return regexReplacePattern.matcher(text).replaceFirst(replace);
+		} catch (IllegalArgumentException|IndexOutOfBoundsException ex) {
+			Utils.error(replaceField, true);
+			replaceInfoLabel.setText(ex.getMessage());
+			return null;
+		}
 	}
 
 	private void updateOverviewRuler() {
@@ -303,8 +387,7 @@ class FindReplacePane
 	}
 
 	private void update() {
-		findField.pseudoClassStateChanged(PseudoClass.getPseudoClass("not-found"),
-				activeHitIndex < 0 && !findField.getText().isEmpty());
+		Utils.error(findField, activeHitIndex < 0 && !findField.getText().isEmpty());
 
 		nOfHitCountLabel.setText(findField.getText().isEmpty()
 				? ""
@@ -325,7 +408,11 @@ class FindReplacePane
 		findField.getStyleClass().add("find");
 		previousButton.getStyleClass().addAll("previous", "flat-button");
 		nextButton.getStyleClass().addAll("next", "flat-button");
+		matchCaseButton.getStyleClass().add("flat-button");
+		regexButton.getStyleClass().add("flat-button");
 		closeButton.getStyleClass().addAll("close", "flat-button");
+		findInfoLabel.getStyleClass().add("info");
+		replaceInfoLabel.getStyleClass().add("info");
 
 		previousButton.setGraphic(FontAwesomeIconFactory.get().createIcon(FontAwesomeIcon.CHEVRON_UP));
 		nextButton.setGraphic(FontAwesomeIconFactory.get().createIcon(FontAwesomeIcon.CHEVRON_DOWN));
@@ -333,11 +420,13 @@ class FindReplacePane
 
 		previousButton.setTooltip(new Tooltip(Messages.get("FindReplacePane.previousButton.tooltip")));
 		nextButton.setTooltip(new Tooltip(Messages.get("FindReplacePane.nextButton.tooltip")));
+		matchCaseButton.setTooltip(new Tooltip(Messages.get("FindReplacePane.matchCaseButton.tooltip")));
+		regexButton.setTooltip(new Tooltip(Messages.get("FindReplacePane.regexButton.tooltip")));
 		closeButton.setTooltip(new Tooltip(Messages.get("FindReplacePane.closeButton.tooltip")));
 
 		findField.setLeft(FontAwesomeIconFactory.get().createIcon(FontAwesomeIcon.SEARCH));
 		findField.setRight(nOfHitCountLabel);
-		findField.textProperty().addListener((ov, o, n) -> findAll(textArea.getText(), n, true));
+		findField.textProperty().addListener((ov, o, n) -> findAll(true));
 		Nodes.addInputMap(findField, sequence(
 				// don't know why, but Ctrl+H (set in menubar) does not work if findField has focus
 				consume(keyPressed(H, SHORTCUT_DOWN), e -> show(true)),
@@ -351,6 +440,17 @@ class FindReplacePane
 		previousButton.setOnAction(e -> findPrevious());
 		nextButton.setOnAction(e -> findNext());
 		closeButton.setOnAction(e -> hide());
+
+		matchCaseButton.setOnAction(e -> {
+			findAll(true);
+			matchCase.set(matchCaseButton.isSelected());
+		} );
+		regexButton.setOnAction(e -> {
+			findAll(true);
+			regex.set(regexButton.isSelected());
+		});
+		matchCaseButton.setSelected(matchCase.get());
+		regexButton.setSelected(regex.get());
 
 		nOfCountFormat = nOfHitCountLabel.getText();
 
@@ -401,22 +501,26 @@ class FindReplacePane
 		findField = new CustomTextField();
 		previousButton = new Button();
 		nextButton = new Button();
+		matchCaseButton = new ToggleButton();
+		regexButton = new ToggleButton();
+		findInfoLabel = new Label();
 		closeButton = new Button();
 		replacePane = new MigPane();
 		replaceField = new CustomTextField();
 		replaceButton = new Button();
 		replaceAllButton = new Button();
+		replaceInfoLabel = new Label();
 		nOfHitCountLabel = new Label();
 
 		//======== pane ========
 		{
 			pane.setLayout("insets 0,hidemode 3");
-			pane.setCols("[fill][left]0[fill][grow,fill][fill]");
+			pane.setCols("[fill][fill]0[fill][pref:n,fill]1px[pref:n,fill][grow,shrinkprio 200,fill][fill]");
 			pane.setRows("[fill]0[]");
 
 			//---- findField ----
 			findField.setPromptText(Messages.get("FindReplacePane.findField.promptText"));
-			pane.add(findField, "cell 0 0,width :200:200");
+			pane.add(findField, "cell 0 0,width 200:200:200");
 
 			//---- previousButton ----
 			previousButton.setFocusTraversable(false);
@@ -426,19 +530,30 @@ class FindReplacePane
 			nextButton.setFocusTraversable(false);
 			pane.add(nextButton, "cell 2 0");
 
+			//---- matchCaseButton ----
+			matchCaseButton.setText("Aa");
+			matchCaseButton.setFocusTraversable(false);
+			pane.add(matchCaseButton, "cell 3 0");
+
+			//---- regexButton ----
+			regexButton.setText(".*");
+			regexButton.setFocusTraversable(false);
+			pane.add(regexButton, "cell 4 0");
+			pane.add(findInfoLabel, "cell 5 0");
+
 			//---- closeButton ----
 			closeButton.setFocusTraversable(false);
-			pane.add(closeButton, "cell 4 0");
+			pane.add(closeButton, "cell 6 0");
 
 			//======== replacePane ========
 			{
 				replacePane.setLayout("insets rel 0 0 0");
-				replacePane.setCols("[][fill][fill]");
+				replacePane.setCols("[fill][pref:n,fill][pref:n,fill][grow,shrinkprio 200,fill]");
 				replacePane.setRows("[]");
 
 				//---- replaceField ----
 				replaceField.setPromptText(Messages.get("FindReplacePane.replaceField.promptText"));
-				replacePane.add(replaceField, "cell 0 0,width :200:200");
+				replacePane.add(replaceField, "cell 0 0,width 200:200:200");
 
 				//---- replaceButton ----
 				replaceButton.setText(Messages.get("FindReplacePane.replaceButton.text"));
@@ -449,8 +564,9 @@ class FindReplacePane
 				replaceAllButton.setText(Messages.get("FindReplacePane.replaceAllButton.text"));
 				replaceAllButton.setFocusTraversable(false);
 				replacePane.add(replaceAllButton, "cell 2 0");
+				replacePane.add(replaceInfoLabel, "cell 3 0");
 			}
-			pane.add(replacePane, "cell 0 1 5 1");
+			pane.add(replacePane, "cell 0 1 7 1");
 		}
 
 		//---- nOfHitCountLabel ----
@@ -463,11 +579,15 @@ class FindReplacePane
 	private CustomTextField findField;
 	private Button previousButton;
 	private Button nextButton;
+	private ToggleButton matchCaseButton;
+	private ToggleButton regexButton;
+	private Label findInfoLabel;
 	private Button closeButton;
 	private MigPane replacePane;
 	private CustomTextField replaceField;
 	private Button replaceButton;
 	private Button replaceAllButton;
+	private Label replaceInfoLabel;
 	private Label nOfHitCountLabel;
 	// JFormDesigner - End of variables declaration  //GEN-END:variables
 }

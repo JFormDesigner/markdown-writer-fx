@@ -106,7 +106,7 @@ public class BottomSlidePane
 			double bottomPrefHeight = bottom.prefHeight(-1);
 			bottomHeight = bottomPrefHeight * bottomVisibility.get();
 
-			layoutInArea(bottom, 0, height - bottomHeight, width, bottomPrefHeight, 0, HPos.CENTER, VPos.CENTER);
+			layoutInArea(bottom, 0, height - bottomHeight, width, bottomPrefHeight, 0, HPos.LEFT, VPos.BOTTOM);
 		}
 
 		if (center != null)

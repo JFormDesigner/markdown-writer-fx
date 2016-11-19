@@ -205,7 +205,10 @@
 	-fx-border-width: 1 0 0 0;
 }
 
-.find-replace .find:not-found {
+.find-replace .text-field:error {
+	-fx-control-inner-background: #ffebee;
+}
+.find-replace .info {
 	-fx-text-fill: #c62828;
 }
 
@@ -230,9 +233,11 @@
 	-fx-background-color: -fx-shadow-highlight-color, -fx-outer-border, -fx-inner-border, -fx-body-color;
 	-fx-color: -fx-hover-base;
 }
-
 .find-replace .flat-button:armed {
 	-fx-color: -fx-pressed-base;
+}
+.find-replace .flat-button:selected {
+	-fx-background-color: -fx-outer-border;
 }
 
 .markdown-editor .hit {
