@@ -32,12 +32,10 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.Preferences;
-import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -52,6 +50,7 @@ import javafx.scene.control.TabPane.TabClosingPolicy;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import org.markdownwriterfx.options.Options;
+import org.markdownwriterfx.util.PrefsBooleanProperty;
 import org.markdownwriterfx.util.Utils;
 
 /**
@@ -66,9 +65,9 @@ class FileEditorTabPane
 	private final ReadOnlyObjectWrapper<FileEditor> activeFileEditor = new ReadOnlyObjectWrapper<>();
 	private final ReadOnlyBooleanWrapper anyFileEditorModified = new ReadOnlyBooleanWrapper();
 
-	final BooleanProperty previewVisible = new SimpleBooleanProperty(true);
-	final BooleanProperty htmlSourceVisible = new SimpleBooleanProperty();
-	final BooleanProperty markdownAstVisible = new SimpleBooleanProperty();
+	final PrefsBooleanProperty previewVisible = new PrefsBooleanProperty(true);
+	final PrefsBooleanProperty htmlSourceVisible = new PrefsBooleanProperty();
+	final PrefsBooleanProperty markdownAstVisible = new PrefsBooleanProperty();
 
 	FileEditorTabPane(MainWindow mainWindow) {
 		this.mainWindow = mainWindow;
@@ -327,9 +326,9 @@ class FileEditorTabPane
 	private void restoreState() {
 		Preferences state = MarkdownWriterFXApp.getState();
 
-		previewVisible.set(state.getBoolean("previewVisible", true));
-		htmlSourceVisible.set(state.getBoolean("htmlSourceVisible", false));
-		markdownAstVisible.set(state.getBoolean("markdownAstVisible", false));
+		previewVisible.init(state, "previewVisible", true);
+		htmlSourceVisible.init(state, "htmlSourceVisible", false);
+		markdownAstVisible.init(state, "markdownAstVisible", false);
 
 		String[] fileNames = Utils.getPrefsStrings(state, "file");
 		String activeFileName = state.get("activeFile", null);
@@ -367,9 +366,5 @@ class FileEditorTabPane
 			state.put("activeFile", activeEditor.getPath().toString());
 		else
 			state.remove("activeFile");
-
-		Utils.putPrefsBoolean(state, "previewVisible", previewVisible.get(), true);
-		Utils.putPrefsBoolean(state, "htmlSourceVisible", htmlSourceVisible.get(), false);
-		Utils.putPrefsBoolean(state, "markdownAstVisible", markdownAstVisible.get(), false);
 	}
 }
