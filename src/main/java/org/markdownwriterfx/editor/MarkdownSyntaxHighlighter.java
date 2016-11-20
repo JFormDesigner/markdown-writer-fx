@@ -27,6 +27,7 @@
 
 package org.markdownwriterfx.editor;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -250,7 +251,32 @@ class MarkdownSyntaxHighlighter
 		for (int i = start; i < end; i++) {
 			Paragraph<Collection<String>, Collection<String>> paragraph = textArea.getParagraph(i);
 			if (ps != paragraph.getParagraphStyle())
-				textArea.setParagraphStyle(i, ps);
+				setParagraphStyle(paragraph, i, ps);
+		}
+	}
+
+	private void setParagraphStyle(Paragraph<?,?> paragraph, int paragraphIndex, Collection<String> paragraphStyle) {
+		if (paragraphStyleField != null) {
+			// because StyledTextArea.setParagraphStyle() is very very slow,
+			// especially if invoked many times, we (try to) go the "short way"
+			try {
+				paragraphStyleField.set(paragraph, paragraphStyle);
+				return;
+			} catch (Exception ex) {
+				// ignore
+			}
+		}
+
+		textArea.setParagraphStyle(paragraphIndex, paragraphStyle);
+	}
+
+	private static Field paragraphStyleField;
+	static {
+		try {
+			paragraphStyleField = Paragraph.class.getDeclaredField("paragraphStyle");
+			paragraphStyleField.setAccessible(true);
+		} catch (Exception e) {
+			// ignore
 		}
 	}
 
