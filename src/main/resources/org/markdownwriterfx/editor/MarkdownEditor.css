@@ -132,7 +132,10 @@
 
 /*---- blocks ----*/
 
-.markdown-editor .pre {
+.markdown-editor .pre.paragraph-text {
+    -fx-background-color: -mwfx-inline-background-color;
+}
+.markdown-editor .pre.text {
 	-fx-fill: #2E7D32 !important;
 }
 
@@ -181,7 +184,8 @@
 
 /*---- table ----*/
 
-.markdown-editor .table {
+.markdown-editor .table.paragraph-text {
+    -fx-background-color: -mwfx-inline-background-color;
 }
 
 .markdown-editor .thead {
