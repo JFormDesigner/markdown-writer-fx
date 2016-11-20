@@ -429,7 +429,7 @@ class FindReplacePane
 		findField.textProperty().addListener((ov, o, n) -> findAll(true));
 		Nodes.addInputMap(findField, sequence(
 				// don't know why, but Ctrl+H (set in menubar) does not work if findField has focus
-				consume(keyPressed(H, SHORTCUT_DOWN), e -> show(true)),
+				consume(keyPressed(H, SHORTCUT_DOWN), e -> show(true, false)),
 				// don't know why, but F3 (set in menubar) does not work if findField has focus
 				consume(keyPressed(F3),		e -> findNext()),
 
@@ -475,13 +475,19 @@ class FindReplacePane
 		return pane;
 	}
 
-	void show(boolean replace) {
+	void show(boolean replace, boolean findSelection) {
 		if (replace)
 			replacePane.setVisible(true);
 
 		boolean oldVisible = visible.get();
 		visible.set(true);
 		textChanged();
+
+		if (findSelection) {
+			String selectedText = textArea.getSelectedText();
+			if (!selectedText.isEmpty() && selectedText.indexOf('\n') < 0)
+				findField.setText(selectedText);
+		}
 
 		if (replace && oldVisible)
 			replaceField.requestFocus();

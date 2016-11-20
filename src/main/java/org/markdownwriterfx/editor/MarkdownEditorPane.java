@@ -334,7 +334,7 @@ public class MarkdownEditorPane
 		if (borderPane.getBottom() == null)
 			borderPane.setBottom(findReplacePane.getNode());
 
-		findReplacePane.show(replace);
+		findReplacePane.show(replace, true);
 	}
 
 	public void findNextPrevious(boolean next) {
