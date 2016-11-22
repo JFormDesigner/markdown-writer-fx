@@ -343,7 +343,7 @@ class FindReplacePane
 			overviewRuler.heightProperty().addListener((ob) -> updateOverviewRuler());
 		}
 
-		if (hits.isEmpty()) {
+		if (hits.isEmpty() || !overviewRuler.isVisible()) {
 			overviewRuler.setStyle(null);
 			return;
 		}
@@ -353,23 +353,43 @@ class FindReplacePane
 		int lineCount = textArea.getParagraphs().size();
 
 		// compute top insets of hits
-		int[] topInsets = new int[hitCount];
-		int topInsetsCount = 0;
-		int previousTopInset = -1;
+		int[] markerY = new int[hitCount];
+		int[] markerHeight = new int[hitCount];
+		boolean hasMergedMarker = false;
+		int markerCount = 0;
+		int previousY = -100;
 		for (Range hit : hits) {
 			int line = textArea.offsetToPosition(hit.start, Bias.Backward).getMajor();
-			int topInset = (int) (height * line / lineCount);
-			if (topInset == previousTopInset)
+			int y = (int) (height * line / lineCount);
+			if (y < 0 || y == previousY)
 				continue; // avoid duplicates
-			previousTopInset = topInset;
 
-			topInsets[topInsetsCount++] = topInset;
+			if (y - 1 == previousY) {
+				// merge with previous
+				markerHeight[markerCount - 1]++;
+				hasMergedMarker = true;
+				previousY = y;
+				continue;
+			}
+
+			previousY = y;
+
+			markerY[markerCount] = y;
+			markerHeight[markerCount] = 1;
+			markerCount++;
 		}
 
 		// build CSS border width and colors
 		StringBuilder buf = new StringBuilder();
-		buf.append("-fx-border-width: 1 0 0 0; -fx-border-color: ");
-		for (int i = 0; i < topInsetsCount; i++) {
+		buf.append("-fx-border-width: ");
+		if (hasMergedMarker) {
+			for (int i = 0; i < markerCount; i++) {
+				if (markerHeight[i] > 1)
+					buf.append(markerHeight[i]).append( " 0 0 0,");
+			}
+		}
+		buf.append( "1 0 0 0; -fx-border-color: ");
+		for (int i = 0; i < markerCount; i++) {
 			if (i > 0)
 				buf.append(',');
 			buf.append("-mwfx-hit");
@@ -377,11 +397,17 @@ class FindReplacePane
 
 		// build CSS border insets
 		buf.append("; -fx-border-insets: ");
-		for (int i = 0; i < topInsetsCount; i++) {
-			if (i > 0)
-				buf.append(',');
-			buf.append(topInsets[i]).append(" 0 0 0");
+		if (hasMergedMarker) {
+			for (int i = 0; i < markerCount; i++) {
+				if (markerHeight[i] > 1)
+					buf.append(markerY[i]).append(" 0 0 0,");
+			}
 		}
+		for (int i = 0; i < markerCount; i++) {
+			if (markerHeight[i] == 1)
+				buf.append(markerY[i]).append(" 0 0 0,");
+		}
+		buf.setLength(buf.length() - 1); // remove last ','
 
 		overviewRuler.setStyle(buf.toString());
 	}
