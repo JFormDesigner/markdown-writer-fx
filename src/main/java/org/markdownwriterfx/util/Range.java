@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Karl Tauber <karl at jformdesigner dot com>
+ * Copyright (c) 2016 Karl Tauber <karl at jformdesigner dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,55 +25,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.markdownwriterfx.preview;
-
-import java.nio.file.Path;
-import javafx.scene.control.ScrollBar;
-import javafx.scene.control.TextArea;
-import org.markdownwriterfx.preview.MarkdownPreviewPane.Renderer;
-import org.markdownwriterfx.util.Utils;
+package org.markdownwriterfx.util;
 
 /**
- * Markdown AST preview.
- * Prints the AST tree to a text area.
- *
  * @author Karl Tauber
  */
-class ASTPreview
-	implements MarkdownPreviewPane.Preview
+public class Range
 {
-	private final TextArea textArea = new TextArea();
-	private ScrollBar vScrollBar;
+	public final int start;
+	public final int end;
 
-	ASTPreview() {
-		textArea.setEditable(false);
-		textArea.setFocusTraversable(false);
+	public Range(int start, int end) {
+		this.start = start;
+		this.end = end;
 	}
 
 	@Override
-	public javafx.scene.Node getNode() {
-		return textArea;
-	}
-
-	@Override
-	public void update(Renderer renderer, Path path) {
-		double scrollTop = textArea.getScrollTop();
-		double scrollLeft = textArea.getScrollLeft();
-
-		textArea.setText(renderer.getAST());
-
-		textArea.setScrollTop(scrollTop);
-		textArea.setScrollLeft(scrollLeft);
-	}
-
-	@Override
-	public void scrollY(double value) {
-		if (vScrollBar == null)
-			vScrollBar = Utils.findVScrollBar(textArea);
-		if (vScrollBar == null)
-			return;
-
-		double maxValue = vScrollBar.maxProperty().get();
-		vScrollBar.setValue(maxValue * value);
+	public String toString() {
+		return start + "-" + end;
 	}
 }

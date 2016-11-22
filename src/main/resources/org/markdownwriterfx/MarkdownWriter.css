@@ -129,6 +129,11 @@
 
 /*---- scroll bars ----*/
 
+.scroll-bar {
+    -fx-background-color: -fx-base;
+	-fx-background-insets: 0;
+}
+
 /* make horizontal increment/decrement buttons square */
 .scroll-bar:horizontal > .increment-button, 
 .scroll-bar:horizontal > .decrement-button {
@@ -154,15 +159,15 @@
 
 /* make thumb flat */
 .scroll-bar > .thumb {
-	-fx-background-color: #ccc;
+	-fx-background-color: #00000022;
 	-fx-background-insets: 0;
 	-fx-background-radius: 0;
 }
 .scroll-bar > .thumb:hover {
-	-fx-background-color: #aaa;
+	-fx-background-color: #00000044;
 }
 .scroll-bar > .thumb:pressed {
-	-fx-background-color: #888;
+	-fx-background-color: #00000066;
 }
 
 
@@ -185,7 +190,63 @@
 }
 
 /* remove text area round edges */
-.main .text-input {
+.main .preview-pane .text-input {
 	-fx-background-insets: 0;
 	-fx-background-radius: 0;
+}
+
+
+/*---- find/replace ----*/
+
+.find-replace {
+	-fx-padding: 0.25em;
+	-fx-background-color: -mwfx-tab-background;
+	-fx-border-color: -fx-outer-border;
+	-fx-border-width: 1 0 0 0;
+}
+
+.find-replace .text-field:error {
+	-fx-control-inner-background: #ffebee;
+}
+.find-replace .info {
+	-fx-text-fill: #c62828;
+}
+
+.find-replace .custom-text-field .left-pane {
+	-fx-padding: 0 0.25em 0 0.5em;
+}
+.find-replace .custom-text-field .right-pane {
+	-fx-padding: 0 0.5em 0 0.25em;
+}
+.find-replace .custom-text-field .glyph-icon {
+	-fx-fill: #aaa;
+}
+.find-replace .custom-text-field .label {
+	-fx-text-fill: #888;
+	-fx-font-size: 0.9em;
+}
+
+.find-replace .flat-button {
+	-fx-background-color: transparent;
+}
+.find-replace .flat-button:hover {
+	-fx-background-color: -fx-shadow-highlight-color, -fx-outer-border, -fx-inner-border, -fx-body-color;
+	-fx-color: -fx-hover-base;
+}
+.find-replace .flat-button:armed {
+	-fx-color: -fx-pressed-base;
+}
+.find-replace .flat-button:selected {
+	-fx-background-color: -fx-outer-border;
+}
+
+.markdown-editor .hit {
+	-rtfx-background-color: #FFF59D !important;
+}
+.markdown-editor .hit-active {
+	-rtfx-background-color: #F9A825 !important;
+}
+
+.scroll-bar > .track {
+	-mwfx-hit: #FBC02D;
 }

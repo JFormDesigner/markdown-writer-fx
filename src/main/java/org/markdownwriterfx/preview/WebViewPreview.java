@@ -43,6 +43,10 @@ class WebViewPreview
 	private int lastScrollX;
 	private int lastScrollY;
 
+	WebViewPreview() {
+		webView.setFocusTraversable(false);
+	}
+
 	@Override
 	public javafx.scene.Node getNode() {
 		return webView;

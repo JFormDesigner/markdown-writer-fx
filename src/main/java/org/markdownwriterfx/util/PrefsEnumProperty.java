@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Karl Tauber <karl at jformdesigner dot com>
+ * Copyright (c) 2016 Karl Tauber <karl at jformdesigner dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,55 +25,30 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.markdownwriterfx.preview;
+package org.markdownwriterfx.util;
 
-import java.nio.file.Path;
-import javafx.scene.control.ScrollBar;
-import javafx.scene.control.TextArea;
-import org.markdownwriterfx.preview.MarkdownPreviewPane.Renderer;
-import org.markdownwriterfx.util.Utils;
+import java.util.prefs.Preferences;
+import javafx.beans.property.SimpleObjectProperty;
 
 /**
- * Markdown AST preview.
- * Prints the AST tree to a text area.
+ * A enum property that loads/saves its value from/to preferences.
  *
  * @author Karl Tauber
  */
-class ASTPreview
-	implements MarkdownPreviewPane.Preview
+public class PrefsEnumProperty<T extends Enum<T>>
+	extends SimpleObjectProperty<T>
 {
-	private final TextArea textArea = new TextArea();
-	private ScrollBar vScrollBar;
-
-	ASTPreview() {
-		textArea.setEditable(false);
-		textArea.setFocusTraversable(false);
+	public PrefsEnumProperty() {
 	}
 
-	@Override
-	public javafx.scene.Node getNode() {
-		return textArea;
+	public PrefsEnumProperty(Preferences prefs, String key, T def) {
+		init(prefs, key, def);
 	}
 
-	@Override
-	public void update(Renderer renderer, Path path) {
-		double scrollTop = textArea.getScrollTop();
-		double scrollLeft = textArea.getScrollLeft();
-
-		textArea.setText(renderer.getAST());
-
-		textArea.setScrollTop(scrollTop);
-		textArea.setScrollLeft(scrollLeft);
-	}
-
-	@Override
-	public void scrollY(double value) {
-		if (vScrollBar == null)
-			vScrollBar = Utils.findVScrollBar(textArea);
-		if (vScrollBar == null)
-			return;
-
-		double maxValue = vScrollBar.maxProperty().get();
-		vScrollBar.setValue(maxValue * value);
+	public void init(Preferences prefs, String key, T def) {
+		set(Utils.getPrefsEnum(prefs, key, def));
+		addListener((ob, o, n) -> {
+			Utils.putPrefsEnum(prefs, key, get(), def);
+		});
 	}
 }

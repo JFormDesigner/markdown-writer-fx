@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Karl Tauber <karl at jformdesigner dot com>
+ * Copyright (c) 2016 Karl Tauber <karl at jformdesigner dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,55 +25,43 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.markdownwriterfx.preview;
+package org.markdownwriterfx.editor;
 
-import java.nio.file.Path;
-import javafx.scene.control.ScrollBar;
-import javafx.scene.control.TextArea;
-import org.markdownwriterfx.preview.MarkdownPreviewPane.Renderer;
-import org.markdownwriterfx.util.Utils;
+import java.util.function.IntFunction;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.control.Label;
+import org.fxmisc.richtext.StyleClassedTextArea;
+import org.reactfx.collection.LiveList;
+import org.reactfx.value.Val;
 
 /**
- * Markdown AST preview.
- * Prints the AST tree to a text area.
- *
  * @author Karl Tauber
  */
-class ASTPreview
-	implements MarkdownPreviewPane.Preview
+class LineNumberGutterFactory
+	implements IntFunction<Node>
 {
-	private final TextArea textArea = new TextArea();
-	private ScrollBar vScrollBar;
+    private final StyleClassedTextArea textArea;
+    private final Val<Integer> lineCount;
 
-	ASTPreview() {
-		textArea.setEditable(false);
-		textArea.setFocusTraversable(false);
+	public LineNumberGutterFactory(StyleClassedTextArea textArea) {
+		this.textArea = textArea;
+		lineCount = LiveList.sizeOf(textArea.getParagraphs());
 	}
 
 	@Override
-	public javafx.scene.Node getNode() {
-		return textArea;
-	}
+	public Node apply(int paragraphIndex) {
+		int lineNo = paragraphIndex + 1;
+		Val<String> text = lineCount.map(n -> {
+			int digits = Math.max(3, (int) Math.floor(Math.log10(textArea.getParagraphs().size())) + 1);
+			return String.format("%" + digits + "d", lineNo);
+		});
 
-	@Override
-	public void update(Renderer renderer, Path path) {
-		double scrollTop = textArea.getScrollTop();
-		double scrollLeft = textArea.getScrollLeft();
-
-		textArea.setText(renderer.getAST());
-
-		textArea.setScrollTop(scrollTop);
-		textArea.setScrollLeft(scrollLeft);
-	}
-
-	@Override
-	public void scrollY(double value) {
-		if (vScrollBar == null)
-			vScrollBar = Utils.findVScrollBar(textArea);
-		if (vScrollBar == null)
-			return;
-
-		double maxValue = vScrollBar.maxProperty().get();
-		vScrollBar.setValue(maxValue * value);
+		Label label = new Label();
+		label.textProperty().bind(text.conditionOnShowing(label));
+		label.setAlignment(Pos.TOP_RIGHT);
+		label.setMaxHeight(Double.MAX_VALUE);
+		label.getStyleClass().add("lineno");
+		return label;
 	}
 }

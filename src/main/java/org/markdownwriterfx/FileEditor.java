@@ -43,6 +43,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
@@ -63,12 +64,11 @@ class FileEditor
 {
 	private final MainWindow mainWindow;
 	private final FileEditorTabPane fileEditorTabPane;
-	@SuppressWarnings("rawtypes")
-	private final ChangeListener previewTypeListener;
 	private final Tab tab = new Tab();
 	private SplitPane splitPane;
 	private MarkdownEditorPane markdownEditorPane;
 	private MarkdownPreviewPane markdownPreviewPane;
+	private long lastModified;
 
 	@SuppressWarnings("unchecked")
 	FileEditor(MainWindow mainWindow, FileEditorTabPane fileEditorTabPane, Path path) {
@@ -83,7 +83,12 @@ class FileEditor
 		this.modified.addListener((observable, oldPath, newPath) -> updateTab());
 		updateTab();
 
-		previewTypeListener = (observable, oldValue, newValue) -> updatePreviewType();
+		@SuppressWarnings("rawtypes")
+		ChangeListener previewTypeListener = (observable, oldValue, newValue) -> updatePreviewType();
+		ChangeListener<Boolean> stageFocusedListener = (observable, oldValue, newValue) -> {
+			if (newValue)
+				reload();
+		};
 
 		tab.setOnSelectionChanged(e -> {
 			if(tab.isSelected()) {
@@ -93,11 +98,15 @@ class FileEditor
 				fileEditorTabPane.previewVisible.addListener(previewTypeListener);
 				fileEditorTabPane.htmlSourceVisible.addListener(previewTypeListener);
 				fileEditorTabPane.markdownAstVisible.addListener(previewTypeListener);
+
+				mainWindow.stageFocusedProperty.addListener(stageFocusedListener);
 			} else {
 				Options.markdownRendererProperty().removeListener(previewTypeListener);
 				fileEditorTabPane.previewVisible.removeListener(previewTypeListener);
 				fileEditorTabPane.htmlSourceVisible.removeListener(previewTypeListener);
 				fileEditorTabPane.markdownAstVisible.removeListener(previewTypeListener);
+
+				mainWindow.stageFocusedProperty.removeListener(stageFocusedListener);
 			}
 		});
 	}
@@ -149,13 +158,7 @@ class FileEditor
 		Platform.runLater(() -> {
 			updatePreviewTypePending = false;
 
-			MarkdownPreviewPane.Type previewType = Type.None;
-			if (fileEditorTabPane.previewVisible.get())
-				previewType = MarkdownPreviewPane.Type.Web;
-			if (fileEditorTabPane.htmlSourceVisible.get())
-				previewType = MarkdownPreviewPane.Type.Source;
-			if (fileEditorTabPane.markdownAstVisible.get())
-				previewType = MarkdownPreviewPane.Type.Ast;
+			MarkdownPreviewPane.Type previewType = getPreviewType();
 
 			markdownPreviewPane.setRendererType(Options.getMarkdownRenderer());
 			markdownPreviewPane.setType(previewType);
@@ -171,11 +174,23 @@ class FileEditor
 		});
 	}
 
+	private MarkdownPreviewPane.Type getPreviewType() {
+		MarkdownPreviewPane.Type previewType = Type.None;
+		if (fileEditorTabPane.previewVisible.get())
+			previewType = MarkdownPreviewPane.Type.Web;
+		if (fileEditorTabPane.htmlSourceVisible.get())
+			previewType = MarkdownPreviewPane.Type.Source;
+		if (fileEditorTabPane.markdownAstVisible.get())
+			previewType = MarkdownPreviewPane.Type.Ast;
+		return previewType;
+	}
+
 	private void activated() {
 		if( tab.getTabPane() == null || !tab.isSelected())
 			return; // tab is already closed or no longer active
 
 		if (tab.getContent() != null) {
+			reload();
 			updatePreviewType();
 			markdownEditorPane.requestFocus();
 			return;
@@ -205,7 +220,9 @@ class FileEditor
 		canUndo.bind(undoManager.undoAvailableProperty());
 		canRedo.bind(undoManager.redoAvailableProperty());
 
-		splitPane = new SplitPane(markdownEditorPane.getNode(), markdownPreviewPane.getNode());
+		splitPane = new SplitPane(markdownEditorPane.getNode());
+		if (getPreviewType() != MarkdownPreviewPane.Type.None)
+			splitPane.getItems().add(markdownPreviewPane.getNode());
 		tab.setContent(splitPane);
 
 		updatePreviewType();
@@ -216,6 +233,8 @@ class FileEditor
 		Path path = this.path.get();
 		if (path == null)
 			return;
+
+		lastModified = path.toFile().lastModified();
 
 		try {
 			byte[] bytes = Files.readAllBytes(path);
@@ -257,6 +276,7 @@ class FileEditor
 
 		try {
 			Files.write(path.get(), bytes);
+			lastModified = path.get().toFile().lastModified();
 			markdownEditorPane.getUndoManager().mark();
 			return true;
 		} catch (IOException ex) {
@@ -266,5 +286,25 @@ class FileEditor
 			alert.showAndWait();
 			return false;
 		}
+	}
+
+	private void reload() {
+		Path path = this.path.get();
+		if (path == null || lastModified == path.toFile().lastModified())
+			return;
+		lastModified = path.toFile().lastModified();
+
+		if( isModified() ) {
+			Alert alert = mainWindow.createAlert(AlertType.WARNING,
+				Messages.get("FileEditor.reloadAlert.title"),
+				Messages.get("FileEditor.reloadAlert.message", path));
+			alert.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
+
+			ButtonType result = alert.showAndWait().get();
+			if (result != ButtonType.YES)
+				return;
+		}
+
+		load();
 	}
 }

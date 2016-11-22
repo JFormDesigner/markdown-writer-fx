@@ -30,9 +30,11 @@ package org.markdownwriterfx.util;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.prefs.Preferences;
+import javafx.css.PseudoClass;
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollBar;
+import javafx.scene.control.TextField;
 
 /**
  * @author Karl Tauber
@@ -136,5 +138,9 @@ public class Utils
 			  return (ScrollBar) scrollBar;
 		}
 		return null;
+	}
+
+	public static void error(TextField textField, boolean error) {
+		textField.pseudoClassStateChanged(PseudoClass.getPseudoClass("error"), error);
 	}
 }

@@ -69,6 +69,8 @@ public class MarkdownPreviewPane
 	}
 
 	public MarkdownPreviewPane() {
+		pane.getStyleClass().add("preview-pane");
+
 		path.addListener((observable, oldValue, newValue) -> update() );
 		markdownText.addListener((observable, oldValue, newValue) -> update() );
 		markdownAST.addListener((observable, oldValue, newValue) -> update() );

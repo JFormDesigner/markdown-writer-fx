@@ -1,0 +1,104 @@
+JFDML JFormDesigner: "9.9.9.9.9999" Java: "1.8.0_102" encoding: "UTF-8"
+
+new FormModel {
+	"i18n.bundlePackage": "org.markdownwriterfx"
+	"i18n.bundleName": "messages"
+	"i18n.autoExternalize": true
+	"i18n.keyPrefix": "FindReplacePane"
+	contentType: "form/javafx"
+	root: new FormRoot {
+		add( new FormContainer( "org.tbee.javafx.scene.layout.fxml.MigPane", new FormLayoutManager( class org.tbee.javafx.scene.layout.fxml.MigPane ) {
+			"$layoutConstraints": "insets 0,hidemode 3"
+			"$columnConstraints": "[fill][fill]0[fill][pref:n,fill]1px[pref:n,fill][grow,shrinkprio 200,fill][fill]"
+			"$rowConstraints": "[fill]0[]"
+		} ) {
+			name: "pane"
+			add( new FormComponent( "org.controlsfx.control.textfield.CustomTextField" ) {
+				name: "findField"
+				"promptText": new FormMessage( null, "FindReplacePane.findField.promptText" )
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 0,width 200:200:200"
+			} )
+			add( new FormComponent( "javafx.scene.control.Button" ) {
+				name: "previousButton"
+				"focusTraversable": false
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 1 0"
+			} )
+			add( new FormComponent( "javafx.scene.control.Button" ) {
+				name: "nextButton"
+				"focusTraversable": false
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 2 0"
+			} )
+			add( new FormComponent( "javafx.scene.control.ToggleButton" ) {
+				name: "matchCaseButton"
+				"text": "Aa"
+				"focusTraversable": false
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 3 0"
+			} )
+			add( new FormComponent( "javafx.scene.control.ToggleButton" ) {
+				name: "regexButton"
+				"text": ".*"
+				"focusTraversable": false
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 4 0"
+			} )
+			add( new FormComponent( "javafx.scene.control.Label" ) {
+				name: "findInfoLabel"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 5 0"
+			} )
+			add( new FormComponent( "javafx.scene.control.Button" ) {
+				name: "closeButton"
+				"focusTraversable": false
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 6 0"
+			} )
+			add( new FormContainer( "org.tbee.javafx.scene.layout.fxml.MigPane", new FormLayoutManager( class org.tbee.javafx.scene.layout.fxml.MigPane ) {
+				"$layoutConstraints": "insets rel 0 0 0"
+				"$rowConstraints": "[]"
+				"$columnConstraints": "[fill][pref:n,fill][pref:n,fill][grow,shrinkprio 200,fill]"
+			} ) {
+				name: "replacePane"
+				add( new FormComponent( "org.controlsfx.control.textfield.CustomTextField" ) {
+					name: "replaceField"
+					"promptText": new FormMessage( null, "FindReplacePane.replaceField.promptText" )
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 0 0,width 200:200:200"
+				} )
+				add( new FormComponent( "javafx.scene.control.Button" ) {
+					name: "replaceButton"
+					"text": new FormMessage( null, "FindReplacePane.replaceButton.text" )
+					"focusTraversable": false
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 1 0"
+				} )
+				add( new FormComponent( "javafx.scene.control.Button" ) {
+					name: "replaceAllButton"
+					"text": new FormMessage( null, "FindReplacePane.replaceAllButton.text" )
+					"focusTraversable": false
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 2 0"
+				} )
+				add( new FormComponent( "javafx.scene.control.Label" ) {
+					name: "replaceInfoLabel"
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 3 0"
+				} )
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 1 7 1"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new javafx.geometry.Point2D( 0.0, 0.0 )
+			"size": new javafx.geometry.Dimension2D( 373.0, 107.0 )
+		} )
+		add( new FormComponent( "javafx.scene.control.Label" ) {
+			name: "nOfHitCountLabel"
+			"text": new FormMessage( null, "FindReplacePane.nOfHitCountLabel.text" )
+		}, new FormLayoutConstraints( null ) {
+			"location": new javafx.geometry.Point2D( 391.0, 4.0 )
+		} )
+	}
+}

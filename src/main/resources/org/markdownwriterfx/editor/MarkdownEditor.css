@@ -29,6 +29,49 @@
 	-mwfx-inline-background-color: #f6f6f6;
 }
 
+/* editor padding */
+/* disabled because of character hitting issue in RichTextFX
+   https://github.com/TomasMikula/RichTextFX/pull/396
+.markdown-editor .paragraph-box .paragraph-text {
+    -fx-padding: 0 1em 0 1em;
+}
+.markdown-editor .paragraph-box:last-paragraph .paragraph-text {
+    -fx-padding: 0 1em 1em 1em;
+}
+.markdown-editor .paragraph-box:first-paragraph .paragraph-text {
+    -fx-padding: 1em 1em 0 1em;
+}
+*/
+
+/* highlight current line */
+.markdown-editor .paragraph-box:has-caret {
+    -fx-background-color: #f2f9fc;
+}
+
+
+/*---- gutter ----*/
+
+.markdown-editor .paragraph-graphic .gutter {
+	-fx-border-width: 0 1 0 0;
+	-fx-border-color: #eee;
+}
+
+.markdown-editor .paragraph-graphic .lineno {
+	-fx-text-fill: #aaa;
+	-fx-padding: 0 0.25em 0 0.25em;
+}
+
+/* editor padding */
+/* disabled because of character hitting issue in RichTextFX
+   https://github.com/TomasMikula/RichTextFX/pull/396
+.markdown-editor .paragraph-box:first-paragraph .paragraph-graphic .gutter {
+    -fx-padding: 1em 0 0 0;
+}
+.markdown-editor .paragraph-box:first-paragraph .paragraph-graphic .gutter.lineno {
+	-fx-padding: 1em 0.25em 0 0.25em;
+}
+*/
+
 
 /*---- headers ----*/
 
@@ -89,7 +132,10 @@
 
 /*---- blocks ----*/
 
-.markdown-editor .pre {
+.markdown-editor .pre.paragraph-text {
+    -fx-background-color: -mwfx-inline-background-color;
+}
+.markdown-editor .pre.text {
 	-fx-fill: #2E7D32 !important;
 }
 
@@ -138,7 +184,8 @@
 
 /*---- table ----*/
 
-.markdown-editor .table {
+.markdown-editor .table.paragraph-text {
+    -fx-background-color: -mwfx-inline-background-color;
 }
 
 .markdown-editor .thead {

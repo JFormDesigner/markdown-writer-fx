@@ -27,10 +27,12 @@
 
 package org.markdownwriterfx.editor;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import javafx.application.Platform;
 import com.vladsch.flexmark.ast.*;
 import com.vladsch.flexmark.ext.abbreviation.Abbreviation;
@@ -46,8 +48,10 @@ import com.vladsch.flexmark.ext.gfm.tasklist.TaskListItem;
 import com.vladsch.flexmark.ext.wikilink.WikiLink;
 import com.vladsch.flexmark.util.sequence.BasedSequence;
 import org.fxmisc.richtext.StyleClassedTextArea;
-import org.fxmisc.richtext.model.StyleSpans;
+import org.fxmisc.richtext.model.Paragraph;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
+import org.fxmisc.richtext.model.TwoDimensional.Bias;
+import org.markdownwriterfx.util.Range;
 
 /**
  * Markdown syntax highlighter.
@@ -108,6 +112,7 @@ class MarkdownSyntaxHighlighter
 
 	private static final HashMap<Long, Collection<String>> styleClassesCache = new HashMap<>();
 	private static final HashMap<Class<? extends Node>, StyleClass> node2style = new HashMap<>();
+	private static final HashMap<Class<? extends Node>, StyleClass> node2lineStyle = new HashMap<>();
 
 	static {
 		// inlines
@@ -122,7 +127,9 @@ class MarkdownSyntaxHighlighter
 		node2style.put(HardLineBreak.class, StyleClass.br);
 
 		// blocks
+		node2lineStyle.put(FencedCodeBlock.class, StyleClass.pre);
 		node2style.put(FencedCodeBlock.class, StyleClass.pre);
+		node2lineStyle.put(IndentedCodeBlock.class, StyleClass.pre);
 		node2style.put(IndentedCodeBlock.class, StyleClass.pre);
 		node2style.put(BlockQuote.class, StyleClass.blockquote);
 		node2style.put(AsideBlock.class, StyleClass.aside);
@@ -135,7 +142,7 @@ class MarkdownSyntaxHighlighter
 		node2style.put(TaskListItem.class, StyleClass.li);
 
 		// tables
-		node2style.put(TableBlock.class, StyleClass.table);
+		node2lineStyle.put(TableBlock.class, StyleClass.table);
 		node2style.put(TableHead.class, StyleClass.thead);
 		node2style.put(TableBody.class, StyleClass.tbody);
 		node2style.put(TableRow.class, StyleClass.tr);
@@ -148,21 +155,24 @@ class MarkdownSyntaxHighlighter
 		node2style.put(Abbreviation.class, StyleClass.abbr);
 	}
 
+	private final StyleClassedTextArea textArea;
 	private ArrayList<StyleRange> styleRanges;
+	private ArrayList<StyleRange> lineStyleRanges;
 
-	static void highlight(StyleClassedTextArea textArea, Node astRoot) {
+	static void highlight(StyleClassedTextArea textArea, Node astRoot, List<ExtraStyledRanges> extraStyledRanges) {
 		assert Platform.isFxApplicationThread();
 
 		assert textArea.getText().length() == textArea.getLength();
-		textArea.setStyleSpans(0, new MarkdownSyntaxHighlighter()
-				.computeHighlighting(astRoot, textArea.getText()));
+		new MarkdownSyntaxHighlighter(textArea).highlight(astRoot, extraStyledRanges);
 	}
 
-	private MarkdownSyntaxHighlighter() {
+	private MarkdownSyntaxHighlighter(StyleClassedTextArea textArea) {
+		this.textArea = textArea;
 	}
 
-	private StyleSpans<Collection<String>> computeHighlighting(Node astRoot, String text) {
+	private void highlight(Node astRoot, List<ExtraStyledRanges> extraStyledRanges) {
 		styleRanges = new ArrayList<>();
+		lineStyleRanges = new ArrayList<>();
 
 		// visit all nodes
 		NodeVisitor visitor = new NodeVisitor(
@@ -175,9 +185,14 @@ class MarkdownSyntaxHighlighter
 			@Override
 			public void visit(Node node) {
 				Class<? extends Node> nodeClass = node.getClass();
+
 				StyleClass style = node2style.get(nodeClass);
 				if (style != null)
 					setStyleClass(node, style);
+
+				StyleClass lineStyle = node2lineStyle.get(nodeClass);
+				if (lineStyle != null)
+					setLineStyleClass(node, lineStyle);
 
 				VisitHandler<?> handler = myCustomHandlersMap.get(nodeClass);
 				if (handler != null)
@@ -188,25 +203,84 @@ class MarkdownSyntaxHighlighter
 		};
 		visitor.visit(astRoot);
 
-		// build style spans
+		// add extra styled ranges
+		if (extraStyledRanges != null) {
+			long extraStyleBits = 1L << StyleClass.values().length;
+			for (ExtraStyledRanges extraStyledRange : extraStyledRanges) {
+				for (Range extraRange : extraStyledRange.ranges) {
+					addStyledRange(styleRanges, extraRange.start, extraRange.end, extraStyleBits);
+				}
+				extraStyleBits <<= 1;
+			}
+
+			// need to clear cache
+			styleClassesCache.clear();
+		}
+
+		// set text styles
 		StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
-		int textLength = text.length();
+		int textLength = textArea.getLength();
 		if (textLength > 0) {
 			int spanStart = 0;
 			for (StyleRange range : styleRanges) {
 				if (range.begin > spanStart)
 					spansBuilder.add(Collections.emptyList(), range.begin - spanStart);
-				spansBuilder.add(toStyleClasses(range.styleBits), range.end - range.begin);
+				spansBuilder.add(toStyleClasses(range.styleBits, extraStyledRanges), range.end - range.begin);
 				spanStart = range.end;
 			}
 			if (spanStart < textLength)
 				spansBuilder.add(Collections.emptyList(), textLength - spanStart);
 		} else
 			spansBuilder.add(Collections.emptyList(), 0);
-		return spansBuilder.create();
+		textArea.setStyleSpans(0, spansBuilder.create());
+
+		// set line styles
+		int start = 0;
+		for (StyleRange range : lineStyleRanges) {
+			if (range.begin > start)
+				setParagraphStyle(start, range.begin, Collections.emptyList());
+			setParagraphStyle(range.begin, range.end, toStyleClasses(range.styleBits, null));
+			start = range.end;
+		}
+		int lineCount = textArea.getParagraphs().size();
+		if (start < lineCount)
+			setParagraphStyle(start, lineCount, Collections.emptyList());
 	}
 
-	private Collection<String> toStyleClasses(long bits) {
+	private void setParagraphStyle(int start, int end, Collection<String> ps) {
+		for (int i = start; i < end; i++) {
+			Paragraph<Collection<String>, Collection<String>> paragraph = textArea.getParagraph(i);
+			if (ps != paragraph.getParagraphStyle())
+				setParagraphStyle(paragraph, i, ps);
+		}
+	}
+
+	private void setParagraphStyle(Paragraph<?,?> paragraph, int paragraphIndex, Collection<String> paragraphStyle) {
+		if (paragraphStyleField != null) {
+			// because StyledTextArea.setParagraphStyle() is very very slow,
+			// especially if invoked many times, we (try to) go the "short way"
+			try {
+				paragraphStyleField.set(paragraph, paragraphStyle);
+				return;
+			} catch (Exception ex) {
+				// ignore
+			}
+		}
+
+		textArea.setParagraphStyle(paragraphIndex, paragraphStyle);
+	}
+
+	private static Field paragraphStyleField;
+	static {
+		try {
+			paragraphStyleField = Paragraph.class.getDeclaredField("paragraphStyle");
+			paragraphStyleField.setAccessible(true);
+		} catch (Exception e) {
+			// ignore
+		}
+	}
+
+	private Collection<String> toStyleClasses(long bits, List<ExtraStyledRanges> extraStyledRanges) {
 		if (bits == 0)
 			return Collections.emptyList();
 
@@ -218,6 +292,14 @@ class MarkdownSyntaxHighlighter
 		for (StyleClass styleClass : StyleClass.values()) {
 			if ((bits & (1L << styleClass.ordinal())) != 0)
 				styleClasses.add(styleClass.name());
+		}
+		if (extraStyledRanges != null) {
+			long extraStyleBits = 1L << StyleClass.values().length;
+			for (ExtraStyledRanges extraStyledRange : extraStyledRanges) {
+				if ((bits & extraStyleBits) != 0)
+					styleClasses.add(extraStyledRange.styleClass);
+				extraStyleBits <<= 1;
+			}
 		}
 		styleClassesCache.put(bits, styleClasses);
 		return styleClasses;
@@ -261,6 +343,13 @@ class MarkdownSyntaxHighlighter
 		addStyledRange(styleRanges, start, end, styleClass);
 	}
 
+	private void setLineStyleClass(Node node, StyleClass styleClass) {
+		int start = textArea.offsetToPosition(node.getStartOffset(), Bias.Backward).getMajor();
+		int end = textArea.offsetToPosition(node.getEndOffset(), Bias.Forward).getMajor() + 1;
+
+		addStyledRange(lineStyleRanges, start, end, styleClass);
+	}
+
 	/**
 	 * Adds a style range to styleRanges.
 	 *
@@ -272,7 +361,11 @@ class MarkdownSyntaxHighlighter
 	 * @param end   the ending index, exclusive
 	 */
 	/*private*/ static void addStyledRange(ArrayList<StyleRange> styleRanges, int begin, int end, StyleClass styleClass) {
-		final long styleBits = 1L << styleClass.ordinal();
+		long styleBits = 1L << styleClass.ordinal();
+		addStyledRange(styleRanges, begin, end, styleBits);
+	}
+
+	private static void addStyledRange(ArrayList<StyleRange> styleRanges, int begin, int end, long styleBits) {
 		final int lastIndex = styleRanges.size() - 1;
 
 		// check whether list is empty
@@ -358,6 +451,18 @@ class MarkdownSyntaxHighlighter
 			this.begin = begin;
 			this.end = end;
 			this.styleBits = styleBits;
+		}
+	}
+
+	//---- class ExtraStyledRanges --------------------------------------------
+
+	static class ExtraStyledRanges {
+		final String styleClass;
+		final List<Range> ranges;
+
+		ExtraStyledRanges(String styleClass, List<Range> ranges) {
+			this.styleClass = styleClass;
+			this.ranges = ranges;
 		}
 	}
 }
