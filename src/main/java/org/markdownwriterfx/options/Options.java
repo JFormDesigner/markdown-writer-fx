@@ -32,7 +32,6 @@ import java.util.prefs.Preferences;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.text.Font;
 import org.markdownwriterfx.util.PrefsBooleanProperty;
@@ -40,7 +39,6 @@ import org.markdownwriterfx.util.PrefsEnumProperty;
 import org.markdownwriterfx.util.PrefsIntegerProperty;
 import org.markdownwriterfx.util.PrefsStringProperty;
 import org.markdownwriterfx.util.PrefsStringsProperty;
-import org.markdownwriterfx.util.Utils;
 
 /**
  * Options
@@ -72,10 +70,7 @@ public class Options
 		markdownRenderer.init(options, "markdownRenderer", RendererType.CommonMark);
 		showLineNo.init(options, "showLineNo", false);
 		showWhitespace.init(options, "showWhitespace", false);
-		setSpellChecker(options.getBoolean("spellChecker", true));
-		spellCheckerProperty().addListener((ob, o, n) -> {
-			Utils.putPrefsBoolean(options, "spellChecker", isSpellChecker(), true);
-		});
+		spellChecker.init(options, "spellChecker", true);
 	}
 
 	/**
@@ -149,7 +144,7 @@ public class Options
 	public static BooleanProperty showWhitespaceProperty() { return showWhitespace; }
 
 	// 'spellChecker' property
-	private static final BooleanProperty spellChecker = new SimpleBooleanProperty();
+	private static final PrefsBooleanProperty spellChecker = new PrefsBooleanProperty();
 	public static boolean isSpellChecker() { return spellChecker.get(); }
 	public static void setSpellChecker(boolean spellChecker) { Options.spellChecker.set(spellChecker); }
 	public static BooleanProperty spellCheckerProperty() { return spellChecker; }
