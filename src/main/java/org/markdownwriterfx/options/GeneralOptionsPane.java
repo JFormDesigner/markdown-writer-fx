@@ -137,9 +137,6 @@ public class GeneralOptionsPane
 		lineSeparatorField.setValue(new Item<String>(Options.getLineSeparator(), Options.getLineSeparator()));
 		encodingField.setValue(new Item<String>(Options.getEncoding(), Options.getEncoding()));
 		markdownFileExtensionsField.setText(Options.getMarkdownFileExtensions());
-
-		// spell checker
-		spellCheckerCheckBox.setSelected(Options.isSpellChecker());
 	}
 
 	void save() {
@@ -155,9 +152,6 @@ public class GeneralOptionsPane
 		Options.setMarkdownFileExtensions(Utils.defaultIfEmpty(
 				markdownFileExtensionsField.getText().trim(),
 				Options.DEF_MARKDOWN_FILE_EXTENSIONS));
-
-		// spell checker
-		Options.setSpellChecker(spellCheckerCheckBox.isSelected());
 	}
 
 	private void initComponents() {
@@ -177,11 +171,10 @@ public class GeneralOptionsPane
 		encodingField = new ComboBox<>();
 		Label markdownFileExtensionsLabel = new Label();
 		markdownFileExtensionsField = new TextField();
-		spellCheckerCheckBox = new CheckBox();
 
 		//======== this ========
 		setCols("[indent,fill]0[fill][fill][grow,fill]");
-		setRows("[][][][][]para[][][][]para[]");
+		setRows("[][][][][]para[][][][]para");
 
 		//---- editorSettingsLabel ----
 		editorSettingsLabel.setText(Messages.get("GeneralOptionsPane.editorSettingsLabel.text"));
@@ -238,10 +231,6 @@ public class GeneralOptionsPane
 		markdownFileExtensionsLabel.setMnemonicParsing(true);
 		add(markdownFileExtensionsLabel, "cell 1 8");
 		add(markdownFileExtensionsField, "cell 2 8 2 1");
-
-		//---- spellCheckerCheckBox ----
-		spellCheckerCheckBox.setText(Messages.get("GeneralOptionsPane.spellCheckerCheckBox.text"));
-		add(spellCheckerCheckBox, "cell 1 9 3 1,alignx left,growx 0");
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 
 		// TODO set this in JFormDesigner as soon as it supports labelFor
@@ -264,7 +253,6 @@ public class GeneralOptionsPane
 	private ComboBox<Item<String>> lineSeparatorField;
 	private ComboBox<Item<String>> encodingField;
 	private TextField markdownFileExtensionsField;
-	private CheckBox spellCheckerCheckBox;
 	// JFormDesigner - End of variables declaration  //GEN-END:variables
 
 	//---- class FontListCell -------------------------------------------------
