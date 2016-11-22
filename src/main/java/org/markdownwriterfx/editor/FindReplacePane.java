@@ -269,7 +269,7 @@ class FindReplacePane
 
 		// Note: using single textArea.replaceText() to avoid multiple changes to undo history
 
-		String replace = replaceField.getText();
+		final String replace = replaceField.getText();
 		Range first = hits.get(0);
 		Range last = hits.get(hits.size() - 1);
 		Pattern regexReplacePattern = regexReplacePattern();
@@ -280,12 +280,14 @@ class FindReplacePane
 		for (Range hit : hits) {
 			if (prev != null)
 				buf.append(textArea.getText(prev.end, hit.start));
+
+			String replace2 = replace;
 			if (regexReplacePattern != null) {
-				replace = regexReplace(regexReplacePattern, hit, replace);
-				if (replace == null)
+				replace2 = regexReplace(regexReplacePattern, hit, replace);
+				if (replace2 == null)
 					return; // error
 			}
-			buf.append(replace);
+			buf.append(replace2);
 			prev = hit;
 		}
 
