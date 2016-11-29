@@ -27,6 +27,12 @@
 
 package org.markdownwriterfx.editor;
 
+import static javafx.scene.input.KeyCode.*;
+import static javafx.scene.input.KeyCombination.*;
+import static org.fxmisc.wellbehaved.event.EventPattern.keyPressed;
+import static org.fxmisc.wellbehaved.event.InputMap.consume;
+import static org.fxmisc.wellbehaved.event.InputMap.sequence;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -36,6 +42,7 @@ import javafx.scene.control.IndexRange;
 import javafx.scene.input.KeyEvent;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.richtext.model.TwoDimensional.Bias;
+import org.fxmisc.wellbehaved.event.Nodes;
 import org.markdownwriterfx.dialogs.ImageDialog;
 import org.markdownwriterfx.dialogs.LinkDialog;
 import org.markdownwriterfx.util.Utils;
@@ -58,12 +65,21 @@ public class SmartEdit
 	private final MarkdownEditorPane editor;
 	private final StyleClassedTextArea textArea;
 
-	public SmartEdit(MarkdownEditorPane editor, StyleClassedTextArea textArea) {
+	SmartEdit(MarkdownEditorPane editor, StyleClassedTextArea textArea) {
 		this.editor = editor;
 		this.textArea = textArea;
+
+		Nodes.addInputMap(textArea, sequence(
+			consume(keyPressed(ENTER),							this::enterPressed),
+			consume(keyPressed(D, SHORTCUT_DOWN),				this::deleteLine),
+			consume(keyPressed(UP, ALT_DOWN),					this::moveLinesUp),
+			consume(keyPressed(DOWN, ALT_DOWN),					this::moveLinesDown),
+			consume(keyPressed(UP, SHORTCUT_DOWN, ALT_DOWN),	this::duplicateLinesUp),
+			consume(keyPressed(DOWN, SHORTCUT_DOWN, ALT_DOWN),	this::duplicateLinesDown)
+		));
 	}
 
-	void enterPressed(KeyEvent e) {
+	private void enterPressed(KeyEvent e) {
 		String currentLine = textArea.getText(textArea.getCurrentParagraph());
 
 		String newText = "\n";
@@ -82,12 +98,12 @@ public class SmartEdit
 		textArea.replaceSelection(newText);
 	}
 
-	void deleteLine(KeyEvent e) {
+	private void deleteLine(KeyEvent e) {
 		IndexRange selRange = selectedLinesRange();
 		textArea.deleteText(selRange.getStart(), selRange.getEnd());
 	}
 
-	void moveLinesUp(KeyEvent e) {
+	private void moveLinesUp(KeyEvent e) {
 		IndexRange selRange = selectedLinesRange();
 		int selStart = selRange.getStart();
 		int selEnd = selRange.getEnd();
@@ -112,7 +128,7 @@ public class SmartEdit
 		textArea.selectRange(beforeStart, beforeStart + selText.length() - 1);
 	}
 
-	void moveLinesDown(KeyEvent e) {
+	private void moveLinesDown(KeyEvent e) {
 		IndexRange selRange = selectedLinesRange();
 		int selStart = selRange.getStart();
 		int selEnd = selRange.getEnd();
@@ -142,11 +158,11 @@ public class SmartEdit
 		textArea.selectRange(newSelStart, newSelEnd);
 	}
 
-	void duplicateLinesUp(KeyEvent e) {
+	private void duplicateLinesUp(KeyEvent e) {
 		duplicateLines(true);
 	}
 
-	void duplicateLinesDown(KeyEvent e) {
+	private void duplicateLinesDown(KeyEvent e) {
 		duplicateLines(false);
 	}
 

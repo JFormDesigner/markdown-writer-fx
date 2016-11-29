@@ -97,12 +97,6 @@ public class MarkdownEditorPane
 		smartEdit = new SmartEdit(this, textArea);
 
 		Nodes.addInputMap(textArea, sequence(
-			consume(keyPressed(ENTER),					smartEdit::enterPressed),
-			consume(keyPressed(D, SHORTCUT_DOWN),		smartEdit::deleteLine),
-			consume(keyPressed(UP, ALT_DOWN),			smartEdit::moveLinesUp),
-			consume(keyPressed(DOWN, ALT_DOWN),			smartEdit::moveLinesDown),
-			consume(keyPressed(UP, SHORTCUT_DOWN, ALT_DOWN),	smartEdit::duplicateLinesUp),
-			consume(keyPressed(DOWN, SHORTCUT_DOWN, ALT_DOWN),	smartEdit::duplicateLinesDown),
 			consume(keyPressed(PLUS, SHORTCUT_DOWN),	this::increaseFontSize),
 			consume(keyPressed(MINUS, SHORTCUT_DOWN),	this::decreaseFontSize),
 			consume(keyPressed(DIGIT0, SHORTCUT_DOWN),	this::resetFontSize),
