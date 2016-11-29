@@ -77,7 +77,7 @@ class CommonmarkPreviewRenderer
 		Parser parser = Parser.builder()
 				.extensions(MarkdownExtensions.getCommonmarkExtensions())
 				.build();
-		return parser.parse(text);
+		return parser.parse(text != null ? text : "");
 	}
 
 	private Node toAstRoot() {
