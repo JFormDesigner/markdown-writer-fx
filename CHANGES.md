@@ -3,6 +3,7 @@ Markdown Writer FX Change Log
 
 ## 0.5
 - Move selected lines up or down with `Alt+Up` or `Alt+Down`.
+- Duplicate selected lines up or down with `Ctrl+Alt+Up` or `Ctrl+Alt+Down`.
 
 ## 0.4
 - Find and Replace added.

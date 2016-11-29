@@ -142,6 +142,36 @@ public class SmartEdit
 		textArea.selectRange(newSelStart, newSelEnd);
 	}
 
+	void duplicateLinesUp(KeyEvent e) {
+		duplicateLines(true);
+	}
+
+	void duplicateLinesDown(KeyEvent e) {
+		duplicateLines(false);
+	}
+
+	private void duplicateLines(boolean up) {
+		IndexRange selRange = selectedLinesRange();
+		int selStart = selRange.getStart();
+		int selEnd = selRange.getEnd();
+
+		String selText = textArea.getText(selStart, selEnd);
+		if (!selText.endsWith("\n"))
+			selText += "\n";
+
+		textArea.replaceText(selStart, selStart, selText);
+
+		if (up)
+			textArea.selectRange(selStart, selStart + selText.length() - 1);
+		else {
+			int newSelStart = selStart + selText.length();
+			int newSelEnd = newSelStart + selText.length();
+			if (selText.endsWith("\n"))
+				newSelEnd--;
+			textArea.selectRange(newSelStart, newSelEnd);
+		}
+	}
+
 	public void surroundSelection(String leading, String trailing) {
 		surroundSelection(leading, trailing, null);
 	}
