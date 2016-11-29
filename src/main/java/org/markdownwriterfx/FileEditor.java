@@ -45,6 +45,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.Tooltip;
@@ -293,6 +294,27 @@ class FileEditor
 		if (path == null || lastModified == path.toFile().lastModified())
 			return;
 		lastModified = path.toFile().lastModified();
+
+		// check whether file has been removed
+		if (!Files.exists(path)) {
+			if (isModified()) {
+				Alert alert = mainWindow.createAlert(AlertType.WARNING,
+					Messages.get("FileEditor.removedAlert.title"),
+					Messages.get("FileEditor.removedAlert.message", path));
+				ButtonType saveButtonType = new ButtonType(Messages.get("FileEditor.removedAlert.saveButton"), ButtonData.OK_DONE);
+				alert.getButtonTypes().setAll(saveButtonType, ButtonType.CLOSE);
+
+				ButtonType result = alert.showAndWait().get();
+				if (result == saveButtonType) {
+					fileEditorTabPane.saveEditorAs(this);
+					return;
+				}
+			}
+
+			// close editor
+			Platform.runLater(() -> fileEditorTabPane.closeEditor(this, false));
+			return;
+		}
 
 		if( isModified() ) {
 			Alert alert = mainWindow.createAlert(AlertType.WARNING,
