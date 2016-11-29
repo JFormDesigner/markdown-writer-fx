@@ -128,6 +128,7 @@ class MainWindow
 		Action fileCloseAllAction = new Action(Messages.get("MainWindow.fileCloseAllAction"), null, null, e -> fileCloseAll(), activeFileEditorIsNull);
 		Action fileSaveAction = new Action(Messages.get("MainWindow.fileSaveAction"), "Shortcut+S", FLOPPY_ALT, e -> fileSave(),
 				createActiveBooleanProperty(FileEditor::modifiedProperty).not());
+		Action fileSaveAsAction = new Action(Messages.get("MainWindow.fileSaveAsAction"), null, null, e -> fileSaveAs(), activeFileEditorIsNull);
 		Action fileSaveAllAction = new Action(Messages.get("MainWindow.fileSaveAllAction"), "Shortcut+Shift+S", null, e -> fileSaveAll(),
 				Bindings.not(fileEditorTabPane.anyFileEditorModifiedProperty()));
 		Action fileExitAction = new Action(Messages.get("MainWindow.fileExitAction"), null, null, e -> fileExit());
@@ -233,6 +234,7 @@ class MainWindow
 				fileCloseAllAction,
 				null,
 				fileSaveAction,
+				fileSaveAsAction,
 				fileSaveAllAction,
 				null,
 				fileExitAction);
@@ -410,6 +412,10 @@ class MainWindow
 
 	private void fileSave() {
 		fileEditorTabPane.saveEditor(fileEditorTabPane.getActiveFileEditor());
+	}
+
+	private void fileSaveAs() {
+		fileEditorTabPane.saveEditorAs(fileEditorTabPane.getActiveFileEditor());
 	}
 
 	private void fileSaveAll() {

@@ -4,6 +4,7 @@ Markdown Writer FX Change Log
 ## 0.4
 - Find and Replace added.
 - Show line numbers in editor (if enabled in Options dialog).
+- "Save As" command added to menu bar.
 - Automatically reload externally changed markdown files (on window activation).
 - Smarter "Insert Bold/Italic/Strikethrough": if used within inline code
   block, then backticks will be changed to `<code>` and `</code>`.
