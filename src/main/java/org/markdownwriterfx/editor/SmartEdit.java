@@ -35,6 +35,7 @@ import java.util.regex.Pattern;
 import javafx.scene.control.IndexRange;
 import javafx.scene.input.KeyEvent;
 import org.fxmisc.richtext.StyleClassedTextArea;
+import org.fxmisc.richtext.model.TwoDimensional.Bias;
 import org.markdownwriterfx.dialogs.ImageDialog;
 import org.markdownwriterfx.dialogs.LinkDialog;
 import org.markdownwriterfx.util.Utils;
@@ -82,9 +83,63 @@ public class SmartEdit
 	}
 
 	void deleteLine(KeyEvent e) {
-		int start = textArea.getCaretPosition() - textArea.getCaretColumn();
-		int end = start + textArea.getParagraph(textArea.getCurrentParagraph()).length() + 1;
-		textArea.deleteText(start, end);
+		IndexRange selRange = selectedLinesRange();
+		textArea.deleteText(selRange.getStart(), selRange.getEnd());
+	}
+
+	void moveLinesUp(KeyEvent e) {
+		IndexRange selRange = selectedLinesRange();
+		int selStart = selRange.getStart();
+		int selEnd = selRange.getEnd();
+		if (selStart == 0)
+			return;
+
+		int before = offsetToLine(selStart - 1);
+		IndexRange beforeRange = linesRange(before, before);
+		int beforeStart = beforeRange.getStart();
+		int beforeEnd = beforeRange.getEnd();
+
+		String beforeText = textArea.getText(beforeStart, beforeEnd);
+		String selText = textArea.getText(selStart, selEnd);
+		if (!selText.endsWith("\n")) {
+			selText += "\n";
+			if (beforeText.endsWith("\n"))
+				beforeText = beforeText.substring(0, beforeText.length() - 1);
+		}
+
+		// Note: using single textArea.replaceText() to avoid multiple changes in undo history
+		textArea.replaceText(beforeStart, selEnd, selText + beforeText);
+		textArea.selectRange(beforeStart, beforeStart + selText.length() - 1);
+	}
+
+	void moveLinesDown(KeyEvent e) {
+		IndexRange selRange = selectedLinesRange();
+		int selStart = selRange.getStart();
+		int selEnd = selRange.getEnd();
+		if (selEnd == textArea.getLength())
+			return;
+
+		int after = offsetToLine(selEnd + 1);
+		IndexRange afterRange = linesRange(after, after);
+		int afterStart = afterRange.getStart();
+		int afterEnd = afterRange.getEnd();
+
+		String selText = textArea.getText(selStart, selEnd);
+		String afterText = textArea.getText(afterStart, afterEnd);
+		if (!afterText.endsWith("\n")) {
+			afterText += "\n";
+			if (selText.endsWith("\n"))
+				selText = selText.substring(0, selText.length() - 1);
+		}
+
+		// Note: using single textArea.replaceText() to avoid multiple changes in undo history
+		textArea.replaceText(selStart, afterEnd, afterText + selText);
+
+		int newSelStart = selStart + afterText.length();
+		int newSelEnd = newSelStart + selText.length();
+		if (selText.endsWith("\n"))
+			newSelEnd--;
+		textArea.selectRange(newSelStart, newSelEnd);
 	}
 
 	public void surroundSelection(String leading, String trailing) {
@@ -185,7 +240,7 @@ public class SmartEdit
 		textArea.getUndoManager().preventMerge();
 
 		// replace text and update selection
-		// Note: using single textArea.replaceText() to avoid multiple changes to undo history
+		// Note: using single textArea.replaceText() to avoid multiple changes in undo history
 		String before = textArea.getText(openingMarker.getEndOffset(), start);
 		String after = textArea.getText(end, closingMarker.getStartOffset());
 		textArea.replaceText(openingMarker.getStartOffset(), closingMarker.getEndOffset(),
@@ -272,5 +327,44 @@ public class SmartEdit
 		};
 		visitor.visit(markdownAST);
 		return nodes;
+	}
+
+	/**
+	 * Returns the line (paragraph) number for the given character offset.
+	 */
+	private int offsetToLine(int offset) {
+		return textArea.offsetToPosition(offset, Bias.Forward).getMajor();
+	}
+
+	/**
+	 * Returns the line numbers of the first and last line that are (partly) selected.
+	 */
+	private IndexRange selectedLines() {
+		IndexRange selection = textArea.getSelection();
+		int start = selection.getStart();
+		int end = Math.max(selection.getEnd() - 1, start); // excluding line separator
+		return new IndexRange(offsetToLine(start), offsetToLine(end));
+	}
+
+	/**
+	 * Returns start and end character offsets of the lines that are (partly) selected.
+	 * The end offset includes the line separator.
+	 */
+	private IndexRange selectedLinesRange() {
+		IndexRange selection = selectedLines();
+		return linesRange(selection.getStart(), selection.getEnd());
+	}
+
+	/**
+	 * Returns start and end character offsets of the given lines range.
+	 * The end offset includes the line separator.
+	 */
+	private IndexRange linesRange(int firstLine, int lastLine) {
+		int start = textArea.getAbsolutePosition(firstLine, 0);
+		int end = textArea.getAbsolutePosition(lastLine, textArea.getParagraph(lastLine).length());
+		if (end < textArea.getLength())
+			end++; // line separator
+
+		return new IndexRange(start, end);
 	}
 }

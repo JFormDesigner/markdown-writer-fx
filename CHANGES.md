@@ -1,6 +1,9 @@
 Markdown Writer FX Change Log
 =============================
 
+## 0.5
+- Move selected lines up or down with `Alt+Up` or `Alt+Down`.
+
 ## 0.4
 - Find and Replace added.
 - Show line numbers in editor (if enabled in Options dialog).

@@ -111,6 +111,14 @@ class MainWindow
 			});
 		});
 
+		// workaround for a bad JavaFX behavior: menu bar always grabs focus when ALT key is pressed,
+		// but should grab it when ALT key is releases (as all other UI toolkits do) to give other
+		// controls the chance to use Alt+Key shortcuts.
+		scene.addEventHandler(KeyEvent.KEY_PRESSED, e -> {
+			if (e.isAltDown())
+				e.consume();
+		});
+
 		Platform.runLater(() -> stageFocusedProperty.bind(scene.getWindow().focusedProperty()));
 	}
 
