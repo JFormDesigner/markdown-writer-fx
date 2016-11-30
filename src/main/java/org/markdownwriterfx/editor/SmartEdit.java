@@ -308,39 +308,27 @@ public class SmartEdit
 	}
 
 	public void insertBold() {
-		// prevent undo merging with previous text entered by user
-		textArea.getUndoManager().preventMerge();
-
-		List<StrongEmphasis> nodes = findNodesAtSelection(StrongEmphasis.class);
-		if (nodes.size() > 0) {
-			// there is bold text in current selection --> change them to plain text
-			removeDelimiters(nodes);
-		} else
-			surroundSelectionInCode("**");
+		insertDelimited(StrongEmphasis.class, "**");
 	}
 
 	public void insertItalic() {
-		// prevent undo merging with previous text entered by user
-		textArea.getUndoManager().preventMerge();
-
-		List<Emphasis> nodes = findNodesAtSelection(Emphasis.class);
-		if (nodes.size() > 0) {
-			// there is bold text in current selection --> change them to plain text
-			removeDelimiters(nodes);
-		} else
-			surroundSelectionInCode("_");
+		insertDelimited(Emphasis.class, "_");
 	}
 
 	public void insertStrikethrough() {
+		insertDelimited(Strikethrough.class, "~~");
+	}
+
+	private void insertDelimited(Class<? extends Node> cls, String openCloseMarker) {
 		// prevent undo merging with previous text entered by user
 		textArea.getUndoManager().preventMerge();
 
-		List<Strikethrough> nodes = findNodesAtSelection(Strikethrough.class);
+		List<? extends Node> nodes = findNodesAtSelection(cls);
 		if (nodes.size() > 0) {
 			// there is bold text in current selection --> change them to plain text
 			removeDelimiters(nodes);
 		} else
-			surroundSelectionInCode("~~");
+			surroundSelectionInCode(openCloseMarker);
 	}
 
 	private <T extends Node> void removeDelimiters(List<T> nodes) {
