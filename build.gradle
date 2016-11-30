@@ -48,7 +48,8 @@ jar {
 	baseName = 'markdown-writer-fx'
 	manifest {
 		attributes 'Main-Class': 'org.markdownwriterfx.MarkdownWriterFXApp',
-					'Class-Path': configurations.compile.collect { 'lib/' + it.getName() }.join(' ')
+					'Class-Path': configurations.compile.collect { 'lib/' + it.getName() }.join(' '),
+					'Implementation-Version': version
 	}
 }
 

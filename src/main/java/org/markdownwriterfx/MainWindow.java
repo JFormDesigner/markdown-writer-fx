@@ -445,12 +445,20 @@ class MainWindow
 	//---- Help actions -------------------------------------------------------
 
 	private void helpAbout() {
+		String version = null;
+		Package pkg = this.getClass().getPackage();
+		if (pkg != null)
+			version = pkg.getImplementationVersion();
+		if (version == null)
+			version = "(dev)";
+
 		Alert alert = new Alert(AlertType.INFORMATION);
 		alert.setTitle(Messages.get("MainWindow.about.title"));
 		alert.setHeaderText(Messages.get("MainWindow.about.headerText"));
-		alert.setContentText(Messages.get("MainWindow.about.contentText"));
+		alert.setContentText(Messages.get("MainWindow.about.contentText", version));
 		alert.setGraphic(new ImageView(new Image("org/markdownwriterfx/markdownwriterfx32.png")));
 		alert.initOwner(getScene().getWindow());
+		alert.getDialogPane().setPrefWidth(420);
 
 		alert.showAndWait();
 	}
