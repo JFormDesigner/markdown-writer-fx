@@ -8,7 +8,17 @@ repositories {
 }
 
 dependencies {
-	compile 'org.fxmisc.richtext:richtextfx:0.7-M2'
+	// for RichTextFX submodule
+    compile group: 'org.reactfx', name: 'reactfx', version: '2.0-M5'
+    compile (group: 'org.fxmisc.undo', name: 'undofx', version: '1.2.2') {
+        transitive = false
+    }
+    compile (group: 'org.fxmisc.flowless', name: 'flowless', version: '0.5.1') {
+        transitive = false
+    }
+    compile group: 'org.fxmisc.wellbehaved', name: 'wellbehavedfx', version: '0.3'
+
+//	compile 'org.fxmisc.richtext:richtextfx:0.7-M2'
 	compile 'com.miglayout:miglayout-javafx:5.0'
 	compile 'de.jensd:fontawesomefx-fontawesome:4.7.0'
 	compile 'org.controlsfx:controlsfx:8.40.12'
@@ -43,6 +53,12 @@ dependencies {
 }
 
 sourceCompatibility = 1.8
+
+// for RichTextFX submodule
+sourceSets {
+	main.java.srcDirs      = ['src/main/java',      'RichTextFX/richtextfx/src/main/java']
+	main.resources.srcDirs = ['src/main/resources', 'RichTextFX/richtextfx/src/main/resources']
+}
 
 jar {
 	baseName = 'markdown-writer-fx'
