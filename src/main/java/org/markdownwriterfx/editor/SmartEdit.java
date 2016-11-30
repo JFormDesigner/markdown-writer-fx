@@ -262,7 +262,7 @@ public class SmartEdit
 		textArea.selectRange(selStart, selEnd);
 	}
 
-	private void surroundSelectionAndReplaceMarker(String leading, String trailing,
+	private void surroundSelectionAndReplaceMarker(String leading, String trailing, String hint,
 			DelimitedNode node, String newOpeningMarker, String newClosingMarker)
 	{
 		IndexRange selection = textArea.getSelection();
@@ -284,6 +284,12 @@ public class SmartEdit
 		int selStart = start + leading.length() + (newOpeningMarker.length() - openingMarker.length());
 		int selEnd = selStart + trimmedSelectedText.length();
 
+		// insert hint text if selection is empty
+		if (hint != null && trimmedSelectedText.isEmpty()) {
+			trimmedSelectedText = hint;
+			selEnd = selStart + hint.length();
+		}
+
 		// replace text and update selection
 		// Note: using single textArea.replaceText() to avoid multiple changes in undo history
 		String before = textArea.getText(openingMarker.getEndOffset(), start);
@@ -293,37 +299,42 @@ public class SmartEdit
 		textArea.selectRange(selStart, selEnd);
 	}
 
-	private void surroundSelectionInCode(String openCloseMarker) {
+	private void surroundSelectionInCode(String openCloseMarker, String hint) {
 		Code codeNode = findNodeAtSelection(Code.class);
 		if (codeNode != null)
-			surroundSelectionAndReplaceMarker(openCloseMarker, openCloseMarker, codeNode, "<code>", "</code>");
+			surroundSelectionAndReplaceMarker(openCloseMarker, openCloseMarker, hint, codeNode, "<code>", "</code>");
 		else
-			surroundSelection(openCloseMarker, openCloseMarker);
+			surroundSelection(openCloseMarker, openCloseMarker, hint);
 	}
 
-	public void insertBold() {
-		insertDelimited(StrongEmphasis.class, "**");
+	public void insertBold(String hint) {
+		insertDelimited(StrongEmphasis.class, "**", hint);
 	}
 
-	public void insertItalic() {
-		insertDelimited(Emphasis.class, "_");
+	public void insertItalic(String hint) {
+		insertDelimited(Emphasis.class, "_", hint);
 	}
 
-	public void insertStrikethrough() {
-		insertDelimited(Strikethrough.class, "~~");
+	public void insertStrikethrough(String hint) {
+		insertDelimited(Strikethrough.class, "~~", hint);
 	}
 
-	public void insertInlineCode() {
-		insertDelimited(Code.class, "`");
+	public void insertInlineCode(String hint) {
+		insertDelimited(Code.class, "`", hint);
 	}
 
-	private void insertDelimited(Class<? extends Node> cls, String openCloseMarker) {
+	private void insertDelimited(Class<? extends Node> cls, String openCloseMarker, String hint) {
 		List<? extends Node> nodes = findNodesAtSelection(cls);
 		if (nodes.size() > 0) {
 			// there is bold text in current selection --> change them to plain text
-			removeDelimiters(nodes);
+			if (nodes.size() == 1 && hint.equals(((DelimitedNode)nodes.get(0)).getText().toString())) {
+				// delete node including hint text
+				Node node = nodes.get(0);
+				deleteText(node.getStartOffset(), node.getEndOffset());
+			} else
+				removeDelimiters(nodes);
 		} else
-			surroundSelectionInCode(openCloseMarker);
+			surroundSelectionInCode(openCloseMarker, hint);
 	}
 
 	private <T extends Node> void removeDelimiters(List<T> nodes) {

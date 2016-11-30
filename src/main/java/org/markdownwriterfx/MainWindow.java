@@ -171,19 +171,19 @@ class MainWindow
 
 		// Insert actions
 		Action insertBoldAction = new Action(Messages.get("MainWindow.insertBoldAction"), "Shortcut+B", BOLD,
-				e -> getActiveSmartEdit().insertBold(),
+				e -> getActiveSmartEdit().insertBold(Messages.get("MainWindow.insertBoldText")),
 				activeFileEditorIsNull);
 		Action insertItalicAction = new Action(Messages.get("MainWindow.insertItalicAction"), "Shortcut+I", ITALIC,
-				e -> getActiveSmartEdit().insertItalic(),
+				e -> getActiveSmartEdit().insertItalic(Messages.get("MainWindow.insertItalicText")),
 				activeFileEditorIsNull);
 		Action insertStrikethroughAction = new Action(Messages.get("MainWindow.insertStrikethroughAction"), "Shortcut+T", STRIKETHROUGH,
-				e -> getActiveSmartEdit().insertStrikethrough(),
+				e -> getActiveSmartEdit().insertStrikethrough(Messages.get("MainWindow.insertStrikethroughText")),
 				activeFileEditorIsNull);
 		Action insertBlockquoteAction = new Action(Messages.get("MainWindow.insertBlockquoteAction"), "Ctrl+Q", QUOTE_LEFT, // not Shortcut+Q because of conflict on Mac
 				e -> getActiveSmartEdit().surroundSelection("\n\n> ", ""),
 				activeFileEditorIsNull);
 		Action insertCodeAction = new Action(Messages.get("MainWindow.insertCodeAction"), "Shortcut+K", CODE,
-				e -> getActiveSmartEdit().insertInlineCode(),
+				e -> getActiveSmartEdit().insertInlineCode(Messages.get("MainWindow.insertCodeText")),
 				activeFileEditorIsNull);
 		Action insertFencedCodeBlockAction = new Action(Messages.get("MainWindow.insertFencedCodeBlockAction"), "Shortcut+Shift+K", FILE_CODE_ALT,
 				e -> getActiveSmartEdit().surroundSelection("\n\n```\n", "\n```\n\n", Messages.get("MainWindow.insertFencedCodeBlockText")),
