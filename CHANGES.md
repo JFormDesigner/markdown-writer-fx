@@ -6,8 +6,8 @@ Markdown Writer FX Change Log
 - Move selected lines up or down with `Alt+Up` or `Alt+Down`.
 - Duplicate selected lines up or down with `Ctrl+Alt+Up` or `Ctrl+Alt+Down`.
 - Smart "Insert > Header X": Support toggle header and change header level.
-- Smarter "Insert > Bold/Italic/Strikethrough": if selection contains
-  bold/italic/strikethrough text, then it will be changed to plain text.
+- Smarter "Insert > Bold/Italic/Strikethrough/Inline Code": if selection contains
+  bold/italic/strikethrough/inline-code text, then it will be changed to plain text.
 
 
 ## 0.4

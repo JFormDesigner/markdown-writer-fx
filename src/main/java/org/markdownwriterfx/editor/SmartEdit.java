@@ -319,6 +319,10 @@ public class SmartEdit
 		insertDelimited(Strikethrough.class, "~~");
 	}
 
+	public void insertInlineCode() {
+		insertDelimited(Code.class, "`");
+	}
+
 	private void insertDelimited(Class<? extends Node> cls, String openCloseMarker) {
 		// prevent undo merging with previous text entered by user
 		textArea.getUndoManager().preventMerge();

@@ -183,7 +183,7 @@ class MainWindow
 				e -> getActiveSmartEdit().surroundSelection("\n\n> ", ""),
 				activeFileEditorIsNull);
 		Action insertCodeAction = new Action(Messages.get("MainWindow.insertCodeAction"), "Shortcut+K", CODE,
-				e -> getActiveSmartEdit().surroundSelection("`", "`"),
+				e -> getActiveSmartEdit().insertInlineCode(),
 				activeFileEditorIsNull);
 		Action insertFencedCodeBlockAction = new Action(Messages.get("MainWindow.insertFencedCodeBlockAction"), "Shortcut+Shift+K", FILE_CODE_ALT,
 				e -> getActiveSmartEdit().surroundSelection("\n\n```\n", "\n```\n\n", Messages.get("MainWindow.insertFencedCodeBlockText")),
