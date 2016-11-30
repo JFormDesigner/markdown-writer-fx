@@ -40,6 +40,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javafx.scene.control.IndexRange;
 import javafx.scene.input.KeyEvent;
+import org.apache.commons.lang3.StringUtils;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.richtext.model.TwoDimensional.Bias;
 import org.fxmisc.wellbehaved.event.Nodes;
@@ -48,6 +49,7 @@ import org.markdownwriterfx.dialogs.LinkDialog;
 import org.markdownwriterfx.util.Utils;
 import com.vladsch.flexmark.ast.Code;
 import com.vladsch.flexmark.ast.DelimitedNode;
+import com.vladsch.flexmark.ast.Heading;
 import com.vladsch.flexmark.ast.Node;
 import com.vladsch.flexmark.ast.NodeVisitor;
 import com.vladsch.flexmark.util.sequence.BasedSequence;
@@ -328,6 +330,69 @@ public class SmartEdit
 		});
 	}
 
+	public void insertHeading(int level, String hint) {
+		// prevent undo merging with previous text entered by user
+		textArea.getUndoManager().preventMerge();
+
+		int caretPosition = textArea.getCaretPosition();
+		Heading heading = findNodeAtLine(caretPosition, Heading.class);
+		if (heading != null) {
+			// there is already a heading at current line --> remove heading or change level
+			if (level == heading.getLevel()) {
+				// same heading level --> remove heading
+				if (heading.isAtxHeading())
+					textArea.deleteText(heading.getOpeningMarker().getStartOffset(), heading.getText().getStartOffset());
+				else if (heading.isSetextHeading())
+					textArea.deleteText(heading.getText().getEndOffset(), heading.getClosingMarker().getEndOffset());
+			} else {
+				// different heading level --> change heading level
+				if (heading.isAtxHeading()) {
+					// replace ATX opening marker
+					String marker = StringUtils.repeat('#', level);
+					BasedSequence openingMarker = heading.getOpeningMarker();
+					textArea.replaceText(openingMarker.getStartOffset(), openingMarker.getEndOffset(), marker);
+
+					// move caret to end of line
+					selectEndOfLine(openingMarker.getStartOffset());
+				} else if (heading.isSetextHeading()) {
+					BasedSequence closingMarker = heading.getClosingMarker();
+					if (level > 2) {
+						// new level too large for setext --> change from setext to ATX header
+						// Note: using single textArea.replaceText() to avoid multiple changes in undo history
+						String newHeading = StringUtils.repeat('#', level) + " " + heading.getText();
+						textArea.replaceText(heading.getStartOffset(), heading.getEndOffset(), newHeading);
+					} else {
+						// replace setext closing marker
+						String marker = StringUtils.repeat(level == 1 ? '=' : '-', closingMarker.length());
+						textArea.replaceText(closingMarker.getStartOffset(), closingMarker.getEndOffset(), marker);
+					}
+				}
+			}
+		} else {
+			// new heading
+			int lineStartOffset = caretPosition - textArea.getCaretColumn();
+			String marker = StringUtils.repeat('#', level);
+			String currentLine = textArea.getText(textArea.getCurrentParagraph());
+			if (currentLine.trim().isEmpty()) {
+				// current line is empty --> insert opening marker and hint
+				textArea.replaceText(lineStartOffset, lineStartOffset + currentLine.length(), marker + " " + hint);
+
+				// select hint
+				int selStart = lineStartOffset + marker.length() + 1;
+				int selEnd = selStart + hint.length();
+				textArea.selectRange(selStart, selEnd);
+			} else {
+				// current line contains text --> insert opening marker
+				if (!currentLine.startsWith(" "))
+					marker += " ";
+				textArea.insertText(lineStartOffset, marker);
+
+				// move caret to end of line
+				selectEndOfLine(lineStartOffset);
+			}
+		}
+	}
+
 	/**
 	 * Find single node (of a specific class) that completely encloses the current selection.
 	 */
@@ -347,6 +412,7 @@ public class SmartEdit
 	/**
 	 * Find all nodes of a specific class that are within the current selection.
 	 */
+	@SuppressWarnings("unused")
 	private <T> List<T> findNodesAtSelection(Class<T> nodeClass) {
 		IndexRange selection = textArea.getSelection();
 		return findNodes(selection.getStart(), selection.getEnd(), nodeClass);
@@ -373,6 +439,32 @@ public class SmartEdit
 		};
 		visitor.visit(markdownAST);
 		return nodes;
+	}
+
+	/**
+	 * Find first node of a specific class that is at the given offset.
+	 */
+	@SuppressWarnings("unused")
+	private <T> T findNodeAt(int offset, Class<T> nodeClass) {
+		List<T> nodes = findNodes(offset, offset, nodeClass);
+		return nodes.size() > 0 ? nodes.get(0) : null;
+	}
+
+	private <T> T findNodeAtLine(int offsetInLine, Class<T> nodeClass) {
+		int line = textArea.offsetToPosition(offsetInLine, Bias.Forward).getMajor();
+		int lineStart = textArea.getAbsolutePosition(line, 0);
+		int lineEnd = lineStart + textArea.getParagraph(line).length();
+		List<T> nodes = findNodes(lineStart, lineEnd, nodeClass);
+		return nodes.size() > 0 ? nodes.get(0) : null;
+	}
+
+	/**
+	 * Moves the caret to the end of the line.
+	 */
+	private void selectEndOfLine(int offsetInLine) {
+		int line = textArea.offsetToPosition(offsetInLine, Bias.Forward).getMajor();
+		int caretPos = textArea.getAbsolutePosition(line, textArea.getParagraph(line).length());
+		textArea.selectRange(caretPos, caretPos);
 	}
 
 	/**

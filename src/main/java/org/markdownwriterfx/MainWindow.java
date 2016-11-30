@@ -197,22 +197,22 @@ class MainWindow
 				activeFileEditorIsNull);
 
 		Action insertHeader1Action = new Action(Messages.get("MainWindow.insertHeader1Action"), "Shortcut+1", HEADER,
-				e -> getActiveSmartEdit().surroundSelection("\n\n# ", "", Messages.get("MainWindow.insertHeader1Text")),
+				e -> getActiveSmartEdit().insertHeading(1, Messages.get("MainWindow.insertHeader1Text")),
 				activeFileEditorIsNull);
 		Action insertHeader2Action = new Action(Messages.get("MainWindow.insertHeader2Action"), "Shortcut+2", HEADER,
-				e -> getActiveSmartEdit().surroundSelection("\n\n## ", "", Messages.get("MainWindow.insertHeader2Text")),
+				e -> getActiveSmartEdit().insertHeading(2, Messages.get("MainWindow.insertHeader2Text")),
 				activeFileEditorIsNull);
 		Action insertHeader3Action = new Action(Messages.get("MainWindow.insertHeader3Action"), "Shortcut+3", HEADER,
-				e -> getActiveSmartEdit().surroundSelection("\n\n### ", "", Messages.get("MainWindow.insertHeader3Text")),
+				e -> getActiveSmartEdit().insertHeading(3, Messages.get("MainWindow.insertHeader3Text")),
 				activeFileEditorIsNull);
 		Action insertHeader4Action = new Action(Messages.get("MainWindow.insertHeader4Action"), "Shortcut+4", HEADER,
-				e -> getActiveSmartEdit().surroundSelection("\n\n#### ", "", Messages.get("MainWindow.insertHeader4Text")),
+				e -> getActiveSmartEdit().insertHeading(4, Messages.get("MainWindow.insertHeader4Text")),
 				activeFileEditorIsNull);
 		Action insertHeader5Action = new Action(Messages.get("MainWindow.insertHeader5Action"), "Shortcut+5", HEADER,
-				e -> getActiveSmartEdit().surroundSelection("\n\n##### ", "", Messages.get("MainWindow.insertHeader5Text")),
+				e -> getActiveSmartEdit().insertHeading(5, Messages.get("MainWindow.insertHeader5Text")),
 				activeFileEditorIsNull);
 		Action insertHeader6Action = new Action(Messages.get("MainWindow.insertHeader6Action"), "Shortcut+6", HEADER,
-				e -> getActiveSmartEdit().surroundSelection("\n\n###### ", "", Messages.get("MainWindow.insertHeader6Text")),
+				e -> getActiveSmartEdit().insertHeading(6, Messages.get("MainWindow.insertHeader6Text")),
 				activeFileEditorIsNull);
 
 		Action insertUnorderedListAction = new Action(Messages.get("MainWindow.insertUnorderedListAction"), "Shortcut+U", LIST_UL,
