@@ -5,7 +5,9 @@ Markdown Writer FX Change Log
 
 - Move selected lines up or down with `Alt+Up` or `Alt+Down`.
 - Duplicate selected lines up or down with `Ctrl+Alt+Up` or `Ctrl+Alt+Down`.
-- Smart "Insert Header X": Support toggle header and change header level.
+- Smart "Insert > Header X": Support toggle header and change header level.
+- Smarter "Insert > Bold/Italic/Strikethrough": if selection contains
+  bold/italic/strikethrough text, then it will be changed to plain text.
 
 
 ## 0.4
@@ -14,7 +16,7 @@ Markdown Writer FX Change Log
 - Show line numbers in editor (if enabled in Options dialog).
 - "Save As" command added to menu bar.
 - Automatically reload externally changed markdown files (on window activation).
-- Smarter "Insert Bold/Italic/Strikethrough": if used within inline code
+- Smarter "Insert > Bold/Italic/Strikethrough": if used within inline code
   block, then backticks will be changed to `<code>` and `</code>`.
 
 

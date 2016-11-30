@@ -49,9 +49,12 @@ import org.markdownwriterfx.dialogs.LinkDialog;
 import org.markdownwriterfx.util.Utils;
 import com.vladsch.flexmark.ast.Code;
 import com.vladsch.flexmark.ast.DelimitedNode;
+import com.vladsch.flexmark.ast.Emphasis;
 import com.vladsch.flexmark.ast.Heading;
 import com.vladsch.flexmark.ast.Node;
 import com.vladsch.flexmark.ast.NodeVisitor;
+import com.vladsch.flexmark.ast.StrongEmphasis;
+import com.vladsch.flexmark.ext.gfm.strikethrough.Strikethrough;
 import com.vladsch.flexmark.util.sequence.BasedSequence;
 
 /**
@@ -305,15 +308,54 @@ public class SmartEdit
 	}
 
 	public void insertBold() {
-		surroundSelectionInCode("**");
+		// prevent undo merging with previous text entered by user
+		textArea.getUndoManager().preventMerge();
+
+		List<StrongEmphasis> nodes = findNodesAtSelection(StrongEmphasis.class);
+		if (nodes.size() > 0) {
+			// there is bold text in current selection --> change them to plain text
+			removeDelimiters(nodes);
+		} else
+			surroundSelectionInCode("**");
 	}
 
 	public void insertItalic() {
-		surroundSelectionInCode("_");
+		// prevent undo merging with previous text entered by user
+		textArea.getUndoManager().preventMerge();
+
+		List<Emphasis> nodes = findNodesAtSelection(Emphasis.class);
+		if (nodes.size() > 0) {
+			// there is bold text in current selection --> change them to plain text
+			removeDelimiters(nodes);
+		} else
+			surroundSelectionInCode("_");
 	}
 
 	public void insertStrikethrough() {
-		surroundSelectionInCode("~~");
+		// prevent undo merging with previous text entered by user
+		textArea.getUndoManager().preventMerge();
+
+		List<Strikethrough> nodes = findNodesAtSelection(Strikethrough.class);
+		if (nodes.size() > 0) {
+			// there is bold text in current selection --> change them to plain text
+			removeDelimiters(nodes);
+		} else
+			surroundSelectionInCode("~~");
+	}
+
+	private <T extends Node> void removeDelimiters(List<T> nodes) {
+		StringBuilder buf = new StringBuilder();
+		for (int i = 0; i < nodes.size(); i++) {
+			T node = nodes.get(i);
+			if (i > 0)
+				buf.append(textArea.getText(nodes.get(i - 1).getEndOffset(), node.getStartOffset()));
+			buf.append(((DelimitedNode)node).getText());
+		}
+
+		int start = nodes.get(0).getStartOffset();
+		int end = nodes.get(nodes.size() - 1).getEndOffset();
+		textArea.replaceText(start, end, buf.toString());
+		textArea.selectRange(start, start + buf.length());
 	}
 
 	public void insertLink() {
@@ -412,7 +454,6 @@ public class SmartEdit
 	/**
 	 * Find all nodes of a specific class that are within the current selection.
 	 */
-	@SuppressWarnings("unused")
 	private <T> List<T> findNodesAtSelection(Class<T> nodeClass) {
 		IndexRange selection = textArea.getSelection();
 		return findNodes(selection.getStart(), selection.getEnd(), nodeClass);
