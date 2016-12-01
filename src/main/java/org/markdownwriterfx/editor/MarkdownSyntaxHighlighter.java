@@ -347,8 +347,8 @@ class MarkdownSyntaxHighlighter
 	}
 
 	private void setLineStyleClass(Node node, StyleClass styleClass) {
-		int start = textArea.offsetToPosition(node.getStartOffset(), Bias.Backward).getMajor();
-		int end = textArea.offsetToPosition(node.getEndOffset(), Bias.Forward).getMajor() + 1;
+		int start = textArea.offsetToPosition(node.getStartOffset(), Bias.Forward).getMajor();
+		int end = textArea.offsetToPosition(node.getEndOffset() - 1, Bias.Forward).getMajor() + 1;
 
 		addStyledRange(lineStyleRanges, start, end, styleClass);
 	}
