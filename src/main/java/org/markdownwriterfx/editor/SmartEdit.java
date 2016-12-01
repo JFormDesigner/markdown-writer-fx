@@ -100,12 +100,12 @@ public class SmartEdit
 				textArea.selectRange(caretPosition - currentLine.length(), caretPosition);
 			}
 		}
-		replaceSelection(newText);
+		replaceSelection(textArea, newText);
 	}
 
 	private void deleteLine(KeyEvent e) {
 		IndexRange selRange = selectedLinesRange();
-		deleteText(selRange.getStart(), selRange.getEnd());
+		deleteText(textArea, selRange.getStart(), selRange.getEnd());
 	}
 
 	private void moveLinesUp(KeyEvent e) {
@@ -129,7 +129,7 @@ public class SmartEdit
 		}
 
 		// Note: using single textArea.replaceText() to avoid multiple changes in undo history
-		replaceText(beforeStart, selEnd, selText + beforeText);
+		replaceText(textArea, beforeStart, selEnd, selText + beforeText);
 		textArea.selectRange(beforeStart, beforeStart + selText.length() - 1);
 	}
 
@@ -154,7 +154,7 @@ public class SmartEdit
 		}
 
 		// Note: using single textArea.replaceText() to avoid multiple changes in undo history
-		replaceText(selStart, afterEnd, afterText + selText);
+		replaceText(textArea, selStart, afterEnd, afterText + selText);
 
 		int newSelStart = selStart + afterText.length();
 		int newSelEnd = newSelStart + selText.length();
@@ -180,7 +180,7 @@ public class SmartEdit
 		if (!selText.endsWith("\n"))
 			selText += "\n";
 
-		replaceText(selStart, selStart, selText);
+		replaceText(textArea, selStart, selStart, selText);
 
 		if (up)
 			textArea.selectRange(selStart, selStart + selText.length() - 1);
@@ -258,7 +258,7 @@ public class SmartEdit
 		}
 
 		// replace text and update selection
-		replaceText(start, end, leading + trimmedSelectedText + trailing);
+		replaceText(textArea, start, end, leading + trimmedSelectedText + trailing);
 		textArea.selectRange(selStart, selEnd);
 	}
 
@@ -294,7 +294,7 @@ public class SmartEdit
 		// Note: using single textArea.replaceText() to avoid multiple changes in undo history
 		String before = textArea.getText(openingMarker.getEndOffset(), start);
 		String after = textArea.getText(end, closingMarker.getStartOffset());
-		replaceText(openingMarker.getStartOffset(), closingMarker.getEndOffset(),
+		replaceText(textArea, openingMarker.getStartOffset(), closingMarker.getEndOffset(),
 				newOpeningMarker + before + leading + trimmedSelectedText + trailing + after + newClosingMarker );
 		textArea.selectRange(selStart, selEnd);
 	}
@@ -330,7 +330,7 @@ public class SmartEdit
 			if (nodes.size() == 1 && hint.equals(((DelimitedNode)nodes.get(0)).getText().toString())) {
 				// delete node including hint text
 				Node node = nodes.get(0);
-				deleteText(node.getStartOffset(), node.getEndOffset());
+				deleteText(textArea, node.getStartOffset(), node.getEndOffset());
 			} else
 				removeDelimiters(nodes);
 		} else
@@ -348,21 +348,21 @@ public class SmartEdit
 
 		int start = nodes.get(0).getStartOffset();
 		int end = nodes.get(nodes.size() - 1).getEndOffset();
-		replaceText(start, end, buf.toString());
+		replaceText(textArea, start, end, buf.toString());
 		textArea.selectRange(start, start + buf.length());
 	}
 
 	public void insertLink() {
 		LinkDialog dialog = new LinkDialog(editor.getNode().getScene().getWindow(), editor.getParentPath());
 		dialog.showAndWait().ifPresent(result -> {
-			replaceSelection(result);
+			replaceSelection(textArea, result);
 		});
 	}
 
 	public void insertImage() {
 		ImageDialog dialog = new ImageDialog(editor.getNode().getScene().getWindow(), editor.getParentPath());
 		dialog.showAndWait().ifPresent(result -> {
-			replaceSelection(result);
+			replaceSelection(textArea, result);
 		});
 	}
 
@@ -374,16 +374,16 @@ public class SmartEdit
 			if (level == heading.getLevel()) {
 				// same heading level --> remove heading
 				if (heading.isAtxHeading())
-					deleteText(heading.getOpeningMarker().getStartOffset(), heading.getText().getStartOffset());
+					deleteText(textArea, heading.getOpeningMarker().getStartOffset(), heading.getText().getStartOffset());
 				else if (heading.isSetextHeading())
-					deleteText(heading.getText().getEndOffset(), heading.getClosingMarker().getEndOffset());
+					deleteText(textArea, heading.getText().getEndOffset(), heading.getClosingMarker().getEndOffset());
 			} else {
 				// different heading level --> change heading level
 				if (heading.isAtxHeading()) {
 					// replace ATX opening marker
 					String marker = StringUtils.repeat('#', level);
 					BasedSequence openingMarker = heading.getOpeningMarker();
-					replaceText(openingMarker.getStartOffset(), openingMarker.getEndOffset(), marker);
+					replaceText(textArea, openingMarker.getStartOffset(), openingMarker.getEndOffset(), marker);
 
 					// move caret to end of line
 					selectEndOfLine(openingMarker.getStartOffset());
@@ -393,11 +393,11 @@ public class SmartEdit
 						// new level too large for setext --> change from setext to ATX header
 						// Note: using single textArea.replaceText() to avoid multiple changes in undo history
 						String newHeading = StringUtils.repeat('#', level) + " " + heading.getText();
-						replaceText(heading.getStartOffset(), heading.getEndOffset(), newHeading);
+						replaceText(textArea, heading.getStartOffset(), heading.getEndOffset(), newHeading);
 					} else {
 						// replace setext closing marker
 						String marker = StringUtils.repeat(level == 1 ? '=' : '-', closingMarker.length());
-						replaceText(closingMarker.getStartOffset(), closingMarker.getEndOffset(), marker);
+						replaceText(textArea, closingMarker.getStartOffset(), closingMarker.getEndOffset(), marker);
 					}
 				}
 			}
@@ -408,7 +408,7 @@ public class SmartEdit
 			String currentLine = textArea.getText(textArea.getCurrentParagraph());
 			if (currentLine.trim().isEmpty()) {
 				// current line is empty --> insert opening marker and hint
-				replaceText(lineStartOffset, lineStartOffset + currentLine.length(), marker + " " + hint);
+				replaceText(textArea, lineStartOffset, lineStartOffset + currentLine.length(), marker + " " + hint);
 
 				// select hint
 				int selStart = lineStartOffset + marker.length() + 1;
@@ -418,7 +418,7 @@ public class SmartEdit
 				// current line contains text --> insert opening marker
 				if (!currentLine.startsWith(" "))
 					marker += " ";
-				insertText(lineStartOffset, marker);
+				insertText(textArea, lineStartOffset, marker);
 
 				// move caret to end of line
 				selectEndOfLine(lineStartOffset);
@@ -426,7 +426,10 @@ public class SmartEdit
 		}
 	}
 
-	private void replaceText(int start, int end, String text) {
+	/**
+	 * Central method to replace text in editor that prevents undo merging.
+	 */
+	static void replaceText(StyleClassedTextArea textArea, int start, int end, String text) {
 		// prevent undo merging with previous text entered by user
 		textArea.getUndoManager().preventMerge();
 
@@ -437,17 +440,17 @@ public class SmartEdit
 		textArea.getUndoManager().preventMerge();
 	}
 
-	void replaceSelection(String replacement) {
+	static void replaceSelection(StyleClassedTextArea textArea, String replacement) {
 		IndexRange range = textArea.getSelection();
-		replaceText(range.getStart(), range.getEnd(), replacement);
+		replaceText(textArea, range.getStart(), range.getEnd(), replacement);
 	}
 
-	private void insertText(int index, String text) {
-		replaceText(index, index, text);
+	static void insertText(StyleClassedTextArea textArea, int index, String text) {
+		replaceText(textArea, index, index, text);
 	}
 
-	private void deleteText(int start, int end) {
-		replaceText(start, end, "");
+	static void deleteText(StyleClassedTextArea textArea, int start, int end) {
+		replaceText(textArea, start, end, "");
 	}
 
 	/**
