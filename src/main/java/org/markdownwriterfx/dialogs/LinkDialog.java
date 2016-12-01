@@ -32,7 +32,6 @@ import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
@@ -82,8 +81,7 @@ public class LinkDialog
 		previewField.textProperty().bind(link);
 
 		setResultConverter(dialogButton -> {
-			ButtonData data = (dialogButton != null) ? dialogButton.getButtonData() : null;
-			return (data == ButtonData.OK_DONE) ? link.get() : null;
+			return (dialogButton == ButtonType.OK) ? link.get() : null;
 		});
 
 		Platform.runLater(() -> {
@@ -110,7 +108,7 @@ public class LinkDialog
 
 		//======== pane ========
 		{
-			pane.setCols("[shrink 0,fill][300,grow,fill][fill][fill]");
+			pane.setCols("[shrink 0,fill][400,grow,fill]");
 			pane.setRows("[][][][]");
 
 			//---- urlLabel ----
@@ -122,8 +120,14 @@ public class LinkDialog
 			urlField.setText("http://yourlink.com");
 			urlField.setPromptText("http://yourlink.com");
 			pane.add(urlField, "cell 1 0");
-			pane.add(linkBrowseDirectoyButton, "cell 2 0");
-			pane.add(linkBrowseFileButton, "cell 3 0");
+
+			//---- linkBrowseDirectoyButton ----
+			linkBrowseDirectoyButton.setFocusTraversable(false);
+			pane.add(linkBrowseDirectoyButton, "cell 1 0,alignx center,growx 0");
+
+			//---- linkBrowseFileButton ----
+			linkBrowseFileButton.setFocusTraversable(false);
+			pane.add(linkBrowseFileButton, "cell 1 0,alignx center,growx 0");
 
 			//---- textLabel ----
 			textLabel.setText(Messages.get("LinkDialog.textLabel.text"));
@@ -131,17 +135,17 @@ public class LinkDialog
 
 			//---- textField ----
 			textField.setEscapeCharacters("[]");
-			pane.add(textField, "cell 1 1 3 1");
+			pane.add(textField, "cell 1 1");
 
 			//---- titleLabel ----
 			titleLabel.setText(Messages.get("LinkDialog.titleLabel.text"));
 			pane.add(titleLabel, "cell 0 2");
-			pane.add(titleField, "cell 1 2 3 1");
+			pane.add(titleField, "cell 1 2");
 
 			//---- previewLabel ----
 			previewLabel.setText(Messages.get("LinkDialog.previewLabel.text"));
 			pane.add(previewLabel, "cell 0 3");
-			pane.add(previewField, "cell 1 3 3 1");
+			pane.add(previewField, "cell 1 3");
 		}
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 	}
