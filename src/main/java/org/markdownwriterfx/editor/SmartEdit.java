@@ -432,6 +432,9 @@ public class SmartEdit
 
 		// replace text
 		textArea.replaceText(start, end, text);
+
+		// prevent undo merging with following text entered by user
+		textArea.getUndoManager().preventMerge();
 	}
 
 	void replaceSelection(String replacement) {
