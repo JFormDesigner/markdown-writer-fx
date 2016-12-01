@@ -332,7 +332,7 @@ public class SmartEdit
 	private void insertDelimited(Class<? extends Node> cls, String openCloseMarker, String hint) {
 		List<? extends Node> nodes = findNodesAtSelection(n -> cls.isInstance(n), false);
 		if (nodes.size() > 0) {
-			// there is bold text in current selection --> change them to plain text
+			// there is delimited text in current selection --> change them to plain text
 			if (nodes.size() == 1 && hint.equals(((DelimitedNode)nodes.get(0)).getText().toString())) {
 				// delete node including hint text
 				Node node = nodes.get(0);
@@ -548,7 +548,7 @@ public class SmartEdit
 			@SuppressWarnings("unchecked")
 			@Override
 			public void visit(Node node) {
-				if (start <= node.getEndOffset() && end >= node.getStartOffset() && predicate.test(node)) {
+				if (start < node.getEndOffset() && end >= node.getStartOffset() && predicate.test(node)) {
 					nodes.add((T) node);
 
 					if (!allowNested)
