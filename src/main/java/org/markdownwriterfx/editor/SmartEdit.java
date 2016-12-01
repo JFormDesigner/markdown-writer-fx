@@ -51,6 +51,8 @@ import com.vladsch.flexmark.ast.Code;
 import com.vladsch.flexmark.ast.DelimitedNode;
 import com.vladsch.flexmark.ast.Emphasis;
 import com.vladsch.flexmark.ast.Heading;
+import com.vladsch.flexmark.ast.Image;
+import com.vladsch.flexmark.ast.Link;
 import com.vladsch.flexmark.ast.Node;
 import com.vladsch.flexmark.ast.NodeVisitor;
 import com.vladsch.flexmark.ast.StrongEmphasis;
@@ -353,16 +355,34 @@ public class SmartEdit
 	}
 
 	public void insertLink() {
+		Link link = findNodeAtSelection(Link.class);
+		if (link != null)
+			selectRange(textArea, link.getStartOffset(), link.getEndOffset());
+
 		LinkDialog dialog = new LinkDialog(editor.getNode().getScene().getWindow(), editor.getParentPath());
+		if (link != null)
+			dialog.init(link.getUrl().toString(), link.getText().toString(), link.getTitle().toString());
 		dialog.showAndWait().ifPresent(result -> {
-			replaceSelection(textArea, result);
+			if (link != null)
+				replaceText(textArea, link.getStartOffset(), link.getEndOffset(), result);
+			else
+				replaceSelection(textArea, result);
 		});
 	}
 
 	public void insertImage() {
+		Image image = findNodeAtSelection(Image.class);
+		if (image != null)
+			selectRange(textArea, image.getStartOffset(), image.getEndOffset());
+
 		ImageDialog dialog = new ImageDialog(editor.getNode().getScene().getWindow(), editor.getParentPath());
+		if (image != null)
+			dialog.init(image.getUrl().toString(), image.getText().toString(), image.getTitle().toString());
 		dialog.showAndWait().ifPresent(result -> {
-			replaceSelection(textArea, result);
+			if (image != null)
+				replaceText(textArea, image.getStartOffset(), image.getEndOffset(), result);
+			else
+				replaceSelection(textArea, result);
 		});
 	}
 

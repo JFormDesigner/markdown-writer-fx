@@ -92,6 +92,12 @@ public class LinkDialog
 		});
 	}
 
+	public void init(String url, String text, String title) {
+		urlField.setText(url);
+		textField.setText(text);
+		titleField.setText(title);
+	}
+
 	private void initComponents() {
 		// JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
 		pane = new MigPane();
