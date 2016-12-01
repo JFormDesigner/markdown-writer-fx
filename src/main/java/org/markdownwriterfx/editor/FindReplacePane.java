@@ -237,7 +237,7 @@ class FindReplacePane
 			return;
 
 		Range activeHit = getActiveHit();
-		textArea.selectRange(activeHit.start, activeHit.end);
+		SmartEdit.selectRange(textArea, activeHit.start, activeHit.end);
 	}
 
 	private void replace() {
@@ -294,7 +294,7 @@ class FindReplacePane
 		SmartEdit.replaceText(textArea, first.start, last.end, buf.toString());
 
 		int caret = first.start + buf.length();
-		textArea.selectRange(caret, caret);
+		SmartEdit.selectRange(textArea, caret, caret);
 		textArea.requestFocus();
 	}
 

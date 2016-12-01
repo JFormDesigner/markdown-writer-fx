@@ -97,7 +97,7 @@ public class SmartEdit
 				// current line contains only whitespace characters and list markers
 				// --> empty current line
 				int caretPosition = textArea.getCaretPosition();
-				textArea.selectRange(caretPosition - currentLine.length(), caretPosition);
+				selectRange(textArea, caretPosition - currentLine.length(), caretPosition);
 			}
 		}
 		replaceSelection(textArea, newText);
@@ -130,7 +130,7 @@ public class SmartEdit
 
 		// Note: using single textArea.replaceText() to avoid multiple changes in undo history
 		replaceText(textArea, beforeStart, selEnd, selText + beforeText);
-		textArea.selectRange(beforeStart, beforeStart + selText.length() - 1);
+		selectRange(textArea, beforeStart, beforeStart + selText.length() - 1);
 	}
 
 	private void moveLinesDown(KeyEvent e) {
@@ -160,7 +160,7 @@ public class SmartEdit
 		int newSelEnd = newSelStart + selText.length();
 		if (selText.endsWith("\n"))
 			newSelEnd--;
-		textArea.selectRange(newSelStart, newSelEnd);
+		selectRange(textArea, newSelStart, newSelEnd);
 	}
 
 	private void duplicateLinesUp(KeyEvent e) {
@@ -183,13 +183,13 @@ public class SmartEdit
 		replaceText(textArea, selStart, selStart, selText);
 
 		if (up)
-			textArea.selectRange(selStart, selStart + selText.length() - 1);
+			selectRange(textArea, selStart, selStart + selText.length() - 1);
 		else {
 			int newSelStart = selStart + selText.length();
 			int newSelEnd = newSelStart + selText.length();
 			if (selText.endsWith("\n"))
 				newSelEnd--;
-			textArea.selectRange(newSelStart, newSelEnd);
+			selectRange(textArea, newSelStart, newSelEnd);
 		}
 	}
 
@@ -259,7 +259,7 @@ public class SmartEdit
 
 		// replace text and update selection
 		replaceText(textArea, start, end, leading + trimmedSelectedText + trailing);
-		textArea.selectRange(selStart, selEnd);
+		selectRange(textArea, selStart, selEnd);
 	}
 
 	private void surroundSelectionAndReplaceMarker(String leading, String trailing, String hint,
@@ -296,7 +296,7 @@ public class SmartEdit
 		String after = textArea.getText(end, closingMarker.getStartOffset());
 		replaceText(textArea, openingMarker.getStartOffset(), closingMarker.getEndOffset(),
 				newOpeningMarker + before + leading + trimmedSelectedText + trailing + after + newClosingMarker );
-		textArea.selectRange(selStart, selEnd);
+		selectRange(textArea, selStart, selEnd);
 	}
 
 	private void surroundSelectionInCode(String openCloseMarker, String hint) {
@@ -349,7 +349,7 @@ public class SmartEdit
 		int start = nodes.get(0).getStartOffset();
 		int end = nodes.get(nodes.size() - 1).getEndOffset();
 		replaceText(textArea, start, end, buf.toString());
-		textArea.selectRange(start, start + buf.length());
+		selectRange(textArea, start, start + buf.length());
 	}
 
 	public void insertLink() {
@@ -413,7 +413,7 @@ public class SmartEdit
 				// select hint
 				int selStart = lineStartOffset + marker.length() + 1;
 				int selEnd = selStart + hint.length();
-				textArea.selectRange(selStart, selEnd);
+				selectRange(textArea, selStart, selEnd);
 			} else {
 				// current line contains text --> insert opening marker
 				if (!currentLine.startsWith(" "))
@@ -451,6 +451,14 @@ public class SmartEdit
 
 	static void deleteText(StyleClassedTextArea textArea, int start, int end) {
 		replaceText(textArea, start, end, "");
+	}
+
+	/**
+	 * Central method to select text in editor that scrolls to the caret.
+	 */
+	static void selectRange(StyleClassedTextArea textArea, int anchor, int caretPosition) {
+		textArea.selectRange(anchor, caretPosition);
+		textArea.requestFollowCaret();
 	}
 
 	/**
@@ -523,7 +531,7 @@ public class SmartEdit
 	private void selectEndOfLine(int offsetInLine) {
 		int line = textArea.offsetToPosition(offsetInLine, Bias.Forward).getMajor();
 		int caretPos = textArea.getAbsolutePosition(line, textArea.getParagraph(line).length());
-		textArea.selectRange(caretPos, caretPos);
+		selectRange(textArea, caretPos, caretPos);
 	}
 
 	/**
