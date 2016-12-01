@@ -121,6 +121,8 @@ class MarkdownSyntaxHighlighter
 		node2style.put(Strikethrough.class, StyleClass.del);
 		node2style.put(Link.class, StyleClass.a);
 		node2style.put(LinkRef.class, StyleClass.a);
+		node2style.put(AutoLink.class, StyleClass.a);
+		node2style.put(MailLink.class, StyleClass.a);
 		node2style.put(WikiLink.class, StyleClass.a);
 		node2style.put(Image.class, StyleClass.img);
 		node2style.put(Code.class, StyleClass.code);

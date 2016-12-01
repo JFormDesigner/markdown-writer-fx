@@ -47,12 +47,15 @@ import org.fxmisc.wellbehaved.event.Nodes;
 import org.markdownwriterfx.dialogs.ImageDialog;
 import org.markdownwriterfx.dialogs.LinkDialog;
 import org.markdownwriterfx.util.Utils;
+import com.vladsch.flexmark.ast.AutoLink;
 import com.vladsch.flexmark.ast.Code;
 import com.vladsch.flexmark.ast.DelimitedNode;
 import com.vladsch.flexmark.ast.Emphasis;
 import com.vladsch.flexmark.ast.Heading;
 import com.vladsch.flexmark.ast.Image;
 import com.vladsch.flexmark.ast.Link;
+import com.vladsch.flexmark.ast.LinkNode;
+import com.vladsch.flexmark.ast.MailLink;
 import com.vladsch.flexmark.ast.Node;
 import com.vladsch.flexmark.ast.NodeVisitor;
 import com.vladsch.flexmark.ast.StrongEmphasis;
@@ -355,23 +358,45 @@ public class SmartEdit
 	}
 
 	public void insertLink() {
-		Link link = findNodeAtSelection(Link.class);
-		if (link != null)
-			selectRange(textArea, link.getStartOffset(), link.getEndOffset());
+		LinkNode linkNode = findNodeAtSelection(LinkNode.class);
+		if (linkNode != null && !(linkNode instanceof Link) && !(linkNode instanceof AutoLink) && !(linkNode instanceof MailLink)) {
+			// link node at caret is not supported --> insert link before or after
+			if (textArea.getCaretPosition() != linkNode.getStartOffset())
+				selectRange(textArea, linkNode.getEndOffset(), linkNode.getEndOffset());
+			linkNode = null;
+		}
+
+		if (linkNode != null)
+			selectRange(textArea, linkNode.getStartOffset(), linkNode.getEndOffset());
 
 		LinkDialog dialog = new LinkDialog(editor.getNode().getScene().getWindow(), editor.getParentPath());
-		if (link != null)
+		if (linkNode instanceof Link) {
+			Link link = (Link) linkNode;
 			dialog.init(link.getUrl().toString(), link.getText().toString(), link.getTitle().toString());
+		} else if (linkNode instanceof AutoLink)
+			dialog.init(((AutoLink) linkNode).getText().toString(), "", "");
+		else if (linkNode instanceof MailLink)
+			dialog.init(((MailLink) linkNode).getText().toString(), "", "");
+
+		LinkNode linkNode2 = linkNode;
 		dialog.showAndWait().ifPresent(result -> {
-			if (link != null)
-				replaceText(textArea, link.getStartOffset(), link.getEndOffset(), result);
+			if (linkNode2 != null)
+				replaceText(textArea, linkNode2.getStartOffset(), linkNode2.getEndOffset(), result);
 			else
 				replaceSelection(textArea, result);
 		});
 	}
 
 	public void insertImage() {
-		Image image = findNodeAtSelection(Image.class);
+		LinkNode linkNode = findNodeAtSelection(LinkNode.class);
+		if (linkNode != null && !(linkNode instanceof Image)) {
+			// link node at caret is not supported --> insert image before or after
+			if (textArea.getCaretPosition() != linkNode.getStartOffset())
+				selectRange(textArea, linkNode.getEndOffset(), linkNode.getEndOffset());
+			linkNode = null;
+		}
+
+		Image image = (Image) linkNode;
 		if (image != null)
 			selectRange(textArea, image.getStartOffset(), image.getEndOffset());
 

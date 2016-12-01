@@ -77,7 +77,7 @@ public class LinkDialog
 				.then(Bindings.format("[%s](%s \"%s\")", textField.escapedTextProperty(), urlField.escapedTextProperty(), titleField.escapedTextProperty()))
 				.otherwise(Bindings.when(textField.escapedTextProperty().isNotEmpty())
 						.then(Bindings.format("[%s](%s)", textField.escapedTextProperty(), urlField.escapedTextProperty()))
-						.otherwise(urlField.escapedTextProperty())));
+						.otherwise(Bindings.format("<%s>", urlField.escapedTextProperty()))));
 		previewField.textProperty().bind(link);
 
 		setResultConverter(dialogButton -> {
