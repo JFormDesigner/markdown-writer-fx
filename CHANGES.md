@@ -8,6 +8,7 @@ Markdown Writer FX Change Log
 - Smart "Insert > Header X": Support toggle header and change header level.
 - Smarter "Insert > Bold/Italic/Strikethrough/Inline Code": if selection contains
   bold/italic/strikethrough/inline-code text, then it will be changed to plain text.
+- Fixed background color of selected text in editor.
 
 
 ## 0.4
