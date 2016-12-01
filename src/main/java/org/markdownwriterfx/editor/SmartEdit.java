@@ -436,6 +436,10 @@ public class SmartEdit
 		// replace text
 		textArea.replaceText(start, end, text);
 
+		// textArea.replaceText() moves the caret to the end of the selected text, which may
+		// it make necessary to scroll if large text is inserted and selectRange() is not called
+		textArea.requestFollowCaret();
+
 		// prevent undo merging with following text entered by user
 		textArea.getUndoManager().preventMerge();
 	}
