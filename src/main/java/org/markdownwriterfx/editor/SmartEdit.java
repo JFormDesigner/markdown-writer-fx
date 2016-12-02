@@ -572,9 +572,9 @@ public class SmartEdit
 	}
 
 	private <T> T findNodeAtLine(int offsetInLine, Predicate<Node> predicate) {
-		int line = textArea.offsetToPosition(offsetInLine, Bias.Forward).getMajor();
-		int lineStart = textArea.getAbsolutePosition(line, 0);
-		int lineEnd = lineStart + textArea.getParagraph(line).length();
+		int line = offsetToLine(offsetInLine);
+		int lineStart = lineToStartOffset(line);
+		int lineEnd = lineToEndOffset(line);
 		List<T> nodes = findNodes(lineStart, lineEnd, predicate, false);
 		return nodes.size() > 0 ? nodes.get(0) : null;
 	}
@@ -583,20 +583,34 @@ public class SmartEdit
 	 * Moves the caret to the end of the line.
 	 */
 	private void selectEndOfLine(int offsetInLine) {
-		int line = textArea.offsetToPosition(offsetInLine, Bias.Forward).getMajor();
-		int caretPos = textArea.getAbsolutePosition(line, textArea.getParagraph(line).length());
+		int line = offsetToLine(offsetInLine);
+		int caretPos = lineToEndOffset(line);
 		selectRange(textArea, caretPos, caretPos);
 	}
 
 	/**
-	 * Returns the line (paragraph) number for the given character offset.
+	 * Returns the line (paragraph) index for the given character offset.
 	 */
 	private int offsetToLine(int offset) {
 		return textArea.offsetToPosition(offset, Bias.Forward).getMajor();
 	}
 
 	/**
-	 * Returns the line numbers of the first and last line that are (partly) selected.
+	 * Returns the start offset of the given line.
+	 */
+	private int lineToStartOffset(int line) {
+		return textArea.getAbsolutePosition(line, 0);
+	}
+
+	/**
+	 * Returns the end offset (excluding line separator) of the given line.
+	 */
+	private int lineToEndOffset(int line) {
+		return lineToStartOffset(line) + textArea.getParagraph(line).length();
+	}
+
+	/**
+	 * Returns the line indices of the first and last line that are (partly) selected.
 	 */
 	private IndexRange selectedLines() {
 		IndexRange selection = textArea.getSelection();
@@ -619,8 +633,8 @@ public class SmartEdit
 	 * The end offset includes the line separator.
 	 */
 	private IndexRange linesRange(int firstLine, int lastLine) {
-		int start = textArea.getAbsolutePosition(firstLine, 0);
-		int end = textArea.getAbsolutePosition(lastLine, textArea.getParagraph(lastLine).length());
+		int start = lineToStartOffset(firstLine);
+		int end = lineToEndOffset(lastLine);
 		if (end < textArea.getLength())
 			end++; // line separator
 
