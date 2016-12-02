@@ -109,19 +109,19 @@ public class SmartEdit
 	}
 
 	private void deleteLine(KeyEvent e) {
-		IndexRange selRange = selectedLinesRange();
+		IndexRange selRange = getSelectedLinesRange(true);
 		deleteText(textArea, selRange.getStart(), selRange.getEnd());
 	}
 
 	private void moveLinesUp(KeyEvent e) {
-		IndexRange selRange = selectedLinesRange();
+		IndexRange selRange = getSelectedLinesRange(true);
 		int selStart = selRange.getStart();
 		int selEnd = selRange.getEnd();
 		if (selStart == 0)
 			return;
 
 		int before = offsetToLine(selStart - 1);
-		IndexRange beforeRange = linesRange(before, before);
+		IndexRange beforeRange = linesToRange(before, before, true);
 		int beforeStart = beforeRange.getStart();
 		int beforeEnd = beforeRange.getEnd();
 
@@ -139,14 +139,14 @@ public class SmartEdit
 	}
 
 	private void moveLinesDown(KeyEvent e) {
-		IndexRange selRange = selectedLinesRange();
+		IndexRange selRange = getSelectedLinesRange(true);
 		int selStart = selRange.getStart();
 		int selEnd = selRange.getEnd();
 		if (selEnd == textArea.getLength())
 			return;
 
 		int after = offsetToLine(selEnd + 1);
-		IndexRange afterRange = linesRange(after, after);
+		IndexRange afterRange = linesToRange(after, after, true);
 		int afterStart = afterRange.getStart();
 		int afterEnd = afterRange.getEnd();
 
@@ -177,7 +177,7 @@ public class SmartEdit
 	}
 
 	private void duplicateLines(boolean up) {
-		IndexRange selRange = selectedLinesRange();
+		IndexRange selRange = getSelectedLinesRange(true);
 		int selStart = selRange.getStart();
 		int selEnd = selRange.getEnd();
 
@@ -471,6 +471,8 @@ public class SmartEdit
 		}
 	}
 
+	//---- text modification --------------------------------------------------
+
 	/**
 	 * Central method to replace text in editor that prevents undo merging.
 	 */
@@ -502,6 +504,8 @@ public class SmartEdit
 		replaceText(textArea, start, end, "");
 	}
 
+	//---- text selection -----------------------------------------------------
+
 	/**
 	 * Central method to select text in editor that scrolls to the caret.
 	 */
@@ -509,6 +513,17 @@ public class SmartEdit
 		textArea.selectRange(anchor, caretPosition);
 		textArea.requestFollowCaret();
 	}
+
+	/**
+	 * Moves the caret to the end of the line.
+	 */
+	private void selectEndOfLine(int offsetInLine) {
+		int line = offsetToLine(offsetInLine);
+		int caretPos = lineToEndOffset(line);
+		selectRange(textArea, caretPos, caretPos);
+	}
+
+	//---- find nodes ---------------------------------------------------------
 
 	/**
 	 * Find single node that completely encloses the current selection and match a predicate.
@@ -586,20 +601,38 @@ public class SmartEdit
 		return nodes.size() > 0 ? nodes.get(0) : null;
 	}
 
+	//---- offset/line conversion -------------------------------------------
+
 	/**
-	 * Moves the caret to the end of the line.
+	 * Returns the line indices of the first and last line that are (partly) selected.
 	 */
-	private void selectEndOfLine(int offsetInLine) {
-		int line = offsetToLine(offsetInLine);
-		int caretPos = lineToEndOffset(line);
-		selectRange(textArea, caretPos, caretPos);
+	private IndexRange getSelectedLines() {
+		IndexRange selection = textArea.getSelection();
+		int start = selection.getStart();
+		int end = Math.max(selection.getEnd() - 1, start); // excluding line separator
+		return new IndexRange(offsetToLine(start), offsetToLine(end));
 	}
 
 	/**
-	 * Returns the line (paragraph) index for the given character offset.
+	 * Returns start and end character offsets of the lines that are (partly) selected.
+	 * The end offset includes the line separator.
 	 */
-	private int offsetToLine(int offset) {
-		return textArea.offsetToPosition(offset, Bias.Forward).getMajor();
+	private IndexRange getSelectedLinesRange(boolean includeLastLineSeparator) {
+		IndexRange selection = getSelectedLines();
+		return linesToRange(selection.getStart(), selection.getEnd(), includeLastLineSeparator);
+	}
+
+	/**
+	 * Returns start and end character offsets of the given lines range.
+	 * The end offset includes the line separator.
+	 */
+	private IndexRange linesToRange(int firstLine, int lastLine, boolean includeLastLineSeparator) {
+		int start = lineToStartOffset(firstLine);
+		int end = lineToEndOffset(lastLine);
+		if (includeLastLineSeparator && end < textArea.getLength())
+			end++; // line separator
+
+		return new IndexRange(start, end);
 	}
 
 	/**
@@ -617,34 +650,9 @@ public class SmartEdit
 	}
 
 	/**
-	 * Returns the line indices of the first and last line that are (partly) selected.
+	 * Returns the line (paragraph) index for the given character offset.
 	 */
-	private IndexRange selectedLines() {
-		IndexRange selection = textArea.getSelection();
-		int start = selection.getStart();
-		int end = Math.max(selection.getEnd() - 1, start); // excluding line separator
-		return new IndexRange(offsetToLine(start), offsetToLine(end));
-	}
-
-	/**
-	 * Returns start and end character offsets of the lines that are (partly) selected.
-	 * The end offset includes the line separator.
-	 */
-	private IndexRange selectedLinesRange() {
-		IndexRange selection = selectedLines();
-		return linesRange(selection.getStart(), selection.getEnd());
-	}
-
-	/**
-	 * Returns start and end character offsets of the given lines range.
-	 * The end offset includes the line separator.
-	 */
-	private IndexRange linesRange(int firstLine, int lastLine) {
-		int start = lineToStartOffset(firstLine);
-		int end = lineToEndOffset(lastLine);
-		if (end < textArea.getLength())
-			end++; // line separator
-
-		return new IndexRange(start, end);
+	private int offsetToLine(int offset) {
+		return textArea.offsetToPosition(offset, Bias.Forward).getMajor();
 	}
 }
