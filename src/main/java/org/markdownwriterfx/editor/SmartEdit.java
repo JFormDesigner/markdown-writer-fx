@@ -36,7 +36,6 @@ import static org.fxmisc.wellbehaved.event.InputMap.sequence;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javafx.scene.control.IndexRange;
@@ -306,7 +305,7 @@ public class SmartEdit
 	}
 
 	private void surroundSelectionInCode(String openCloseMarker, String hint) {
-		Code codeNode = findNodeAtSelection(n -> n instanceof Code);
+		Code codeNode = findNodeAtSelection((s, e, n) -> n instanceof Code);
 		if (codeNode != null)
 			surroundSelectionAndReplaceMarker(openCloseMarker, openCloseMarker, hint, codeNode, "<code>", "</code>");
 		else
@@ -330,7 +329,7 @@ public class SmartEdit
 	}
 
 	private void insertDelimited(Class<? extends Node> cls, String openCloseMarker, String hint) {
-		List<? extends Node> nodes = findNodesAtSelection(n -> cls.isInstance(n), false);
+		List<? extends Node> nodes = findNodesAtSelection((s, e, n) -> cls.isInstance(n), false);
 		if (nodes.size() > 0) {
 			// there is delimited text in current selection --> change them to plain text
 			if (nodes.size() == 1 && hint.equals(((DelimitedNode)nodes.get(0)).getText().toString())) {
@@ -359,7 +358,7 @@ public class SmartEdit
 	}
 
 	public void insertLink() {
-		LinkNode linkNode = findNodeAtSelection(n -> n instanceof LinkNode);
+		LinkNode linkNode = findNodeAtSelection((s, e, n) -> n instanceof LinkNode);
 		if (linkNode != null && !(linkNode instanceof Link) && !(linkNode instanceof AutoLink) && !(linkNode instanceof MailLink)) {
 			// link node at caret is not supported --> insert link before or after
 			if (textArea.getCaretPosition() != linkNode.getStartOffset())
@@ -389,7 +388,7 @@ public class SmartEdit
 	}
 
 	public void insertImage() {
-		LinkNode linkNode = findNodeAtSelection(n -> n instanceof LinkNode);
+		LinkNode linkNode = findNodeAtSelection((s, e, n) -> n instanceof LinkNode);
 		if (linkNode != null && !(linkNode instanceof Image)) {
 			// link node at caret is not supported --> insert image before or after
 			if (textArea.getCaretPosition() != linkNode.getStartOffset())
@@ -414,7 +413,7 @@ public class SmartEdit
 
 	public void insertHeading(int level, String hint) {
 		int caretPosition = textArea.getCaretPosition();
-		Heading heading = findNodeAtLine(caretPosition, n -> n instanceof Heading);
+		Heading heading = findNodeAtLine(caretPosition, (s, e, n) -> n instanceof Heading);
 		if (heading != null) {
 			// there is already a heading at current line --> remove heading or change level
 			if (level == heading.getLevel()) {
@@ -514,7 +513,7 @@ public class SmartEdit
 	/**
 	 * Find single node that completely encloses the current selection and match a predicate.
 	 */
-	private <T extends Node> T findNodeAtSelection(Predicate<Node> predicate) {
+	private <T extends Node> T findNodeAtSelection(FindNodePredicate predicate) {
 		IndexRange selection = textArea.getSelection();
 		int start = selection.getStart();
 		int end = selection.getEnd();
@@ -530,7 +529,7 @@ public class SmartEdit
 	/**
 	 * Find all nodes that are within the current selection and match a predicate.
 	 */
-	private <T> List<T> findNodesAtSelection(Predicate<Node> predicate, boolean allowNested) {
+	private <T> List<T> findNodesAtSelection(FindNodePredicate predicate, boolean allowNested) {
 		IndexRange selection = textArea.getSelection();
 		return findNodes(selection.getStart(), selection.getEnd(), predicate, allowNested);
 	}
@@ -538,7 +537,7 @@ public class SmartEdit
 	/**
 	 * Find all nodes that are within the given range and match a predicate.
 	 */
-	private <T> List<T> findNodes(int start, int end, Predicate<Node> predicate, boolean allowNested) {
+	private <T> List<T> findNodes(int start, int end, FindNodePredicate predicate, boolean allowNested) {
 		Node markdownAST = editor.getMarkdownAST();
 		if (markdownAST == null)
 			return Collections.emptyList();
@@ -548,7 +547,7 @@ public class SmartEdit
 			@SuppressWarnings("unchecked")
 			@Override
 			public void visit(Node node) {
-				if (start < node.getEndOffset() && end >= node.getStartOffset() && predicate.test(node)) {
+				if (isInNode(start, end, node) && predicate.test(start, end, node)) {
 					nodes.add((T) node);
 
 					if (!allowNested)
@@ -562,16 +561,24 @@ public class SmartEdit
 		return nodes;
 	}
 
+	private interface FindNodePredicate {
+	    boolean test(int start, int end, Node node);
+	}
+
+	private boolean isInNode(int start, int end, Node node) {
+		return start < node.getEndOffset() && end >= node.getStartOffset();
+	}
+
 	/**
 	 * Find first node that is at the given offset and match a predicate.
 	 */
 	@SuppressWarnings("unused")
-	private <T> T findNodeAt(int offset, Predicate<Node> predicate) {
+	private <T> T findNodeAt(int offset, FindNodePredicate predicate) {
 		List<T> nodes = findNodes(offset, offset, predicate, false);
 		return nodes.size() > 0 ? nodes.get(0) : null;
 	}
 
-	private <T> T findNodeAtLine(int offsetInLine, Predicate<Node> predicate) {
+	private <T> T findNodeAtLine(int offsetInLine, FindNodePredicate predicate) {
 		int line = offsetToLine(offsetInLine);
 		int lineStart = lineToStartOffset(line);
 		int lineEnd = lineToEndOffset(line);
