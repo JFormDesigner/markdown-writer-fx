@@ -81,6 +81,9 @@ public class SmartEdit
 
 		Nodes.addInputMap(textArea, sequence(
 			consume(keyPressed(ENTER),							this::enterPressed),
+			consume(keyPressed(TAB),							this::tabPressed),
+			consume(keyPressed(TAB, SHIFT_DOWN),				this::shiftTabPressed),
+			consume(keyPressed(BACK_SPACE),						this::backspacePressed),
 			consume(keyPressed(D, SHORTCUT_DOWN),				this::deleteLine),
 			consume(keyPressed(UP, ALT_DOWN),					this::moveLinesUp),
 			consume(keyPressed(DOWN, ALT_DOWN),					this::moveLinesDown),
@@ -88,6 +91,8 @@ public class SmartEdit
 			consume(keyPressed(DOWN, SHORTCUT_DOWN, ALT_DOWN),	this::duplicateLinesDown)
 		));
 	}
+
+	//---- enter  -------------------------------------------------------------
 
 	private void enterPressed(KeyEvent e) {
 		String currentLine = textArea.getText(textArea.getCurrentParagraph());
@@ -108,10 +113,135 @@ public class SmartEdit
 		replaceSelection(textArea, newText);
 	}
 
+	//---- indent -------------------------------------------------------------
+
+	private void tabPressed(KeyEvent e) {
+		if (isIndentSelection())
+			indentSelectedLines(true);
+		else
+			replaceSelection(textArea, "\t");
+	}
+
+	private void shiftTabPressed(KeyEvent e) {
+		indentSelectedLines(false);
+	}
+
+	private void backspacePressed(KeyEvent e) {
+		IndexRange selection = textArea.getSelection();
+		int start = selection.getStart();
+		int end = selection.getEnd();
+		if (selection.getLength() > 0) {
+			// selection is not empty --> delete selected text
+			deleteText(textArea, start, end);
+		} else if (isIndentSelection()) {
+			// selection is empty and caret is in leading whitespace of a line --> unindent line
+			indentSelectedLines(false);
+		} else if (start > 0) {
+			// selection is empty --> delete character before caret
+			deleteText(textArea, start - 1, start);
+	}
+
+	/**
+	 * Returns whether an indent operation should used for the selection.
+	 *
+	 * Returns true if:
+	 *  - selection spans multiple lines
+	 *  - selection is empty and caret is in leading whitespace of a line
+	 *  - a single line is completely selected (excluding line separator)
+	 */
+	private boolean isIndentSelection() {
+		IndexRange selection = textArea.getSelection();
+		int start = selection.getStart();
+		int startLine = offsetToLine(start);
+		if (selection.getLength() == 0)
+			return textArea.getText(lineToStartOffset(startLine), start).trim().isEmpty();
+		else {
+			int end = selection.getEnd();
+			int endLine = offsetToLine(end);
+			return endLine > startLine ||
+				   lineToStartOffset(startLine) == start && lineToEndOffset(startLine) == end;
+		}
+	}
+
+	private void indentSelectedLines(boolean right) {
+		IndexRange range = getSelectedLinesRange(false);
+		String str = textArea.getText(range.getStart(), range.getEnd());
+		String newStr = indentText(str, right);
+
+		IndentSelection isel = rememberIndentSelection();
+		replaceText(textArea, range.getStart(), range.getEnd(), newStr);
+		selectAfterIndent(isel);
+	}
+
+	private String indentText(String str, boolean right) {
+		String[] lines = str.split("\n");
+
+		String indent = "    ";
+		StringBuilder buf = new StringBuilder(str.length() + (right ? (indent.length() * lines.length) : 0));
+		for (int i = 0; i < lines.length; i++) {
+			if (i > 0)
+				buf.append('\n');
+
+			String line = lines[i];
+			if (right) {
+				if (line.isEmpty() && lines.length > 1)
+					continue; // do not indent empty lines if multiple lines are selected
+
+				buf.append(indent).append(line);
+			} else {
+				int j = 0;
+				while (j < line.length() && j < 4 && Character.isWhitespace(line.charAt(j)))
+					j++;
+				buf.append(line.substring(j));
+			}
+		}
+
+		// String.split("\n") ignores '\n' at the end of the string --> append '\n' to result
+		if (str.endsWith("\n"))
+			buf.append('\n');
+
+		return buf.toString();
+	}
+
+	private static class IndentSelection {
+		int startLine;
+		int endLine;
+		int startOffsetFromEnd;
+		int endOffsetFromEnd;
+	}
+
+	private IndentSelection rememberIndentSelection() {
+		IndentSelection isel = new IndentSelection();
+
+		IndexRange selection = textArea.getSelection();
+		int start = selection.getStart();
+		int end = selection.getEnd();
+		isel.startLine = offsetToLine(start);
+		isel.endLine = offsetToLine(end);
+		isel.startOffsetFromEnd = (start == end || start - lineToStartOffset(isel.startLine) > 0)
+				? lineToEndOffset(isel.startLine) - start
+				: -1; // beginning of line
+		isel.endOffsetFromEnd = lineToEndOffset(isel.endLine) - end;
+
+		return isel;
+	}
+
+	private void selectAfterIndent(IndentSelection isel) {
+		int start = (isel.startOffsetFromEnd != -1)
+				? Math.max(lineToEndOffset(isel.startLine) - isel.startOffsetFromEnd, lineToStartOffset(isel.startLine))
+				: lineToStartOffset(isel.startLine);
+		int end = Math.max(lineToEndOffset(isel.endLine) - isel.endOffsetFromEnd, lineToStartOffset(isel.endLine));
+		selectRange(textArea, start, end);
+	}
+
+	//---- delete -------------------------------------------------------------
+
 	private void deleteLine(KeyEvent e) {
 		IndexRange selRange = getSelectedLinesRange(true);
 		deleteText(textArea, selRange.getStart(), selRange.getEnd());
 	}
+
+	//---- move lines ---------------------------------------------------------
 
 	private void moveLinesUp(KeyEvent e) {
 		IndexRange selRange = getSelectedLinesRange(true);
@@ -168,6 +298,8 @@ public class SmartEdit
 		selectRange(textArea, newSelStart, newSelEnd);
 	}
 
+	//---- duplicate lines ----------------------------------------------------
+
 	private void duplicateLinesUp(KeyEvent e) {
 		duplicateLines(true);
 	}
@@ -197,6 +329,8 @@ public class SmartEdit
 			selectRange(textArea, newSelStart, newSelEnd);
 		}
 	}
+
+	//---- surround -----------------------------------------------------------
 
 	public void surroundSelection(String leading, String trailing) {
 		surroundSelection(leading, trailing, null);
@@ -312,6 +446,8 @@ public class SmartEdit
 			surroundSelection(openCloseMarker, openCloseMarker, hint);
 	}
 
+	//---- delimited inlines --------------------------------------------------
+
 	public void insertBold(String hint) {
 		insertDelimited(StrongEmphasis.class, "**", hint);
 	}
@@ -356,6 +492,8 @@ public class SmartEdit
 		replaceText(textArea, start, end, buf.toString());
 		selectRange(textArea, start, start + buf.length());
 	}
+
+	//---- links --------------------------------------------------------------
 
 	public void insertLink() {
 		LinkNode linkNode = findNodeAtSelection((s, e, n) -> n instanceof LinkNode);
@@ -410,6 +548,8 @@ public class SmartEdit
 				replaceSelection(textArea, result);
 		});
 	}
+
+	//---- heading ------------------------------------------------------------
 
 	public void insertHeading(int level, String hint) {
 		int caretPosition = textArea.getCaretPosition();
@@ -615,7 +755,7 @@ public class SmartEdit
 
 	/**
 	 * Returns start and end character offsets of the lines that are (partly) selected.
-	 * The end offset includes the line separator.
+	 * The end offset includes the line separator if includeLastLineSeparator is true.
 	 */
 	private IndexRange getSelectedLinesRange(boolean includeLastLineSeparator) {
 		IndexRange selection = getSelectedLines();
@@ -624,7 +764,7 @@ public class SmartEdit
 
 	/**
 	 * Returns start and end character offsets of the given lines range.
-	 * The end offset includes the line separator.
+	 * The end offset includes the line separator if includeLastLineSeparator is true.
 	 */
 	private IndexRange linesToRange(int firstLine, int lastLine, boolean includeLastLineSeparator) {
 		int start = lineToStartOffset(firstLine);
