@@ -110,7 +110,10 @@ public class SmartEdit
 				selectRange(textArea, caretPosition - currentLine.length(), caretPosition);
 			}
 		}
-		replaceSelection(textArea, newText);
+
+		// Note: not using replaceSelection(StyleClassedTextArea, String) to allow undo merging in this case
+		textArea.replaceSelection(newText);
+		textArea.requestFollowCaret();
 	}
 
 	//---- indent -------------------------------------------------------------
@@ -118,8 +121,11 @@ public class SmartEdit
 	private void tabPressed(KeyEvent e) {
 		if (isIndentSelection())
 			indentSelectedLines(true);
-		else
-			replaceSelection(textArea, "\t");
+		else {
+			// Note: not using replaceSelection(StyleClassedTextArea, String) to allow undo merging in this case
+			textArea.replaceSelection("\t");
+			textArea.requestFollowCaret();
+		}
 	}
 
 	private void shiftTabPressed(KeyEvent e) {
