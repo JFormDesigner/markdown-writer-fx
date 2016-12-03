@@ -70,7 +70,7 @@ import com.vladsch.flexmark.util.sequence.BasedSequence;
 public class SmartEdit
 {
 	private static final Pattern AUTO_INDENT_PATTERN = Pattern.compile(
-			"(\\s*[*+-]\\s+|\\s*[0-9]+\\.\\s+|\\s+)(.*)");
+			"(\\s*[*+-]\\s+|\\s*[0-9]+\\.\\s+|\\s*(?:>\\s*)+|\\s+)(.*)");
 
 	private final MarkdownEditorPane editor;
 	private final StyleClassedTextArea textArea;
