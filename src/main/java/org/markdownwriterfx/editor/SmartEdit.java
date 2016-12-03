@@ -97,6 +97,9 @@ public class SmartEdit
 			consume(keyPressed(UP, SHORTCUT_DOWN, ALT_DOWN),	this::duplicateLinesUp),
 			consume(keyPressed(DOWN, SHORTCUT_DOWN, ALT_DOWN),	this::duplicateLinesDown)
 		));
+
+//		textArea.selectionProperty().addListener((ob, o, n) ->
+//			System.out.println(findNodes(n.getStart(), n.getEnd(), (s, e, node) -> true, true)));
 	}
 
 	//---- enter  -------------------------------------------------------------
@@ -819,7 +822,9 @@ public class SmartEdit
 	}
 
 	private boolean isInNode(int start, int end, Node node) {
-		return start < node.getEndOffset() && end >= node.getStartOffset();
+		if (end == start)
+			end++;
+		return start < node.getEndOffset() && end > node.getStartOffset();
 	}
 
 	/**
