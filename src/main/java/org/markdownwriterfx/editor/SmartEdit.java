@@ -55,6 +55,8 @@ import com.vladsch.flexmark.ast.Heading;
 import com.vladsch.flexmark.ast.Image;
 import com.vladsch.flexmark.ast.Link;
 import com.vladsch.flexmark.ast.LinkNode;
+import com.vladsch.flexmark.ast.ListBlock;
+import com.vladsch.flexmark.ast.ListItem;
 import com.vladsch.flexmark.ast.MailLink;
 import com.vladsch.flexmark.ast.Node;
 import com.vladsch.flexmark.ast.NodeVisitor;
@@ -123,7 +125,10 @@ public class SmartEdit
 	//---- indent -------------------------------------------------------------
 
 	private void tabPressed(KeyEvent e) {
-		if (isIndentSelection())
+		List<Node> nodes;
+		if (!(nodes = findIndentableNodesAtSelection()).isEmpty())
+			indentNodes(nodes, true);
+		else if (isIndentSelection())
 			indentSelectedLines(true);
 		else {
 			// Note: not using replaceSelection(StyleClassedTextArea, String) to allow undo merging in this case
@@ -133,7 +138,11 @@ public class SmartEdit
 	}
 
 	private void shiftTabPressed(KeyEvent e) {
-		indentSelectedLines(false);
+		List<Node> nodes;
+		if (!(nodes = findIndentableNodesAtSelection()).isEmpty())
+			indentNodes(nodes, false);
+		else
+			indentSelectedLines(false);
 	}
 
 	private void backspacePressed(KeyEvent e) {
@@ -212,6 +221,54 @@ public class SmartEdit
 			buf.append('\n');
 
 		return buf.toString();
+	}
+
+	/**
+	 * Experiment: indent whole list items (including sub lists)
+	 *
+	 * Disabled because the user experience is not that good
+	 * and it is questionable whether this feature makes sense at all.
+	 */
+	private final boolean indentNodes = false;
+
+	private List<Node> findIndentableNodesAtSelection() {
+		if (!indentNodes)
+			return Collections.emptyList();
+
+		return findNodesAtSelectedLines((start, end, node) -> {
+			if (!(node instanceof ListItem))
+				return false;
+
+			// match only if one non-ListBlock child is in range
+			for (Node child : node.getChildren()) {
+				if (isInNode(start, end, child) && !(child instanceof ListBlock))
+					return true;
+			}
+			return false;
+		}, false);
+	}
+
+	private void indentNodes(List<Node> nodes, boolean right) {
+		StringBuilder buf = new StringBuilder();
+		for (int i = 0; i < nodes.size(); i++) {
+			Node node = nodes.get(i);
+			if (i > 0)
+				buf.append(textArea.getText(nodes.get(i - 1).getEndOffset(), node.getStartOffset()));
+
+			// indent list items
+			if (node instanceof ListItem) {
+				String str = node.getChars().toString();
+				str = indentText(str, right);
+				buf.append(str);
+			}
+		}
+
+		int start = nodes.get(0).getStartOffset();
+		int end = nodes.get(nodes.size() - 1).getEndOffset();
+
+		IndentSelection isel = rememberIndentSelection();
+		replaceText(textArea, start, end, buf.toString());
+		selectAfterIndent(isel);
 	}
 
 	private static class IndentSelection {
@@ -698,6 +755,14 @@ public class SmartEdit
 	private <T> List<T> findNodesAtSelection(FindNodePredicate predicate, boolean allowNested) {
 		IndexRange selection = textArea.getSelection();
 		return findNodes(selection.getStart(), selection.getEnd(), predicate, allowNested);
+	}
+
+	/**
+	 * Find all nodes that are within the current (partly) selected line(s) and match a predicate.
+	 */
+	private <T> List<T> findNodesAtSelectedLines(FindNodePredicate predicate, boolean allowNested) {
+		IndexRange selRange = getSelectedLinesRange(false);
+		return findNodes(selRange.getStart(), selRange.getEnd(), predicate, allowNested);
 	}
 
 	/**
