@@ -153,12 +153,17 @@ public class SmartEdit
 		if (selection.getLength() > 0) {
 			// selection is not empty --> delete selected text
 			deleteText(textArea, start, end);
-		} else if (isIndentSelection()) {
-			// selection is empty and caret is in leading whitespace of a line --> unindent line
-			indentSelectedLines(false);
-		} else if (start > 0) {
-			// selection is empty --> delete character before caret
-			deleteText(textArea, start - 1, start);
+		} else {
+			int startLine = offsetToLine(start);
+			int startLineOffset = lineToStartOffset(startLine);
+			if (start > startLineOffset && textArea.getText(startLineOffset, start).trim().isEmpty()) {
+				// selection is empty and caret is in leading whitespace of a line,
+				// but not at the beginning of a line --> unindent line
+				indentSelectedLines(false);
+			} else if (start > 0) {
+				// delete character before caret
+				deleteText(textArea, start - 1, start);
+			}
 		}
 	}
 
