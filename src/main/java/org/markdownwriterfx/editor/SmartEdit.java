@@ -69,8 +69,12 @@ import com.vladsch.flexmark.util.sequence.BasedSequence;
  */
 public class SmartEdit
 {
+	private static final String TASK_LIST_MARKER = "(?:\\[[ xX]\\]\\s+|)";
+	private static final String BULLET_LIST_MARKER = "\\s*[*+-]\\s+" + TASK_LIST_MARKER;
+	private static final String ORDERED_LIST_MARKER = "\\s*[0-9]+\\.\\s+" + TASK_LIST_MARKER;
+	private static final String BLOCK_QUOTE_MARKER = "\\s*(?:>\\s*)+";
 	private static final Pattern AUTO_INDENT_PATTERN = Pattern.compile(
-			"(\\s*[*+-]\\s+|\\s*[0-9]+\\.\\s+|\\s*(?:>\\s*)+|\\s+)(.*)");
+			"(" + BULLET_LIST_MARKER + "|" + ORDERED_LIST_MARKER + "|" + BLOCK_QUOTE_MARKER + "|\\s+)(.*)");
 
 	private final MarkdownEditorPane editor;
 	private final StyleClassedTextArea textArea;
@@ -145,6 +149,7 @@ public class SmartEdit
 		} else if (start > 0) {
 			// selection is empty --> delete character before caret
 			deleteText(textArea, start - 1, start);
+		}
 	}
 
 	/**

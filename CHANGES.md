@@ -7,7 +7,8 @@ Markdown Writer FX Change Log
 - Duplicate selected lines up or down with `Ctrl+Alt+Up` or `Ctrl+Alt+Down`.
 - Indent or unindent lines with `Tab` or `Shift+Tab`. `Backspace` key unindents
   line if caret is in leading whitespace of a line.
-- Auto-indent for block quotes (`Enter` key adds block quote markers to new line).
+- Auto-indent for block quotes and GFM task lists (`Enter` key adds
+  block quote markers or task list markers to new line).
 - Smart "Insert > Header X": Support toggle header and change header level.
 - Smarter "Insert > Bold/Italic/Strikethrough/Inline Code": if selection contains
   bold/italic/strikethrough/inline-code text, then it will be changed to plain text.
