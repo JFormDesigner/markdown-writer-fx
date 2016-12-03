@@ -216,7 +216,7 @@ class MainWindow
 				activeFileEditorIsNull);
 
 		Action insertUnorderedListAction = new Action(Messages.get("MainWindow.insertUnorderedListAction"), "Shortcut+U", LIST_UL,
-				e -> getActiveSmartEdit().surroundSelection("\n\n* ", ""),
+				e -> getActiveSmartEdit().insertUnorderedList(),
 				activeFileEditorIsNull);
 		Action insertOrderedListAction = new Action(Messages.get("MainWindow.insertOrderedListAction"), "Shortcut+Shift+O", LIST_OL,
 				e -> getActiveSmartEdit().surroundSelection("\n\n1. ", ""),

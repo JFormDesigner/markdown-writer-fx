@@ -70,6 +70,10 @@ public class Options
 		markdownRenderer.init(options, "markdownRenderer", RendererType.CommonMark);
 		showLineNo.init(options, "showLineNo", false);
 		showWhitespace.init(options, "showWhitespace", false);
+
+		emphasisMarker.init(options, "emphasisMarker", "_");
+		strongEmphasisMarker.init(options, "strongEmphasisMarker", "**");
+		bulletListMarker.init(options, "bulletListMarker", "-");
 	}
 
 	/**
@@ -141,4 +145,22 @@ public class Options
 	public static boolean isShowWhitespace() { return showWhitespace.get(); }
 	public static void setShowWhitespace(boolean showWhitespace) { Options.showWhitespace.set(showWhitespace); }
 	public static BooleanProperty showWhitespaceProperty() { return showWhitespace; }
+
+	// 'emphasisMarker' property
+	private static final PrefsStringProperty emphasisMarker = new PrefsStringProperty();
+	public static String getEmphasisMarker() { return emphasisMarker.get(); }
+	public static void setEmphasisMarker(String emphasisMarker) { Options.emphasisMarker.set(emphasisMarker); }
+	public static StringProperty emphasisMarkerProperty() { return emphasisMarker; }
+
+	// 'strongEmphasisMarker' property
+	private static final PrefsStringProperty strongEmphasisMarker = new PrefsStringProperty();
+	public static String getStrongEmphasisMarker() { return strongEmphasisMarker.get(); }
+	public static void setStrongEmphasisMarker(String strongEmphasisMarker) { Options.strongEmphasisMarker.set(strongEmphasisMarker); }
+	public static StringProperty strongEmphasisMarkerProperty() { return strongEmphasisMarker; }
+
+	// 'bulletListMarker' property
+	private static final PrefsStringProperty bulletListMarker = new PrefsStringProperty();
+	public static String getBulletListMarker() { return bulletListMarker.get(); }
+	public static void setBulletListMarker(String bulletListMarker) { Options.bulletListMarker.set(bulletListMarker); }
+	public static StringProperty bulletListMarkerProperty() { return bulletListMarker; }
 }

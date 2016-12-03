@@ -14,6 +14,7 @@ Markdown Writer FX Change Log
   bold/italic/strikethrough/inline-code text, then it will be changed to plain text.
 - Improved "Insert > Link/Image" allows editing existing links/images in dialogs.
 - Support Autolinks (link without text) and Email links.
+- Configurable bold, italic and unordered list markers in Options dialog.
 - Fixed background color of selected text in editor.
 
 

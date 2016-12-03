@@ -46,6 +46,7 @@ import org.fxmisc.richtext.model.TwoDimensional.Bias;
 import org.fxmisc.wellbehaved.event.Nodes;
 import org.markdownwriterfx.dialogs.ImageDialog;
 import org.markdownwriterfx.dialogs.LinkDialog;
+import org.markdownwriterfx.options.Options;
 import org.markdownwriterfx.util.Utils;
 import com.vladsch.flexmark.ast.AutoLink;
 import com.vladsch.flexmark.ast.Code;
@@ -517,11 +518,11 @@ public class SmartEdit
 	//---- delimited inlines --------------------------------------------------
 
 	public void insertBold(String hint) {
-		insertDelimited(StrongEmphasis.class, "**", hint);
+		insertDelimited(StrongEmphasis.class, Options.getStrongEmphasisMarker(), hint);
 	}
 
 	public void insertItalic(String hint) {
-		insertDelimited(Emphasis.class, "_", hint);
+		insertDelimited(Emphasis.class, Options.getEmphasisMarker(), hint);
 	}
 
 	public void insertStrikethrough(String hint) {
@@ -677,6 +678,12 @@ public class SmartEdit
 				selectEndOfLine(lineStartOffset);
 			}
 		}
+	}
+
+	//---- lists --------------------------------------------------------------
+
+	public void insertUnorderedList() {
+		surroundSelection("\n\n" + Options.getBulletListMarker() + " ", "");
 	}
 
 	//---- text modification --------------------------------------------------
