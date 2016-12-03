@@ -108,10 +108,10 @@ public class SmartEdit
 		Matcher matcher = AUTO_INDENT_PATTERN.matcher(currentLine);
 		if (matcher.matches()) {
 			if (!matcher.group(2).isEmpty()) {
-				// indent new line with same whitespace characters and list markers as current line
+				// indent new line with same whitespace characters and auto-indentable markers as current line
 				newText = newText.concat(matcher.group(1));
 			} else {
-				// current line contains only whitespace characters and list markers
+				// current line contains only whitespace characters and auto-indentable markers
 				// --> empty current line
 				int caretPosition = textArea.getCaretPosition();
 				selectRange(textArea, caretPosition - currentLine.length(), caretPosition);
@@ -154,15 +154,25 @@ public class SmartEdit
 			// selection is not empty --> delete selected text
 			deleteText(textArea, start, end);
 		} else {
+			// selection is empty
 			int startLine = offsetToLine(start);
 			int startLineOffset = lineToStartOffset(startLine);
 			if (start > startLineOffset && textArea.getText(startLineOffset, start).trim().isEmpty()) {
 				// selection is empty and caret is in leading whitespace of a line,
 				// but not at the beginning of a line --> unindent line
 				indentSelectedLines(false);
-			} else if (start > 0) {
-				// delete character before caret
-				deleteText(textArea, start - 1, start);
+			} else {
+				String line = textArea.getText(startLine);
+				int startLineEndOffset = startLineOffset + line.length();
+				Matcher matcher = (start == startLineEndOffset) ? AUTO_INDENT_PATTERN.matcher(line) : null;
+				if (matcher != null && matcher.matches() && matcher.group(2).isEmpty()) {
+					// caret is at end of line and line contains only whitespace characters
+					// and auto-indentable markers --> empty line
+					deleteText(textArea, startLineOffset, startLineEndOffset);
+				} else if (start > 0) {
+					// delete character before caret
+					deleteText(textArea, start - 1, start);
+				}
 			}
 		}
 	}
