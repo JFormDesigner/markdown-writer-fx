@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Karl Tauber <karl at jformdesigner dot com>
+ * Copyright (c) 2016 Karl Tauber <karl at jformdesigner dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,42 +25,34 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.markdownwriterfx.controls;
+package org.markdownwriterfx.util;
 
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.scene.control.CheckBox;
+import java.util.prefs.Preferences;
+import javafx.beans.property.SimpleBooleanProperty;
 
 /**
- * CheckBox that toggles a bit in an integer.
+ * A boolean property that loads/saves its value from/to preferences.
  *
  * @author Karl Tauber
  */
-public class FlagCheckBox
-	extends CheckBox
+public class PrefsBooleanProperty
+	extends SimpleBooleanProperty
 {
-	public FlagCheckBox() {
-		setOnAction(e -> {
-			if (isSelected())
-				setFlags(getFlags() | getFlag());
-			else
-				setFlags(getFlags() & ~getFlag());
-		});
-
-		flags.addListener((obs, oldFlags, newFlags) -> {
-			setSelected((newFlags.intValue() & getFlag()) != 0);
-		});
+	public PrefsBooleanProperty() {
 	}
 
-	// 'flag' property
-	private final IntegerProperty flag = new SimpleIntegerProperty();
-	public int getFlag() { return flag.get(); }
-	public void setFlag(int flag) { this.flag.set(flag); }
-	public IntegerProperty flagProperty() { return flag; }
+	public PrefsBooleanProperty(boolean initialValue) {
+		super(initialValue);
+	}
 
-	// 'flags' property
-	private final IntegerProperty flags = new SimpleIntegerProperty();
-	public int getFlags() { return flags.get(); }
-	public void setFlags(int flags) { this.flags.set(flags); }
-	public IntegerProperty flagsProperty() { return flags; }
+	public PrefsBooleanProperty(Preferences prefs, String key, boolean def) {
+		init(prefs, key, def);
+	}
+
+	public void init(Preferences prefs, String key, boolean def) {
+		set(prefs.getBoolean(key, def));
+		addListener((ob, o, n) -> {
+			Utils.putPrefsBoolean(prefs, key, get(), def);
+		});
+	}
 }

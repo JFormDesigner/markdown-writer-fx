@@ -27,15 +27,18 @@
 
 package org.markdownwriterfx.options;
 
+import java.util.List;
 import java.util.prefs.Preferences;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.StringProperty;
-import org.markdownwriterfx.util.Utils;
-import org.pegdown.Extensions;
+import javafx.scene.text.Font;
+import org.markdownwriterfx.util.PrefsBooleanProperty;
+import org.markdownwriterfx.util.PrefsEnumProperty;
+import org.markdownwriterfx.util.PrefsIntegerProperty;
+import org.markdownwriterfx.util.PrefsStringProperty;
+import org.markdownwriterfx.util.PrefsStringsProperty;
 
 /**
  * Options
@@ -44,44 +47,97 @@ import org.pegdown.Extensions;
  */
 public class Options
 {
-	private static Preferences options;
+	public static final String[] DEF_FONT_FAMILIES = {
+		"Consolas",
+		"DejaVu Sans Mono",
+		"Lucida Sans Typewriter",
+		"Lucida Console",
+	};
+
+	public static final int DEF_FONT_SIZE = 12;
+	public static final int MIN_FONT_SIZE = 8;
+	public static final int MAX_FONT_SIZE = 36;
+	public static final String DEF_MARKDOWN_FILE_EXTENSIONS = "*.md,*.markdown,*.txt";
+	public enum RendererType { CommonMark, FlexMark };
 
 	public static void load(Preferences options) {
-		Options.options = options;
-
-		setLineSeparator(options.get("lineSeparator", null));
-		setEncoding(options.get("encoding", null));
-		setMarkdownExtensions(options.getInt("markdownExtensions", Extensions.ALL));
-		setShowWhitespace(options.getBoolean("showWhitespace", false));
+		fontFamily.init(options, "fontFamily", null, value -> safeFontFamily(value));
+		fontSize.init(options, "fontSize", DEF_FONT_SIZE);
+		lineSeparator.init(options, "lineSeparator", null);
+		encoding.init(options, "encoding", null);
+		markdownFileExtensions.init(options, "markdownFileExtensions", DEF_MARKDOWN_FILE_EXTENSIONS);
+		markdownExtensions.init(options, "markdownExtensions");
+		markdownRenderer.init(options, "markdownRenderer", RendererType.CommonMark);
+		showLineNo.init(options, "showLineNo", false);
+		showWhitespace.init(options, "showWhitespace", false);
 	}
 
-	public static void save() {
-		Utils.putPrefs(options, "lineSeparator", getLineSeparator(), null);
-		Utils.putPrefs(options, "encoding", getEncoding(), null);
-		Utils.putPrefsInt(options, "markdownExtensions", getMarkdownExtensions(), Extensions.ALL);
-		Utils.putPrefsBoolean(options, "showWhitespace", isShowWhitespace(), false);
+	/**
+	 * Check whether font family is null or invalid (family not available on system)
+	 * and search for an available family.
+	 */
+	private static String safeFontFamily(String fontFamily) {
+		List<String> fontFamilies = Font.getFamilies();
+		if (fontFamily != null && fontFamilies.contains(fontFamily))
+			return fontFamily;
+
+		for (String family : DEF_FONT_FAMILIES) {
+			if (fontFamilies.contains(family))
+				return family;
+		}
+		return "Monospaced";
 	}
+
+	// 'fontFamily' property
+	private static final PrefsStringProperty fontFamily = new PrefsStringProperty();
+	public static String getFontFamily() { return fontFamily.get(); }
+	public static void setFontFamily(String fontFamily) { Options.fontFamily.set(fontFamily); }
+	public static StringProperty fontFamilyProperty() { return fontFamily; }
+
+	// 'fontSize' property
+	private static final PrefsIntegerProperty fontSize = new PrefsIntegerProperty();
+	public static int getFontSize() { return fontSize.get(); }
+	public static void setFontSize(int fontSize) { Options.fontSize.set(Math.min(Math.max(fontSize,  MIN_FONT_SIZE), MAX_FONT_SIZE)); }
+	public static IntegerProperty fontSizeProperty() { return fontSize; }
 
 	// 'lineSeparator' property
-	private static final StringProperty lineSeparator = new SimpleStringProperty();
+	private static final PrefsStringProperty lineSeparator = new PrefsStringProperty();
 	public static String getLineSeparator() { return lineSeparator.get(); }
 	public static void setLineSeparator(String lineSeparator) { Options.lineSeparator.set(lineSeparator); }
 	public static StringProperty lineSeparatorProperty() { return lineSeparator; }
 
 	// 'encoding' property
-	private static final StringProperty encoding = new SimpleStringProperty();
+	private static final PrefsStringProperty encoding = new PrefsStringProperty();
 	public static String getEncoding() { return encoding.get(); }
 	public static void setEncoding(String encoding) { Options.encoding.set(encoding); }
 	public static StringProperty encodingProperty() { return encoding; }
 
+	// 'markdownFileExtensions' property
+	private static final PrefsStringProperty markdownFileExtensions = new PrefsStringProperty();
+	public static String getMarkdownFileExtensions() { return markdownFileExtensions.get(); }
+	public static void setMarkdownFileExtensions(String markdownFileExtensions) { Options.markdownFileExtensions.set(markdownFileExtensions); }
+	public static StringProperty markdownFileExtensionsProperty() { return markdownFileExtensions; }
+
 	// 'markdownExtensions' property
-	private static final IntegerProperty markdownExtensions = new SimpleIntegerProperty();
-	public static int getMarkdownExtensions() { return markdownExtensions.get(); }
-	public static void setMarkdownExtensions(int markdownExtensions) { Options.markdownExtensions.set(markdownExtensions); }
-	public static IntegerProperty markdownExtensionsProperty() { return markdownExtensions; }
+	private static final PrefsStringsProperty markdownExtensions = new PrefsStringsProperty();
+	public static String[] getMarkdownExtensions() { return markdownExtensions.get(); }
+	public static void setMarkdownExtensions(String[] markdownExtensions) { Options.markdownExtensions.set(markdownExtensions); }
+	public static ObjectProperty<String[]> markdownExtensionsProperty() { return markdownExtensions; }
+
+	// 'markdownRenderer' property
+	private static final PrefsEnumProperty<RendererType> markdownRenderer = new PrefsEnumProperty<>();
+	public static RendererType getMarkdownRenderer() { return markdownRenderer.get(); }
+	public static void setMarkdownRenderer(RendererType markdownRenderer) { Options.markdownRenderer.set(markdownRenderer); }
+	public static ObjectProperty<RendererType> markdownRendererProperty() { return markdownRenderer; }
+
+	// 'showLineNo' property
+	private static final PrefsBooleanProperty showLineNo = new PrefsBooleanProperty();
+	public static boolean isShowLineNo() { return showLineNo.get(); }
+	public static void setShowLineNo(boolean showLineNo) { Options.showLineNo.set(showLineNo); }
+	public static BooleanProperty showLineNoProperty() { return showLineNo; }
 
 	// 'showWhitespace' property
-	private static final BooleanProperty showWhitespace = new SimpleBooleanProperty();
+	private static final PrefsBooleanProperty showWhitespace = new PrefsBooleanProperty();
 	public static boolean isShowWhitespace() { return showWhitespace.get(); }
 	public static void setShowWhitespace(boolean showWhitespace) { Options.showWhitespace.set(showWhitespace); }
 	public static BooleanProperty showWhitespaceProperty() { return showWhitespace; }

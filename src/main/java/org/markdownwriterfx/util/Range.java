@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Karl Tauber <karl at jformdesigner dot com>
+ * Copyright (c) 2016 Karl Tauber <karl at jformdesigner dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,36 +25,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.markdownwriterfx.controls;
-
-import java.io.File;
-import javafx.event.ActionEvent;
-import javafx.scene.control.Tooltip;
-import javafx.stage.DirectoryChooser;
-import org.markdownwriterfx.Messages;
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
-import de.jensd.fx.glyphs.fontawesome.utils.FontAwesomeIconFactory;
+package org.markdownwriterfx.util;
 
 /**
- * Button that opens a directory chooser to select a local directory for a URL in markdown.
- *
  * @author Karl Tauber
  */
-public class BrowseDirectoryButton
-	extends BrowseFileButton
+public class Range
 {
-	public BrowseDirectoryButton() {
-		setGraphic(FontAwesomeIconFactory.get().createIcon(FontAwesomeIcon.FOLDER_ALT, "1.2em"));
-		setTooltip(new Tooltip(Messages.get("BrowseDirectoryButton.tooltip")));
+	public final int start;
+	public final int end;
+
+	public Range(int start, int end) {
+		this.start = start;
+		this.end = end;
 	}
 
 	@Override
-	protected void browse(ActionEvent e) {
-		DirectoryChooser directoryChooser = new DirectoryChooser();
-		directoryChooser.setTitle(Messages.get("BrowseDirectoryButton.chooser.title"));
-		directoryChooser.setInitialDirectory(getInitialDirectory());
-		File result = directoryChooser.showDialog(getScene().getWindow());
-		if (result != null)
-			updateUrl(result);
+	public String toString() {
+		return start + "-" + end;
 	}
 }

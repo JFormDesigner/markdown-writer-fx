@@ -28,18 +28,11 @@
 package org.markdownwriterfx.preview;
 
 import java.nio.file.Path;
-import java.util.Collections;
-import javafx.scene.Node;
 import javafx.scene.web.WebView;
-import org.pegdown.LinkRenderer;
-import org.pegdown.ToHtmlSerializer;
-import org.pegdown.VerbatimSerializer;
-import org.pegdown.ast.RootNode;
-import org.pegdown.plugins.PegDownPlugins;
+import org.markdownwriterfx.preview.MarkdownPreviewPane.Renderer;
 
 /**
  * WebView preview.
- * Serializes the AST tree to HTML and shows it in a WebView.
  *
  * @author Karl Tauber
  */
@@ -50,21 +43,17 @@ class WebViewPreview
 	private int lastScrollX;
 	private int lastScrollY;
 
-	Node getNode() {
-		return webView;
-	}
-
-	static String toHtml(RootNode astRoot) {
-		if (astRoot == null)
-			return "";
-		return new ToHtmlSerializer(new LinkRenderer(),
-				Collections.<String, VerbatimSerializer>emptyMap(),
-				PegDownPlugins.NONE.getHtmlSerializerPlugins())
-			.toHtml(astRoot);
+	WebViewPreview() {
+		webView.setFocusTraversable(false);
 	}
 
 	@Override
-	public void update(RootNode astRoot, Path path) {
+	public javafx.scene.Node getNode() {
+		return webView;
+	}
+
+	@Override
+	public void update(Renderer renderer, Path path) {
 		if (!webView.getEngine().getLoadWorker().isRunning()) {
 			// get window.scrollX and window.scrollY from web engine,
 			// but only no worker is running (in this case the result would be zero)
@@ -89,7 +78,7 @@ class WebViewPreview
 			+ base
 			+ "</head>\n"
 			+ "<body" + scrollScript + ">\n"
-			+ toHtml(astRoot)
+			+ renderer.getHtml()
 			+ "</body>\n"
 			+ "</html>");
 	}

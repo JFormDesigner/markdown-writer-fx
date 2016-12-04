@@ -33,81 +33,113 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.geometry.Side;
-import javafx.scene.Node;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
-import javafx.scene.control.TabPane.TabClosingPolicy;
-import org.markdownwriterfx.Messages;
-import org.pegdown.ast.RootNode;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.scene.layout.BorderPane;
+import org.markdownwriterfx.options.Options.RendererType;
+import com.vladsch.flexmark.ast.Node;
 
 /**
  * Markdown preview pane.
- *
- * Uses pegdown AST.
  *
  * @author Karl Tauber
  */
 public class MarkdownPreviewPane
 {
-	private final TabPane tabPane = new TabPane();
+	public enum Type { None, Web, Source, Ast };
+
+	private final BorderPane pane = new BorderPane();
 	private final WebViewPreview webViewPreview = new WebViewPreview();
 	private final HtmlSourcePreview htmlSourcePreview = new HtmlSourcePreview();
 	private final ASTPreview astPreview = new ASTPreview();
 
+	private RendererType activeRendererType;
+	private Renderer activeRenderer;
+	private Preview activePreview;
+
+	interface Renderer {
+		void update(String markdownText, Node astRoot);
+		String getHtml();
+		String getAST();
+	}
+
 	interface Preview {
-		void update(RootNode astRoot, Path path);
+		javafx.scene.Node getNode();
+		void update(Renderer fenderer, Path path);
 		void scrollY(double value);
 	}
 
 	public MarkdownPreviewPane() {
-		tabPane.setSide(Side.BOTTOM);
-		tabPane.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
+		pane.getStyleClass().add("preview-pane");
 
-		Tab webViewTab = new Tab(Messages.get("MarkdownPreviewPane.webViewTab"), webViewPreview.getNode());
-		webViewTab.setUserData(webViewPreview);
-		tabPane.getTabs().add(webViewTab);
-
-		Tab htmlSourceTab = new Tab(Messages.get("MarkdownPreviewPane.htmlSourceTab"), htmlSourcePreview.getNode());
-		htmlSourceTab.setUserData(htmlSourcePreview);
-		tabPane.getTabs().add(htmlSourceTab);
-
-		Tab astTab = new Tab(Messages.get("MarkdownPreviewPane.astTab"), astPreview.getNode());
-		astTab.setUserData(astPreview);
-		tabPane.getTabs().add(astTab);
-
-		tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
-			update();
-			scrollY();
-		});
-
-		path.addListener((observable, oldValue, newValue) -> {
-			update();
-		});
-
-		markdownAST.addListener((observable, oldValue, newValue) -> {
-			update();
-		});
+		path.addListener((observable, oldValue, newValue) -> update() );
+		markdownText.addListener((observable, oldValue, newValue) -> update() );
+		markdownAST.addListener((observable, oldValue, newValue) -> update() );
 
 		scrollY.addListener((observable, oldValue, newValue) -> {
 			scrollY();
 		});
 	}
 
-	public Node getNode() {
-		return tabPane;
+	public javafx.scene.Node getNode() {
+		return pane;
 	}
 
-	private Preview getActivePreview() {
-		return (Preview) tabPane.getSelectionModel().getSelectedItem().getUserData();
+	public void setRendererType(RendererType rendererType) {
+		if (rendererType == null)
+			rendererType = RendererType.CommonMark;
+
+		if (activeRendererType == rendererType)
+			return;
+		activeRendererType = rendererType;
+		activePreview = null;
+
+		switch (rendererType) {
+			case CommonMark:	activeRenderer = new CommonmarkPreviewRenderer(); break;
+			case FlexMark:		activeRenderer = new FlexmarkPreviewRenderer(); break;
+		}
 	}
 
+	public void setType(Type type) {
+		Preview preview;
+		switch (type) {
+			case Web:		preview = webViewPreview; break;
+			case Source:	preview = htmlSourcePreview; break;
+			case Ast:		preview = astPreview; break;
+			default:		preview = null; break;
+		}
+		if (activePreview == preview)
+			return;
+
+		activePreview = preview;
+		pane.setCenter((preview != null) ? preview.getNode() : null);
+
+		update();
+		scrollY();
+	}
+
+	private boolean updateRunLaterPending;
 	private void update() {
-		getActivePreview().update(getMarkdownAST(), getPath());
+		if (activePreview == null)
+			return;
+
+		// avoid too many (and useless) runLater() invocations
+		if (updateRunLaterPending)
+			return;
+		updateRunLaterPending = true;
+
+		Platform.runLater(() -> {
+			updateRunLaterPending = false;
+
+			activeRenderer.update(getMarkdownText(), getMarkdownAST());
+			activePreview.update(activeRenderer, getPath());
+		});
 	}
 
 	private boolean scrollYrunLaterPending;
 	private void scrollY() {
+		if (activePreview == null)
+			return;
+
 		// avoid too many (and useless) runLater() invocations
 		if (scrollYrunLaterPending)
 			return;
@@ -115,7 +147,7 @@ public class MarkdownPreviewPane
 
 		Platform.runLater(() -> {
 			scrollYrunLaterPending = false;
-			getActivePreview().scrollY(getScrollY());
+			activePreview.scrollY(getScrollY());
 		});
 	}
 
@@ -125,11 +157,17 @@ public class MarkdownPreviewPane
 	public void setPath(Path path) { this.path.set(path); }
 	public ObjectProperty<Path> pathProperty() { return path; }
 
+	// 'markdownText' property
+	private final SimpleStringProperty markdownText = new SimpleStringProperty();
+	public String getMarkdownText() { return markdownText.get(); }
+	public void getMarkdownText(String text) { markdownText.set(text); }
+	public SimpleStringProperty markdownTextProperty() { return markdownText; }
+
 	// 'markdownAST' property
-	private final ObjectProperty<RootNode> markdownAST = new SimpleObjectProperty<RootNode>();
-	public RootNode getMarkdownAST() { return markdownAST.get(); }
-	public void setMarkdownAST(RootNode astRoot) { markdownAST.set(astRoot); }
-	public ObjectProperty<RootNode> markdownASTProperty() { return markdownAST; }
+	private final ObjectProperty<Node> markdownAST = new SimpleObjectProperty<Node>();
+	public Node getMarkdownAST() { return markdownAST.get(); }
+	public void setMarkdownAST(Node astRoot) { markdownAST.set(astRoot); }
+	public ObjectProperty<Node> markdownASTProperty() { return markdownAST; }
 
 	// 'scrollY' property
 	private final DoubleProperty scrollY = new SimpleDoubleProperty();

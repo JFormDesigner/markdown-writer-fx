@@ -62,7 +62,7 @@ public class ImageDialog
 		initComponents();
 
 		linkBrowseFileButton.setBasePath(basePath);
-		linkBrowseFileButton.addExtensionFilter(new ExtensionFilter(Messages.get("ImageDialog.chooser.imagesFilter"), "*.png", "*.gif", "*.jpg"));
+		linkBrowseFileButton.addExtensionFilter(new ExtensionFilter(Messages.get("ImageDialog.chooser.imagesFilter"), "*.png", "*.gif", "*.jpg", "*.svg"));
 		linkBrowseFileButton.urlProperty().bindBidirectional(urlField.escapedTextProperty());
 
 		DialogPane dialogPane = getDialogPane();
