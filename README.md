@@ -61,7 +61,7 @@ See [Change Log](CHANGES.md)
 Credits
 -------
 
-  * Tomas Mikula for [RichTextFX], [ReactFX], [WellBehavedFX], [Flowless], [UndoFX] and [LiveDirsFX]
+  * Tomas Mikula for [RichTextFX], [ReactFX], [WellBehavedFX], [Flowless] and [UndoFX]
   * Mikael Grev for [MigLayout] and Tom Eugelink for MigPane
   * Vladimir Schneider for [flexmark-java] Markdown parser
   * Atlassian for [commonmark-java] Markdown parser
@@ -87,7 +87,6 @@ License
    [WellBehavedFX]: https://github.com/TomasMikula/WellBehavedFX
    [Flowless]: https://github.com/TomasMikula/Flowless
    [UndoFX]: https://github.com/TomasMikula/UndoFX
-   [LiveDirsFX]: https://github.com/TomasMikula/LiveDirsFX
    [FontAwesomeFX]: https://bitbucket.org/Jerady/fontawesomefx
    [ControlsFX]: http://fxexperience.com/controlsfx/
    [CSSFX]: https://github.com/McFoggy/cssfx
