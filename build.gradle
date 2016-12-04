@@ -1,33 +1,76 @@
-version = '0.2'
+version = '0.4'
 
 apply plugin: 'java'
 apply plugin: 'java-library-distribution'
 
 repositories {
-	mavenCentral()
-	maven {
-		url 'https://oss.sonatype.org/content/repositories/snapshots/'
-	}
+	jcenter()
+    maven {
+        url 'https://oss.sonatype.org/content/repositories/snapshots/' 
+    }
 }
 
 dependencies {
-	compile group: 'org.fxmisc.richtext', name: 'richtextfx', version: '0.6.10'
-	compile group: 'org.fxmisc.livedirs', name: 'livedirsfx', version: '1.0.0-SNAPSHOT'
-	compile group: 'com.miglayout', name: 'miglayout-javafx', version: '5.0'
-	compile group: 'de.jensd', name: 'fontawesomefx', version: '8.9'
-	compile group: 'org.pegdown', name: 'pegdown', version: '1.6.0'
+	// for RichTextFX submodule
+    compile group: 'org.reactfx', name: 'reactfx', version: '2.0-M5'
+    compile (group: 'org.fxmisc.undo', name: 'undofx', version: '1.2.2') {
+        transitive = false
+    }
+    compile (group: 'org.fxmisc.flowless', name: 'flowless', version: '0.5.1') {
+        transitive = false
+    }
+    compile group: 'org.fxmisc.wellbehaved', name: 'wellbehavedfx', version: '0.3'
 
-	// newer versions of dependencies
-	compile group: 'org.fxmisc.flowless', name: 'flowless', version: '0.4.4'
+	compile 'org.fxmisc.richtext:richtextfx:0.7-M2'
+	compile group: 'org.fxmisc.livedirs', name: 'livedirsfx', version: '1.0.0-SNAPSHOT'
+	compile 'com.miglayout:miglayout-javafx:5.0'
+	compile group: 'de.jensd', name: 'fontawesomefx', version: '8.9'
+	compile 'de.jensd:fontawesomefx-fontawesome:4.7.0'
+	compile 'org.controlsfx:controlsfx:8.40.12'
+	compile 'org.fxmisc.cssfx:cssfx:1.0.0'
+	compile 'org.apache.commons:commons-lang3:3.5'
+
+	def flexmarkVersion = '0.6.0'
+	compile 'com.vladsch.flexmark:flexmark:' + flexmarkVersion
+	compile 'com.vladsch.flexmark:flexmark-ext-abbreviation:' + flexmarkVersion
+	compile 'com.vladsch.flexmark:flexmark-ext-anchorlink:' + flexmarkVersion
+	compile 'com.vladsch.flexmark:flexmark-ext-aside:' + flexmarkVersion
+	compile 'com.vladsch.flexmark:flexmark-ext-autolink:' + flexmarkVersion
+	compile 'com.vladsch.flexmark:flexmark-ext-definition:' + flexmarkVersion
+	compile 'com.vladsch.flexmark:flexmark-ext-footnotes:' + flexmarkVersion
+	compile 'com.vladsch.flexmark:flexmark-ext-gfm-strikethrough:' + flexmarkVersion
+	compile 'com.vladsch.flexmark:flexmark-ext-gfm-tables:' + flexmarkVersion
+	compile 'com.vladsch.flexmark:flexmark-ext-gfm-tasklist:' + flexmarkVersion
+	compile 'com.vladsch.flexmark:flexmark-ext-toc:' + flexmarkVersion
+	compile 'com.vladsch.flexmark:flexmark-ext-wikilink:' + flexmarkVersion
+	compile 'com.vladsch.flexmark:flexmark-ext-yaml-front-matter:' + flexmarkVersion
+
+	def commonmarkVersion = '0.7.1'
+	compile 'com.atlassian.commonmark:commonmark:' + commonmarkVersion
+	compile 'com.atlassian.commonmark:commonmark-ext-autolink:' + commonmarkVersion
+	compile 'com.atlassian.commonmark:commonmark-ext-gfm-strikethrough:' + commonmarkVersion
+	compile 'com.atlassian.commonmark:commonmark-ext-gfm-tables:' + commonmarkVersion
+	compile 'com.atlassian.commonmark:commonmark-ext-heading-anchor:' + commonmarkVersion
+	compile 'com.atlassian.commonmark:commonmark-ext-ins:' + commonmarkVersion
+	compile 'com.atlassian.commonmark:commonmark-ext-yaml-front-matter:' + commonmarkVersion
+
+	testCompile 'junit:junit:4.12'
 }
 
 sourceCompatibility = 1.8
+
+// for RichTextFX submodule
+sourceSets {
+	main.java.srcDirs      = ['src/main/java',      'RichTextFX/richtextfx/src/main/java']
+	main.resources.srcDirs = ['src/main/resources', 'RichTextFX/richtextfx/src/main/resources']
+}
 
 jar {
 	baseName = 'markdown-writer-fx'
 	manifest {
 		attributes 'Main-Class': 'org.markdownwriterfx.MarkdownWriterFXApp',
-					'Class-Path': configurations.compile.collect { 'lib/' + it.getName() }.join(' ')
+					'Class-Path': configurations.compile.collect { 'lib/' + it.getName() }.join(' '),
+					'Implementation-Version': version
 	}
 }
 
@@ -35,7 +78,7 @@ distributions {
 	main {
 		baseName = 'markdown-writer-fx'
 		contents {
-			from { ['LICENSE', 'README.md'] }
+			from { ['LICENSE', 'README.md', 'CHANGES.md'] }
 			into( 'images' ) {
 				from { 'images' }
 			}

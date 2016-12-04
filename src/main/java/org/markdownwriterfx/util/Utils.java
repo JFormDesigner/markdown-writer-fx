@@ -30,9 +30,11 @@ package org.markdownwriterfx.util;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.prefs.Preferences;
+import javafx.css.PseudoClass;
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollBar;
+import javafx.scene.control.TextField;
 
 /**
  * @author Karl Tauber
@@ -45,6 +47,10 @@ public class Utils
 		if (o1 == null || o2 == null)
 			return false;
 		return o1.equals(o2);
+	}
+
+	public static String defaultIfEmpty(String value, String defaultValue) {
+		return isNullOrEmpty(value) ? defaultValue : value;
 	}
 
 	public static boolean isNullOrEmpty(String s) {
@@ -105,6 +111,25 @@ public class Utils
 			prefs.remove(key + (i + 1));
 	}
 
+	@SuppressWarnings("unchecked")
+	public static <T extends Enum<T>> T getPrefsEnum(Preferences prefs, String key, T def) {
+		String s = prefs.get(key, null);
+		if (s == null)
+			return def;
+		try {
+			return (T) Enum.valueOf(def.getClass(), s);
+		} catch (IllegalArgumentException ex) {
+			return def;
+		}
+	}
+
+	public static <T extends Enum<T>> void putPrefsEnum(Preferences prefs, String key, T value, T def) {
+		if (value != def)
+			prefs.put(key, value.name());
+		else
+			prefs.remove(key);
+	}
+
 	public static ScrollBar findVScrollBar(Node node) {
 		Set<Node> scrollBars = node.lookupAll(".scroll-bar");
 		for (Node scrollBar : scrollBars) {
@@ -113,5 +138,9 @@ public class Utils
 			  return (ScrollBar) scrollBar;
 		}
 		return null;
+	}
+
+	public static void error(TextField textField, boolean error) {
+		textField.pseudoClassStateChanged(PseudoClass.getPseudoClass("error"), error);
 	}
 }

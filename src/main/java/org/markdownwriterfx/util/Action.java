@@ -27,6 +27,7 @@
 
 package org.markdownwriterfx.util;
 
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.value.ObservableBooleanValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -45,20 +46,29 @@ public class Action
 	public final GlyphIcons icon;
 	public final EventHandler<ActionEvent> action;
 	public final ObservableBooleanValue disable;
+	public final BooleanProperty selected;
 
 	public Action(String text, String accelerator, GlyphIcons icon,
 		EventHandler<ActionEvent> action)
 	{
-		this(text, accelerator, icon, action, null);
+		this(text, accelerator, icon, action, null, null);
 	}
 
 	public Action(String text, String accelerator, GlyphIcons icon,
 		EventHandler<ActionEvent> action, ObservableBooleanValue disable)
+	{
+		this(text, accelerator, icon, action, disable, null);
+	}
+
+	public Action(String text, String accelerator, GlyphIcons icon,
+		EventHandler<ActionEvent> action, ObservableBooleanValue disable,
+		BooleanProperty selected)
 	{
 		this.text = text;
 		this.accelerator = (accelerator != null) ? KeyCombination.valueOf(accelerator) : null;
 		this.icon = icon;
 		this.action = action;
 		this.disable = disable;
+		this.selected = selected;
 	}
 }

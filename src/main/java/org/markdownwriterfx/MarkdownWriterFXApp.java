@@ -27,10 +27,15 @@
 
 package org.markdownwriterfx;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.prefs.Preferences;
 import javafx.application.Application;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import org.fxmisc.cssfx.CSSFX;
+import org.fxmisc.cssfx.api.URIToPathConverter;
 import org.markdownwriterfx.options.Options;
 import org.markdownwriterfx.util.StageState;
 
@@ -57,16 +62,30 @@ public class MarkdownWriterFXApp
 		app = this;
 		Options.load(getOptions());
 
+		// enable auto-reloading CSS files (start with -Dcssfx=true)
+		if (Boolean.getBoolean("cssfx")) {
+//			System.setProperty("cssfx.log", "true");
+//			System.setProperty("cssfx.log.level", "DEBUG");
+
+			CSSFX.addConverter(new URIToPathConverter() {
+				@Override
+				public Path convert(String uri) {
+					if (uri.startsWith("jar:") || uri.startsWith("file:"))
+						return null;
+
+					Path p = Paths.get("bin", uri);
+					return Files.exists(p) ? p : null;
+				}
+			}).start();
+		}
+
 		mainWindow = new MainWindow();
 
 		stageState = new StageState(primaryStage, getState());
 
 		primaryStage.getIcons().addAll(
-				new Image("org/markdownwriterfx/markdownwriterfx16.png"),
 				new Image("org/markdownwriterfx/markdownwriterfx32.png"),
-				new Image("org/markdownwriterfx/markdownwriterfx128.png"),
-				new Image("org/markdownwriterfx/markdownwriterfx256.png"),
-				new Image("org/markdownwriterfx/markdownwriterfx512.png"));
+				new Image("org/markdownwriterfx/markdownwriterfx128.png"));
 		primaryStage.setTitle("Markdown Writer FX");
 		primaryStage.setScene(mainWindow.getScene());
 		primaryStage.show();

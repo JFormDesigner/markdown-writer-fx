@@ -26,7 +26,47 @@
  */
 
 .markdown-editor {
-	-fx-font-size: 14px;
+	-mwfx-inline-background-color: #f6f6f6;
+
+	/* selection background color */
+	-fx-highlight-fill: derive(#1E90FF, 100%);
+}
+
+/* editor padding */
+.markdown-editor .paragraph-box .paragraph-text {
+    -fx-padding: 0 1em 0 1em;
+}
+.markdown-editor .paragraph-box:last-paragraph .paragraph-text {
+    -fx-padding: 0 1em 1em 1em;
+}
+.markdown-editor .paragraph-box:first-paragraph .paragraph-text {
+    -fx-padding: 1em 1em 0 1em;
+}
+
+/* highlight current line */
+.markdown-editor .paragraph-box:has-caret {
+    -fx-background-color: #f2f9fc;
+}
+
+
+/*---- gutter ----*/
+
+.markdown-editor .paragraph-graphic .gutter {
+	-fx-border-width: 0 1 0 0;
+	-fx-border-color: #eee;
+}
+
+.markdown-editor .paragraph-graphic .lineno {
+	-fx-text-fill: #aaa;
+	-fx-padding: 0 0.25em 0 0.25em;
+}
+
+/* editor padding */
+.markdown-editor .paragraph-box:first-paragraph .paragraph-graphic .gutter {
+    -fx-padding: 1em 0 0 0;
+}
+.markdown-editor .paragraph-box:first-paragraph .paragraph-graphic .gutter.lineno {
+	-fx-padding: 1em 0.25em 0 0.25em;
 }
 
 
@@ -46,7 +86,7 @@
 .markdown-editor .h5,
 .markdown-editor .h6 {
 	-fx-font-weight: bold;
-	-fx-fill: derive(crimson, -20%);
+	-fx-fill: #c62828;
 }
 
 
@@ -54,39 +94,53 @@
 
 .markdown-editor .strong {
 	-fx-font-weight: bold;
+	-rtfx-background-color: -mwfx-inline-background-color;
 }
 
 .markdown-editor .em {
 	-fx-font-style: italic;
+	-rtfx-background-color: -mwfx-inline-background-color;
 }
 
 .markdown-editor .del {
 	-fx-strikethrough: true;
+	-rtfx-background-color: -mwfx-inline-background-color;
 }
 
 .markdown-editor .a {
 	-fx-fill: #4183C4 !important;
+	-rtfx-background-color: -mwfx-inline-background-color;
 }
 
 .markdown-editor .img {
-	-fx-fill: #4183C4 !important;
+	-fx-fill: #BF360C !important;
+	-rtfx-background-color: -mwfx-inline-background-color;
 }
 
 .markdown-editor .code {
-	-fx-font-family: monospace;
-	-fx-fill: #090 !important;
+	-fx-fill: #388E3C !important;
+	-rtfx-background-color: -mwfx-inline-background-color;
+}
+
+.markdown-editor .br {
+	-rtfx-background-color: #c8eafb;
 }
 
 
 /*---- blocks ----*/
 
-.markdown-editor .pre {
-	-fx-font-family: monospace;
-	-fx-fill: #060 !important;
+.markdown-editor .pre.paragraph-text {
+    -fx-background-color: -mwfx-inline-background-color;
+}
+.markdown-editor .pre.text {
+	-fx-fill: #2E7D32 !important;
 }
 
 .markdown-editor .blockquote {
 	-fx-fill: #777;
+}
+.markdown-editor .aside {
+	-fx-fill: #BF360C;
 }
 
 
@@ -100,6 +154,16 @@
 
 .markdown-editor .li {
 	-fx-fill: #444;
+}
+
+.markdown-editor .liopen {
+	-fx-fill: #BF360C;
+	-fx-font-weight: bold;
+}
+
+.markdown-editor .liopentask {
+	-fx-fill: #283593;
+	-fx-font-weight: bold;
 }
 
 .markdown-editor .dl {
@@ -117,8 +181,8 @@
 
 /*---- table ----*/
 
-.markdown-editor .table {
-	-fx-font-family: monospace;
+.markdown-editor .table.paragraph-text {
+    -fx-background-color: -mwfx-inline-background-color;
 }
 
 .markdown-editor .thead {
@@ -127,14 +191,11 @@
 .markdown-editor .tbody {
 }
 
-.markdown-editor .caption {
+.markdown-editor .tr {
 }
 
 .markdown-editor .th {
 	-fx-font-weight: bold;
-}
-
-.markdown-editor .tr {
 }
 
 .markdown-editor .td {
@@ -144,9 +205,14 @@
 /*---- misc ----*/
 
 .markdown-editor .html {
-	-fx-font-family: monospace;
 	-fx-fill: derive(crimson, -50%);
 }
-.markdown-editor .monospace {
-	-fx-font-family: monospace;
+
+.markdown-editor .reference {
+	-fx-fill: derive(#4183C4,30%) !important;
+}
+
+.markdown-editor .abbrdef,
+.markdown-editor .abbr {
+	-fx-fill: #004D40;
 }

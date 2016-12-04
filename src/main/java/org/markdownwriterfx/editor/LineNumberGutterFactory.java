@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Karl Tauber <karl at jformdesigner dot com>
+ * Copyright (c) 2016 Karl Tauber <karl at jformdesigner dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,36 +25,43 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.markdownwriterfx.controls;
+package org.markdownwriterfx.editor;
 
-import java.io.File;
-import javafx.event.ActionEvent;
-import javafx.scene.control.Tooltip;
-import javafx.stage.DirectoryChooser;
-import org.markdownwriterfx.Messages;
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
-import de.jensd.fx.glyphs.fontawesome.utils.FontAwesomeIconFactory;
+import java.util.function.IntFunction;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.control.Label;
+import org.fxmisc.richtext.StyleClassedTextArea;
+import org.reactfx.collection.LiveList;
+import org.reactfx.value.Val;
 
 /**
- * Button that opens a directory chooser to select a local directory for a URL in markdown.
- *
  * @author Karl Tauber
  */
-public class BrowseDirectoryButton
-	extends BrowseFileButton
+class LineNumberGutterFactory
+	implements IntFunction<Node>
 {
-	public BrowseDirectoryButton() {
-		setGraphic(FontAwesomeIconFactory.get().createIcon(FontAwesomeIcon.FOLDER_ALT, "1.2em"));
-		setTooltip(new Tooltip(Messages.get("BrowseDirectoryButton.tooltip")));
+    private final StyleClassedTextArea textArea;
+    private final Val<Integer> lineCount;
+
+	public LineNumberGutterFactory(StyleClassedTextArea textArea) {
+		this.textArea = textArea;
+		lineCount = LiveList.sizeOf(textArea.getParagraphs());
 	}
 
 	@Override
-	protected void browse(ActionEvent e) {
-		DirectoryChooser directoryChooser = new DirectoryChooser();
-		directoryChooser.setTitle(Messages.get("BrowseDirectoryButton.chooser.title"));
-		directoryChooser.setInitialDirectory(getInitialDirectory());
-		File result = directoryChooser.showDialog(getScene().getWindow());
-		if (result != null)
-			updateUrl(result);
+	public Node apply(int paragraphIndex) {
+		int lineNo = paragraphIndex + 1;
+		Val<String> text = lineCount.map(n -> {
+			int digits = Math.max(3, (int) Math.floor(Math.log10(textArea.getParagraphs().size())) + 1);
+			return String.format("%" + digits + "d", lineNo);
+		});
+
+		Label label = new Label();
+		label.textProperty().bind(text.conditionOnShowing(label));
+		label.setAlignment(Pos.TOP_RIGHT);
+		label.setMaxHeight(Double.MAX_VALUE);
+		label.getStyleClass().add("lineno");
+		return label;
 	}
 }

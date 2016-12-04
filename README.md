@@ -1,4 +1,4 @@
-![Markdown Writer FX](images/logo.png)
+![Markdown Writer FX](images/markdownwriterfx.png)
 
 Markdown Writer FX
 ==================
@@ -7,7 +7,8 @@ An open source [Markdown] editor written in JavaFX 8.
 
 ![Markdown Writer FX Screenshot](images/screenshot.png)
 
-For Markdown processing it uses [pegdown], which is nearly 100% compatible with the original [Markdown] specification and also supports parts of [Markdown Extra], [MultiMarkdown] and [Github-flavoured-Markdown].
+For Markdown rendering it uses [commonmark-java] or [flexmark-java],
+two Java implementations of the [CommonMark] specification.
 
 Features
 --------
@@ -15,6 +16,7 @@ Features
   * Syntax highlighting in editor
   * Keyboard shortcuts to insert Markdown (Bold, Italic, Code, Links, Images, Header, Lists, ...)
   * Auto-indent lists
+  * search and replace
   * HTML preview
   * HTML source preview
   * Markdown AST view
@@ -24,7 +26,6 @@ TODO
 ----
 
   * auto-complete
-  * search and replace
   * improved syntax highlighting (HTML, ...)
   * more options
   * directory tree view
@@ -41,7 +42,7 @@ Installation
 ------------
 
 Download
-[markdown-writer-fx-0.2.zip](https://github.com/JFormDesigner/markdown-writer-fx/releases/download/0.2/markdown-writer-fx-0.2.zip)
+[markdown-writer-fx-0.4.zip](https://github.com/JFormDesigner/markdown-writer-fx/releases/download/0.4/markdown-writer-fx-0.4.zip)
 and extract it to any folder.
 
 Double-click `markdown-writer-fx.jar` to start *Markdown Writer FX*.
@@ -60,10 +61,13 @@ See [Change Log](CHANGES.md)
 Credits
 -------
 
-  * Tomas Mikula for [RichTextFX], [ReactFX], [WellBehavedFX], [Flowless], [UndoFX] and [LiveDirsFX]
+  * Tomas Mikula for [RichTextFX], [ReactFX], [WellBehavedFX], [Flowless] and [UndoFX]
   * Mikael Grev for [MigLayout] and Tom Eugelink for MigPane
-  * sirthias for [pegdown] Markdown parser
+  * Vladimir Schneider for [flexmark-java] Markdown parser
+  * Atlassian for [commonmark-java] Markdown parser
   * Jens Deters for [FontAwesomeFX]
+  * The [ControlsFX] project
+  * Matthieu Brouillard for [CSSFX]
 
 License
 -------
@@ -71,7 +75,9 @@ License
 *Markdown Writer FX* is open source licensed under the [BSD 2-Clause License](LICENSE)
 
    [Markdown]: http://daringfireball.net/projects/markdown/
-   [pegdown]: https://github.com/sirthias/pegdown
+   [CommonMark]: http://commonmark.org/
+   [commonmark-java]: https://github.com/atlassian/commonmark-java
+   [flexmark-java]: https://github.com/vsch/flexmark-java
    [Markdown Extra]: https://michelf.ca/projects/php-markdown/extra/
    [MultiMarkdown]: http://fletcherpenney.net/multimarkdown/
    [Github-flavoured-Markdown]: https://help.github.com/articles/github-flavored-markdown/
@@ -81,5 +87,6 @@ License
    [WellBehavedFX]: https://github.com/TomasMikula/WellBehavedFX
    [Flowless]: https://github.com/TomasMikula/Flowless
    [UndoFX]: https://github.com/TomasMikula/UndoFX
-   [LiveDirsFX]: https://github.com/TomasMikula/LiveDirsFX
    [FontAwesomeFX]: https://bitbucket.org/Jerady/fontawesomefx
+   [ControlsFX]: http://fxexperience.com/controlsfx/
+   [CSSFX]: https://github.com/McFoggy/cssfx

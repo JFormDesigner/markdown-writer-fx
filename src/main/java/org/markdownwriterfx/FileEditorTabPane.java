@@ -49,6 +49,8 @@ import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabClosingPolicy;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
+import org.markdownwriterfx.options.Options;
+import org.markdownwriterfx.util.PrefsBooleanProperty;
 import org.markdownwriterfx.util.Utils;
 
 /**
@@ -62,6 +64,10 @@ class FileEditorTabPane
 	private final TabPane tabPane;
 	private final ReadOnlyObjectWrapper<FileEditor> activeFileEditor = new ReadOnlyObjectWrapper<>();
 	private final ReadOnlyBooleanWrapper anyFileEditorModified = new ReadOnlyBooleanWrapper();
+
+	final PrefsBooleanProperty previewVisible = new PrefsBooleanProperty(true);
+	final PrefsBooleanProperty htmlSourceVisible = new PrefsBooleanProperty();
+	final PrefsBooleanProperty markdownAstVisible = new PrefsBooleanProperty();
 
 	FileEditorTabPane(MainWindow mainWindow) {
 		this.mainWindow = mainWindow;
@@ -122,7 +128,7 @@ class FileEditorTabPane
 	}
 
 	private FileEditor createFileEditor(Path path) {
-		FileEditor fileEditor = new FileEditor(mainWindow, path);
+		FileEditor fileEditor = new FileEditor(mainWindow, this, path);
 		fileEditor.getTab().setOnCloseRequest(e -> {
 			if (!canCloseEditor(fileEditor))
 				e.consume();
@@ -181,17 +187,25 @@ class FileEditorTabPane
 		if (fileEditor == null || !fileEditor.isModified())
 			return true;
 
-		if (fileEditor.getPath() == null) {
-			tabPane.getSelectionModel().select(fileEditor.getTab());
+		if (fileEditor.getPath() == null)
+			return saveEditorAs(fileEditor);
 
-			FileChooser fileChooser = createFileChooser(Messages.get("FileEditorTabPane.saveChooser.title"));
-			File file = fileChooser.showSaveDialog(mainWindow.getScene().getWindow());
-			if (file == null)
-				return false;
+		return fileEditor.save();
+	}
 
-			saveLastDirectory(file);
-			fileEditor.setPath(file.toPath());
-		}
+	boolean saveEditorAs(FileEditor fileEditor) {
+		if (fileEditor == null)
+			return true;
+
+		tabPane.getSelectionModel().select(fileEditor.getTab());
+
+		FileChooser fileChooser = createFileChooser(Messages.get("FileEditorTabPane.saveChooser.title"));
+		File file = fileChooser.showSaveDialog(mainWindow.getScene().getWindow());
+		if (file == null)
+			return false;
+
+		saveLastDirectory(file);
+		fileEditor.setPath(file.toPath());
 
 		return fileEditor.save();
 	}
@@ -297,10 +311,12 @@ class FileEditorTabPane
 	}
 
 	private FileChooser createFileChooser(String title) {
+		String[] extensions = Options.getMarkdownFileExtensions().trim().split("\\s*,\\s*");
+
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle(title);
 		fileChooser.getExtensionFilters().addAll(
-			new ExtensionFilter(Messages.get("FileEditorTabPane.chooser.markdownFilesFilter"), "*.md", "*.markdown", "*.txt"),
+			new ExtensionFilter(Messages.get("FileEditorTabPane.chooser.markdownFilesFilter"), extensions),
 			new ExtensionFilter(Messages.get("FileEditorTabPane.chooser.allFilesFilter"), "*.*"));
 
 		String lastDirectory = MarkdownWriterFXApp.getState().get("lastDirectory", null);
@@ -317,6 +333,11 @@ class FileEditorTabPane
 
 	private void restoreState() {
 		Preferences state = MarkdownWriterFXApp.getState();
+
+		previewVisible.init(state, "previewVisible", true);
+		htmlSourceVisible.init(state, "htmlSourceVisible", false);
+		markdownAstVisible.init(state, "markdownAstVisible", false);
+
 		String[] fileNames = Utils.getPrefsStrings(state, "file");
 		String activeFileName = state.get("activeFile", null);
 
