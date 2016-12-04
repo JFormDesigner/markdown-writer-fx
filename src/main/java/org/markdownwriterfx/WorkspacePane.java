@@ -111,7 +111,6 @@ public class WorkspacePane {
 				if (selectedItem != null) {
 					File selectedFile = selectedItem.getValue().toFile();
 					if (selectedFile.isFile()) {
-						System.out.println("Selected Text : " + selectedItem.getValue());
 						List<File> selectedFiles = new ArrayList<>();
 						selectedFiles.add(selectedItem.getValue().toFile());
 						fileEditorTabPane.openEditors(selectedFiles, 0);
