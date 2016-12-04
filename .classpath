@@ -23,6 +23,5 @@
 		</accessrules>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.buildship.core.gradleclasspathcontainer"/>
-	<classpathentry kind="lib" path="libs/richtextfx-fat-0.7-M2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
