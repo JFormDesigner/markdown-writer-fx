@@ -29,6 +29,7 @@ package org.markdownwriterfx;
 
 import java.text.MessageFormat;
 import java.util.function.Function;
+
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
@@ -68,7 +69,6 @@ import org.markdownwriterfx.options.Options.RendererType;
 import org.markdownwriterfx.options.OptionsDialog;
 import org.markdownwriterfx.util.Action;
 import org.markdownwriterfx.util.ActionUtils;
-import org.markdownwriterfx.workspaces.WorkspacePane;
 import static de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon.*;
 
 /**
@@ -86,8 +86,8 @@ class MainWindow
 	final BooleanProperty stageFocusedProperty = new SimpleBooleanProperty();
 
 	MainWindow() {
-		workspacePane = new WorkspacePane();
 		fileEditorTabPane = new FileEditorTabPane(this);
+		workspacePane = new WorkspacePane(fileEditorTabPane);
 
 		BorderPane borderPane = new BorderPane();
 		borderPane.getStyleClass().add("main");
