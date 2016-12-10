@@ -16,6 +16,7 @@ Markdown Writer FX Change Log
 - Support Autolinks (link without text) and Email links.
 - Configurable bold, italic and unordered list markers in Options dialog.
 - Fixed background color of selected text in editor.
+- Updated [commonmark-java] and [flexmark-java] to [CommonMark] spec 0.27.
 
 
 ## 0.4
