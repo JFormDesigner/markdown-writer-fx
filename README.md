@@ -68,6 +68,7 @@ Credits
   * Jens Deters for [FontAwesomeFX]
   * The [ControlsFX] project
   * Matthieu Brouillard for [CSSFX]
+  * Lea Verou, Golmote & more for [Prism]
 
 License
 -------
@@ -90,3 +91,4 @@ License
    [FontAwesomeFX]: https://bitbucket.org/Jerady/fontawesomefx
    [ControlsFX]: http://fxexperience.com/controlsfx/
    [CSSFX]: https://github.com/McFoggy/cssfx
+   [Prism]: https://github.com/PrismJS/prism
