@@ -103,6 +103,12 @@ class HtmlSourcePreview
 	private static final int GROUP_EQUAL_SYMBOL = 2;
 	private static final int GROUP_ATTRIBUTE_VALUE = 3;
 
+	private static final Collection<String> STYLE_COMMENT = Collections.singleton("comment");
+	private static final Collection<String> STYLE_PUNCTATION = Collections.singleton("tagmark");
+	private static final Collection<String> STYLE_TAG = Collections.singleton("anytag");
+	private static final Collection<String> STYLE_ATTR_NAME = Collections.singleton("attribute");
+	private static final Collection<String> STYLE_ATTR_VALUE = Collections.singleton("avalue");
+
 	private static StyleSpans<Collection<String>> computeHighlighting(String text) {
 
 		Matcher matcher = XML_TAG.matcher(text);
@@ -112,14 +118,14 @@ class HtmlSourcePreview
 
 			spansBuilder.add(Collections.emptyList(), matcher.start() - lastKwEnd);
 			if(matcher.group("COMMENT") != null) {
-				spansBuilder.add(Collections.singleton("comment"), matcher.end() - matcher.start());
+				spansBuilder.add(STYLE_COMMENT, matcher.end() - matcher.start());
 			}
 			else {
 				if(matcher.group("ELEMENT") != null) {
 					String attributesText = matcher.group(GROUP_ATTRIBUTES_SECTION);
 
-					spansBuilder.add(Collections.singleton("tagmark"), matcher.end(GROUP_OPEN_BRACKET) - matcher.start(GROUP_OPEN_BRACKET));
-					spansBuilder.add(Collections.singleton("anytag"), matcher.end(GROUP_ELEMENT_NAME) - matcher.end(GROUP_OPEN_BRACKET));
+					spansBuilder.add(STYLE_PUNCTATION, matcher.end(GROUP_OPEN_BRACKET) - matcher.start(GROUP_OPEN_BRACKET));
+					spansBuilder.add(STYLE_TAG, matcher.end(GROUP_ELEMENT_NAME) - matcher.end(GROUP_OPEN_BRACKET));
 
 					if(!attributesText.isEmpty()) {
 
@@ -128,9 +134,9 @@ class HtmlSourcePreview
 						Matcher amatcher = ATTRIBUTES.matcher(attributesText);
 						while(amatcher.find()) {
 							spansBuilder.add(Collections.emptyList(), amatcher.start() - lastKwEnd);
-							spansBuilder.add(Collections.singleton("attribute"), amatcher.end(GROUP_ATTRIBUTE_NAME) - amatcher.start(GROUP_ATTRIBUTE_NAME));
-							spansBuilder.add(Collections.singleton("tagmark"), amatcher.end(GROUP_EQUAL_SYMBOL) - amatcher.end(GROUP_ATTRIBUTE_NAME));
-							spansBuilder.add(Collections.singleton("avalue"), amatcher.end(GROUP_ATTRIBUTE_VALUE) - amatcher.end(GROUP_EQUAL_SYMBOL));
+							spansBuilder.add(STYLE_ATTR_NAME, amatcher.end(GROUP_ATTRIBUTE_NAME) - amatcher.start(GROUP_ATTRIBUTE_NAME));
+							spansBuilder.add(STYLE_PUNCTATION, amatcher.end(GROUP_EQUAL_SYMBOL) - amatcher.end(GROUP_ATTRIBUTE_NAME));
+							spansBuilder.add(STYLE_ATTR_VALUE, amatcher.end(GROUP_ATTRIBUTE_VALUE) - amatcher.end(GROUP_EQUAL_SYMBOL));
 							lastKwEnd = amatcher.end();
 						}
 						if(attributesText.length() > lastKwEnd)
@@ -139,7 +145,7 @@ class HtmlSourcePreview
 
 					lastKwEnd = matcher.end(GROUP_ATTRIBUTES_SECTION);
 
-					spansBuilder.add(Collections.singleton("tagmark"), matcher.end(GROUP_CLOSE_BRACKET) - lastKwEnd);
+					spansBuilder.add(STYLE_PUNCTATION, matcher.end(GROUP_CLOSE_BRACKET) - lastKwEnd);
 				}
 			}
 			lastKwEnd = matcher.end();
