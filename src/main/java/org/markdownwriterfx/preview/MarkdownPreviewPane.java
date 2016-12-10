@@ -48,7 +48,7 @@ public class MarkdownPreviewPane
 	public enum Type { None, Web, Source, Ast };
 
 	private final BorderPane pane = new BorderPane();
-	private final WebViewPreview webViewPreview = new WebViewPreview();
+	private final WebViewPreview webViewPreview = new WebViewPreview(this);
 	private final HtmlSourcePreview htmlSourcePreview = new HtmlSourcePreview();
 	private final ASTPreview astPreview = new ASTPreview();
 

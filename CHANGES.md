@@ -1,6 +1,12 @@
 Markdown Writer FX Change Log
 =============================
 
+## 0.6
+
+- Syntax highlighting for fenced code blocks in Preview that
+  supports [120 languages](http://prismjs.com/#languages-list) (issue #9).
+
+
 ## 0.5
 
 - Move selected lines up or down with `Alt+Up` or `Alt+Down`.
