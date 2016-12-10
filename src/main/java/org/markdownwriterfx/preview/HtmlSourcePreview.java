@@ -103,11 +103,11 @@ class HtmlSourcePreview
 	private static final int GROUP_EQUAL_SYMBOL = 2;
 	private static final int GROUP_ATTRIBUTE_VALUE = 3;
 
-	private static final Collection<String> STYLE_COMMENT = Collections.singleton("comment");
-	private static final Collection<String> STYLE_PUNCTATION = Collections.singleton("tagmark");
-	private static final Collection<String> STYLE_TAG = Collections.singleton("anytag");
-	private static final Collection<String> STYLE_ATTR_NAME = Collections.singleton("attribute");
-	private static final Collection<String> STYLE_ATTR_VALUE = Collections.singleton("avalue");
+	private static final Collection<String> STYLE_COMMENT    = Collections.singleton("comment");
+	private static final Collection<String> STYLE_PUNCTATION = Collections.singleton("punctuation");
+	private static final Collection<String> STYLE_TAG        = Collections.singleton("tag");
+	private static final Collection<String> STYLE_ATTR_NAME  = Collections.singleton("attr-name");
+	private static final Collection<String> STYLE_ATTR_VALUE = Collections.singleton("attr-value");
 
 	private static StyleSpans<Collection<String>> computeHighlighting(String text) {
 
