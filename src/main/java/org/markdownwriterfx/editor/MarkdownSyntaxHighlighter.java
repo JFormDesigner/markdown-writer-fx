@@ -121,8 +121,11 @@ class MarkdownSyntaxHighlighter
 		node2style.put(Strikethrough.class, StyleClass.del);
 		node2style.put(Link.class, StyleClass.a);
 		node2style.put(LinkRef.class, StyleClass.a);
+		node2style.put(AutoLink.class, StyleClass.a);
+		node2style.put(MailLink.class, StyleClass.a);
 		node2style.put(WikiLink.class, StyleClass.a);
 		node2style.put(Image.class, StyleClass.img);
+		node2style.put(ImageRef.class, StyleClass.img);
 		node2style.put(Code.class, StyleClass.code);
 		node2style.put(HardLineBreak.class, StyleClass.br);
 
@@ -344,8 +347,8 @@ class MarkdownSyntaxHighlighter
 	}
 
 	private void setLineStyleClass(Node node, StyleClass styleClass) {
-		int start = textArea.offsetToPosition(node.getStartOffset(), Bias.Backward).getMajor();
-		int end = textArea.offsetToPosition(node.getEndOffset(), Bias.Forward).getMajor() + 1;
+		int start = textArea.offsetToPosition(node.getStartOffset(), Bias.Forward).getMajor();
+		int end = textArea.offsetToPosition(node.getEndOffset() - 1, Bias.Forward).getMajor() + 1;
 
 		addStyledRange(lineStyleRanges, start, end, styleClass);
 	}

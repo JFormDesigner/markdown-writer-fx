@@ -27,11 +27,12 @@
 
 .markdown-editor {
 	-mwfx-inline-background-color: #f6f6f6;
+
+	/* selection background color */
+	-fx-highlight-fill: derive(#1E90FF, 50%);
 }
 
 /* editor padding */
-/* disabled because of character hitting issue in RichTextFX
-   https://github.com/TomasMikula/RichTextFX/pull/396
 .markdown-editor .paragraph-box .paragraph-text {
     -fx-padding: 0 1em 0 1em;
 }
@@ -41,7 +42,6 @@
 .markdown-editor .paragraph-box:first-paragraph .paragraph-text {
     -fx-padding: 1em 1em 0 1em;
 }
-*/
 
 /* highlight current line */
 .markdown-editor .paragraph-box:has-caret {
@@ -62,15 +62,12 @@
 }
 
 /* editor padding */
-/* disabled because of character hitting issue in RichTextFX
-   https://github.com/TomasMikula/RichTextFX/pull/396
 .markdown-editor .paragraph-box:first-paragraph .paragraph-graphic .gutter {
     -fx-padding: 1em 0 0 0;
 }
 .markdown-editor .paragraph-box:first-paragraph .paragraph-graphic .gutter.lineno {
 	-fx-padding: 1em 0.25em 0 0.25em;
 }
-*/
 
 
 /*---- headers ----*/

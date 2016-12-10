@@ -53,11 +53,11 @@ import org.tbee.javafx.scene.layout.fxml.MigPane;
  *
  * @author Karl Tauber
  */
-public class GeneralOptionsPane
+class GeneralOptionsPane
 	extends MigPane
 {
 	@SuppressWarnings("unchecked")
-	public GeneralOptionsPane() {
+	GeneralOptionsPane() {
 		initComponents();
 
 		Font titleFont = Font.font(16);

@@ -1,0 +1,81 @@
+JFDML JFormDesigner: "9.9.9.9.9999" Java: "1.8.0_112" encoding: "UTF-8"
+
+new FormModel {
+	"i18n.autoExternalize": true
+	"i18n.bundlePackage": "org.markdownwriterfx"
+	"i18n.bundleName": "messages"
+	"i18n.keyPrefix": "EditorOptionsPane"
+	contentType: "form/javafx"
+	root: new FormRoot {
+		add( new FormContainer( "org.tbee.javafx.scene.layout.fxml.MigPane", new FormLayoutManager( class org.tbee.javafx.scene.layout.fxml.MigPane ) {
+			"$layoutConstraints": "hidemode 3"
+			"$columnConstraints": "[indent,fill]0[fill][fill]"
+			"$rowConstraints": "[][][][]"
+		} ) {
+			name: "this"
+			add( new FormComponent( "javafx.scene.control.Label" ) {
+				name: "markersTitle"
+				"text": new FormMessage( null, "EditorOptionsPane.markersTitle.text" )
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 0 2 1"
+			} )
+			add( new FormComponent( "javafx.scene.control.Label" ) {
+				name: "strongEmphasisMarkerLabel"
+				"text": new FormMessage( null, "EditorOptionsPane.strongEmphasisMarkerLabel.text" )
+				"mnemonicParsing": true
+				auxiliary() {
+					"JavaCodeGenerator.variableLocal": true
+				}
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 1 1"
+			} )
+			add( new FormComponent( "javafx.scene.control.ChoiceBox" ) {
+				name: "strongEmphasisMarkerField"
+				auxiliary() {
+					"JavaCodeGenerator.typeParameters": "String"
+				}
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 2 1"
+			} )
+			add( new FormComponent( "javafx.scene.control.Label" ) {
+				name: "emphasisMarkerLabel"
+				"text": new FormMessage( null, "EditorOptionsPane.emphasisMarkerLabel.text" )
+				"mnemonicParsing": true
+				auxiliary() {
+					"JavaCodeGenerator.variableLocal": true
+				}
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 1 2"
+			} )
+			add( new FormComponent( "javafx.scene.control.ChoiceBox" ) {
+				name: "emphasisMarkerField"
+				auxiliary() {
+					"JavaCodeGenerator.typeParameters": "String"
+				}
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 2 2"
+			} )
+			add( new FormComponent( "javafx.scene.control.Label" ) {
+				name: "bulletListMarkerLabel"
+				"text": new FormMessage( null, "EditorOptionsPane.bulletListMarkerLabel.text" )
+				"mnemonicParsing": true
+				auxiliary() {
+					"JavaCodeGenerator.variableLocal": true
+				}
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 1 3"
+			} )
+			add( new FormComponent( "javafx.scene.control.ChoiceBox" ) {
+				name: "bulletListMarkerField"
+				auxiliary() {
+					"JavaCodeGenerator.typeParameters": "String"
+				}
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 2 3"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new javafx.geometry.Point2D( 0.0, 0.0 )
+			"size": new javafx.geometry.Dimension2D( 400.0, 300.0 )
+		} )
+	}
+}

@@ -100,8 +100,6 @@ public class MarkdownEditorPane
 		smartEdit = new SmartEdit(this, textArea);
 
 		Nodes.addInputMap(textArea, sequence(
-			consume(keyPressed(ENTER),					smartEdit::enterPressed),
-			consume(keyPressed(D, SHORTCUT_DOWN),		smartEdit::deleteLine),
 			consume(keyPressed(PLUS, SHORTCUT_DOWN),	this::increaseFontSize),
 			consume(keyPressed(MINUS, SHORTCUT_DOWN),	this::decreaseFontSize),
 			consume(keyPressed(DIGIT0, SHORTCUT_DOWN),	this::resetFontSize),

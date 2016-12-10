@@ -237,7 +237,7 @@ class FindReplacePane
 			return;
 
 		Range activeHit = getActiveHit();
-		textArea.selectRange(activeHit.start, activeHit.end);
+		SmartEdit.selectRange(textArea, activeHit.start, activeHit.end);
 	}
 
 	private void replace() {
@@ -255,7 +255,7 @@ class FindReplacePane
 			if (replace == null)
 				return; // error
 		}
-		textArea.replaceText(activeHit.start, activeHit.end, replace);
+		SmartEdit.replaceText(textArea, activeHit.start, activeHit.end, replace);
 
 		selectActiveHit();
 	}
@@ -291,10 +291,10 @@ class FindReplacePane
 			prev = hit;
 		}
 
-		textArea.replaceText(first.start, last.end, buf.toString());
+		SmartEdit.replaceText(textArea, first.start, last.end, buf.toString());
 
 		int caret = first.start + buf.length();
-		textArea.selectRange(caret, caret);
+		SmartEdit.selectRange(textArea, caret, caret);
 		textArea.requestFocus();
 	}
 

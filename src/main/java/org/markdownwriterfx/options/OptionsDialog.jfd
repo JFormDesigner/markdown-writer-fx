@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "9.9.9.9.9999" Java: "1.8.0_102" encoding: "UTF-8"
+JFDML JFormDesigner: "9.9.9.9.9999" Java: "1.8.0_112" encoding: "UTF-8"
 
 new FormModel {
 	"i18n.bundlePackage": "org.markdownwriterfx"
@@ -15,6 +15,13 @@ new FormModel {
 				"text": new FormMessage( null, "OptionsDialog.generalTab.text" )
 				add( new FormComponent( "org.markdownwriterfx.options.GeneralOptionsPane" ) {
 					name: "generalOptionsPane"
+				} )
+			} )
+			add( new FormContainer( "javafx.scene.control.Tab", new FormLayoutManager( class javafx.scene.control.Tab ) ) {
+				name: "editorTab"
+				"text": new FormMessage( null, "OptionsDialog.editorTab.text" )
+				add( new FormComponent( "org.markdownwriterfx.options.EditorOptionsPane" ) {
+					name: "editorOptionsPane"
 				} )
 			} )
 			add( new FormContainer( "javafx.scene.control.Tab", new FormLayoutManager( class javafx.scene.control.Tab ) ) {

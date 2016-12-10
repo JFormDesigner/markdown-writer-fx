@@ -41,16 +41,18 @@ class CommonmarkPreviewRenderer
 	implements MarkdownPreviewPane.Renderer
 {
 	private String markdownText;
+	private com.vladsch.flexmark.ast.Node flexAstRoot;
 	private Node astRoot;
 	private String html;
 	private String ast;
 
 	@Override
 	public void update(String markdownText, com.vladsch.flexmark.ast.Node astRoot) {
-		if (this.markdownText == markdownText)
+		if (this.flexAstRoot == astRoot)
 			return;
 
 		this.markdownText = markdownText;
+		this.flexAstRoot = astRoot;
 
 		this.astRoot = null;
 		html = null;
@@ -75,7 +77,7 @@ class CommonmarkPreviewRenderer
 		Parser parser = Parser.builder()
 				.extensions(MarkdownExtensions.getCommonmarkExtensions())
 				.build();
-		return parser.parse(text);
+		return parser.parse(text != null ? text : "");
 	}
 
 	private Node toAstRoot() {

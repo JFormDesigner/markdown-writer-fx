@@ -187,17 +187,25 @@ class FileEditorTabPane
 		if (fileEditor == null || !fileEditor.isModified())
 			return true;
 
-		if (fileEditor.getPath() == null) {
-			tabPane.getSelectionModel().select(fileEditor.getTab());
+		if (fileEditor.getPath() == null)
+			return saveEditorAs(fileEditor);
 
-			FileChooser fileChooser = createFileChooser(Messages.get("FileEditorTabPane.saveChooser.title"));
-			File file = fileChooser.showSaveDialog(mainWindow.getScene().getWindow());
-			if (file == null)
-				return false;
+		return fileEditor.save();
+	}
 
-			saveLastDirectory(file);
-			fileEditor.setPath(file.toPath());
-		}
+	boolean saveEditorAs(FileEditor fileEditor) {
+		if (fileEditor == null)
+			return true;
+
+		tabPane.getSelectionModel().select(fileEditor.getTab());
+
+		FileChooser fileChooser = createFileChooser(Messages.get("FileEditorTabPane.saveChooser.title"));
+		File file = fileChooser.showSaveDialog(mainWindow.getScene().getWindow());
+		if (file == null)
+			return false;
+
+		saveLastDirectory(file);
+		fileEditor.setPath(file.toPath());
 
 		return fileEditor.save();
 	}

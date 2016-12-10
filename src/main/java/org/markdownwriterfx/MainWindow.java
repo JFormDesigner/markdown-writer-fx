@@ -111,6 +111,14 @@ class MainWindow
 			});
 		});
 
+		// workaround for a bad JavaFX behavior: menu bar always grabs focus when ALT key is pressed,
+		// but should grab it when ALT key is releases (as all other UI toolkits do) to give other
+		// controls the chance to use Alt+Key shortcuts.
+		scene.addEventHandler(KeyEvent.KEY_PRESSED, e -> {
+			if (e.isAltDown())
+				e.consume();
+		});
+
 		Platform.runLater(() -> stageFocusedProperty.bind(scene.getWindow().focusedProperty()));
 	}
 
@@ -128,6 +136,7 @@ class MainWindow
 		Action fileCloseAllAction = new Action(Messages.get("MainWindow.fileCloseAllAction"), null, null, e -> fileCloseAll(), activeFileEditorIsNull);
 		Action fileSaveAction = new Action(Messages.get("MainWindow.fileSaveAction"), "Shortcut+S", FLOPPY_ALT, e -> fileSave(),
 				createActiveBooleanProperty(FileEditor::modifiedProperty).not());
+		Action fileSaveAsAction = new Action(Messages.get("MainWindow.fileSaveAsAction"), null, null, e -> fileSaveAs(), activeFileEditorIsNull);
 		Action fileSaveAllAction = new Action(Messages.get("MainWindow.fileSaveAllAction"), "Shortcut+Shift+S", null, e -> fileSaveAll(),
 				Bindings.not(fileEditorTabPane.anyFileEditorModifiedProperty()));
 		Action fileExitAction = new Action(Messages.get("MainWindow.fileExitAction"), null, null, e -> fileExit());
@@ -162,19 +171,19 @@ class MainWindow
 
 		// Insert actions
 		Action insertBoldAction = new Action(Messages.get("MainWindow.insertBoldAction"), "Shortcut+B", BOLD,
-				e -> getActiveSmartEdit().insertBold(),
+				e -> getActiveSmartEdit().insertBold(Messages.get("MainWindow.insertBoldText")),
 				activeFileEditorIsNull);
 		Action insertItalicAction = new Action(Messages.get("MainWindow.insertItalicAction"), "Shortcut+I", ITALIC,
-				e -> getActiveSmartEdit().insertItalic(),
+				e -> getActiveSmartEdit().insertItalic(Messages.get("MainWindow.insertItalicText")),
 				activeFileEditorIsNull);
 		Action insertStrikethroughAction = new Action(Messages.get("MainWindow.insertStrikethroughAction"), "Shortcut+T", STRIKETHROUGH,
-				e -> getActiveSmartEdit().insertStrikethrough(),
+				e -> getActiveSmartEdit().insertStrikethrough(Messages.get("MainWindow.insertStrikethroughText")),
 				activeFileEditorIsNull);
 		Action insertBlockquoteAction = new Action(Messages.get("MainWindow.insertBlockquoteAction"), "Ctrl+Q", QUOTE_LEFT, // not Shortcut+Q because of conflict on Mac
 				e -> getActiveSmartEdit().surroundSelection("\n\n> ", ""),
 				activeFileEditorIsNull);
 		Action insertCodeAction = new Action(Messages.get("MainWindow.insertCodeAction"), "Shortcut+K", CODE,
-				e -> getActiveSmartEdit().surroundSelection("`", "`"),
+				e -> getActiveSmartEdit().insertInlineCode(Messages.get("MainWindow.insertCodeText")),
 				activeFileEditorIsNull);
 		Action insertFencedCodeBlockAction = new Action(Messages.get("MainWindow.insertFencedCodeBlockAction"), "Shortcut+Shift+K", FILE_CODE_ALT,
 				e -> getActiveSmartEdit().surroundSelection("\n\n```\n", "\n```\n\n", Messages.get("MainWindow.insertFencedCodeBlockText")),
@@ -188,26 +197,26 @@ class MainWindow
 				activeFileEditorIsNull);
 
 		Action insertHeader1Action = new Action(Messages.get("MainWindow.insertHeader1Action"), "Shortcut+1", HEADER,
-				e -> getActiveSmartEdit().surroundSelection("\n\n# ", "", Messages.get("MainWindow.insertHeader1Text")),
+				e -> getActiveSmartEdit().insertHeading(1, Messages.get("MainWindow.insertHeader1Text")),
 				activeFileEditorIsNull);
 		Action insertHeader2Action = new Action(Messages.get("MainWindow.insertHeader2Action"), "Shortcut+2", HEADER,
-				e -> getActiveSmartEdit().surroundSelection("\n\n## ", "", Messages.get("MainWindow.insertHeader2Text")),
+				e -> getActiveSmartEdit().insertHeading(2, Messages.get("MainWindow.insertHeader2Text")),
 				activeFileEditorIsNull);
 		Action insertHeader3Action = new Action(Messages.get("MainWindow.insertHeader3Action"), "Shortcut+3", HEADER,
-				e -> getActiveSmartEdit().surroundSelection("\n\n### ", "", Messages.get("MainWindow.insertHeader3Text")),
+				e -> getActiveSmartEdit().insertHeading(3, Messages.get("MainWindow.insertHeader3Text")),
 				activeFileEditorIsNull);
 		Action insertHeader4Action = new Action(Messages.get("MainWindow.insertHeader4Action"), "Shortcut+4", HEADER,
-				e -> getActiveSmartEdit().surroundSelection("\n\n#### ", "", Messages.get("MainWindow.insertHeader4Text")),
+				e -> getActiveSmartEdit().insertHeading(4, Messages.get("MainWindow.insertHeader4Text")),
 				activeFileEditorIsNull);
 		Action insertHeader5Action = new Action(Messages.get("MainWindow.insertHeader5Action"), "Shortcut+5", HEADER,
-				e -> getActiveSmartEdit().surroundSelection("\n\n##### ", "", Messages.get("MainWindow.insertHeader5Text")),
+				e -> getActiveSmartEdit().insertHeading(5, Messages.get("MainWindow.insertHeader5Text")),
 				activeFileEditorIsNull);
 		Action insertHeader6Action = new Action(Messages.get("MainWindow.insertHeader6Action"), "Shortcut+6", HEADER,
-				e -> getActiveSmartEdit().surroundSelection("\n\n###### ", "", Messages.get("MainWindow.insertHeader6Text")),
+				e -> getActiveSmartEdit().insertHeading(6, Messages.get("MainWindow.insertHeader6Text")),
 				activeFileEditorIsNull);
 
 		Action insertUnorderedListAction = new Action(Messages.get("MainWindow.insertUnorderedListAction"), "Shortcut+U", LIST_UL,
-				e -> getActiveSmartEdit().surroundSelection("\n\n* ", ""),
+				e -> getActiveSmartEdit().insertUnorderedList(),
 				activeFileEditorIsNull);
 		Action insertOrderedListAction = new Action(Messages.get("MainWindow.insertOrderedListAction"), "Shortcut+Shift+O", LIST_OL,
 				e -> getActiveSmartEdit().surroundSelection("\n\n1. ", ""),
@@ -233,6 +242,7 @@ class MainWindow
 				fileCloseAllAction,
 				null,
 				fileSaveAction,
+				fileSaveAsAction,
 				fileSaveAllAction,
 				null,
 				fileExitAction);
@@ -412,6 +422,10 @@ class MainWindow
 		fileEditorTabPane.saveEditor(fileEditorTabPane.getActiveFileEditor());
 	}
 
+	private void fileSaveAs() {
+		fileEditorTabPane.saveEditorAs(fileEditorTabPane.getActiveFileEditor());
+	}
+
 	private void fileSaveAll() {
 		fileEditorTabPane.saveAllEditors();
 	}
@@ -431,12 +445,20 @@ class MainWindow
 	//---- Help actions -------------------------------------------------------
 
 	private void helpAbout() {
+		String version = null;
+		Package pkg = this.getClass().getPackage();
+		if (pkg != null)
+			version = pkg.getImplementationVersion();
+		if (version == null)
+			version = "(dev)";
+
 		Alert alert = new Alert(AlertType.INFORMATION);
 		alert.setTitle(Messages.get("MainWindow.about.title"));
 		alert.setHeaderText(Messages.get("MainWindow.about.headerText"));
-		alert.setContentText(Messages.get("MainWindow.about.contentText"));
+		alert.setContentText(Messages.get("MainWindow.about.contentText", version));
 		alert.setGraphic(new ImageView(new Image("org/markdownwriterfx/markdownwriterfx32.png")));
 		alert.initOwner(getScene().getWindow());
+		alert.getDialogPane().setPrefWidth(420);
 
 		alert.showAndWait();
 	}
