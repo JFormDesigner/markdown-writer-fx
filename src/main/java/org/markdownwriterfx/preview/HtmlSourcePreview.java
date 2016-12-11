@@ -91,14 +91,19 @@ class HtmlSourcePreview
 	// from richtextfx-demos/src/main/java/org/fxmisc/richtext/demo/XMLEditor.java
 
 	private static final Pattern XML_TAG = Pattern.compile("(?<ELEMENT>(</?\\h*)(\\w+)([^<>]*)(\\h*/?>))"
+			+"|(?<ENTITY>&#?[\\da-z]{1,8};)"
 			+"|(?<COMMENT><!--[^<>]+-->)");
 
 	private static final Pattern ATTRIBUTES = Pattern.compile("(\\w+\\h*)(=)(\\h*\"[^\"]+\")");
 
+	private static final int GROUP_ELEMENT = 1;
 	private static final int GROUP_OPEN_BRACKET = 2;
 	private static final int GROUP_ELEMENT_NAME = 3;
 	private static final int GROUP_ATTRIBUTES_SECTION = 4;
 	private static final int GROUP_CLOSE_BRACKET = 5;
+	private static final int GROUP_ENTITY = 6;
+	private static final int GROUP_COMMENT = 7;
+
 	private static final int GROUP_ATTRIBUTE_NAME = 1;
 	private static final int GROUP_EQUAL_SYMBOL = 2;
 	private static final int GROUP_ATTRIBUTE_VALUE = 3;
@@ -108,6 +113,7 @@ class HtmlSourcePreview
 	private static final Collection<String> STYLE_TAG        = Collections.singleton("tag");
 	private static final Collection<String> STYLE_ATTR_NAME  = Collections.singleton("attr-name");
 	private static final Collection<String> STYLE_ATTR_VALUE = Collections.singleton("attr-value");
+	private static final Collection<String> STYLE_ENTITY     = Collections.singleton("entity");
 
 	private static StyleSpans<Collection<String>> computeHighlighting(String text) {
 
@@ -117,36 +123,35 @@ class HtmlSourcePreview
 		while(matcher.find()) {
 
 			spansBuilder.add(Collections.emptyList(), matcher.start() - lastKwEnd);
-			if(matcher.group("COMMENT") != null) {
-				spansBuilder.add(STYLE_COMMENT, matcher.end() - matcher.start());
-			}
-			else {
-				if(matcher.group("ELEMENT") != null) {
-					String attributesText = matcher.group(GROUP_ATTRIBUTES_SECTION);
+			if(matcher.group(GROUP_ELEMENT) != null) {
+				String attributesText = matcher.group(GROUP_ATTRIBUTES_SECTION);
 
-					spansBuilder.add(STYLE_PUNCTATION, matcher.end(GROUP_OPEN_BRACKET) - matcher.start(GROUP_OPEN_BRACKET));
-					spansBuilder.add(STYLE_TAG, matcher.end(GROUP_ELEMENT_NAME) - matcher.end(GROUP_OPEN_BRACKET));
+				spansBuilder.add(STYLE_PUNCTATION, matcher.end(GROUP_OPEN_BRACKET) - matcher.start(GROUP_OPEN_BRACKET));
+				spansBuilder.add(STYLE_TAG, matcher.end(GROUP_ELEMENT_NAME) - matcher.end(GROUP_OPEN_BRACKET));
 
-					if(!attributesText.isEmpty()) {
+				if(!attributesText.isEmpty()) {
 
-						lastKwEnd = 0;
+					lastKwEnd = 0;
 
-						Matcher amatcher = ATTRIBUTES.matcher(attributesText);
-						while(amatcher.find()) {
-							spansBuilder.add(Collections.emptyList(), amatcher.start() - lastKwEnd);
-							spansBuilder.add(STYLE_ATTR_NAME, amatcher.end(GROUP_ATTRIBUTE_NAME) - amatcher.start(GROUP_ATTRIBUTE_NAME));
-							spansBuilder.add(STYLE_PUNCTATION, amatcher.end(GROUP_EQUAL_SYMBOL) - amatcher.end(GROUP_ATTRIBUTE_NAME));
-							spansBuilder.add(STYLE_ATTR_VALUE, amatcher.end(GROUP_ATTRIBUTE_VALUE) - amatcher.end(GROUP_EQUAL_SYMBOL));
-							lastKwEnd = amatcher.end();
-						}
-						if(attributesText.length() > lastKwEnd)
-							spansBuilder.add(Collections.emptyList(), attributesText.length() - lastKwEnd);
+					Matcher amatcher = ATTRIBUTES.matcher(attributesText);
+					while(amatcher.find()) {
+						spansBuilder.add(Collections.emptyList(), amatcher.start() - lastKwEnd);
+						spansBuilder.add(STYLE_ATTR_NAME, amatcher.end(GROUP_ATTRIBUTE_NAME) - amatcher.start(GROUP_ATTRIBUTE_NAME));
+						spansBuilder.add(STYLE_PUNCTATION, amatcher.end(GROUP_EQUAL_SYMBOL) - amatcher.end(GROUP_ATTRIBUTE_NAME));
+						spansBuilder.add(STYLE_ATTR_VALUE, amatcher.end(GROUP_ATTRIBUTE_VALUE) - amatcher.end(GROUP_EQUAL_SYMBOL));
+						lastKwEnd = amatcher.end();
 					}
-
-					lastKwEnd = matcher.end(GROUP_ATTRIBUTES_SECTION);
-
-					spansBuilder.add(STYLE_PUNCTATION, matcher.end(GROUP_CLOSE_BRACKET) - lastKwEnd);
+					if(attributesText.length() > lastKwEnd)
+						spansBuilder.add(Collections.emptyList(), attributesText.length() - lastKwEnd);
 				}
+
+				lastKwEnd = matcher.end(GROUP_ATTRIBUTES_SECTION);
+
+				spansBuilder.add(STYLE_PUNCTATION, matcher.end(GROUP_CLOSE_BRACKET) - lastKwEnd);
+			} else if(matcher.group(GROUP_ENTITY) != null) {
+				spansBuilder.add(STYLE_ENTITY, matcher.end() - matcher.start());
+			} else if(matcher.group(GROUP_COMMENT) != null) {
+				spansBuilder.add(STYLE_COMMENT, matcher.end() - matcher.start());
 			}
 			lastKwEnd = matcher.end();
 		}
