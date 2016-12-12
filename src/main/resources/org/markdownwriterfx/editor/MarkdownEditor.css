@@ -27,9 +27,6 @@
 
 .markdown-editor {
 	-mwfx-inline-background-color: #f6f6f6;
-
-	/* selection background color */
-	-fx-highlight-fill: derive(#1E90FF, 50%);
 }
 
 /* editor padding */

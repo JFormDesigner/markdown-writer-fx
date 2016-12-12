@@ -5,12 +5,12 @@
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- *  o Redistributions of source code must retain the above copyright
- *	notice, this list of conditions and the following disclaimer.
+ *  * Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
  *
- *  o Redistributions in binary form must reproduce the above copyright
- *	notice, this list of conditions and the following disclaimer in the
- *	documentation and/or other materials provided with the distribution.
+ *  * Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -48,13 +48,11 @@ import org.markdownwriterfx.util.Utils;
 class HtmlSourcePreview
 	implements MarkdownPreviewPane.Preview
 {
-	private final StyleClassedTextArea textArea = new StyleClassedTextArea();
+	private final PreviewStyledTextArea textArea = new PreviewStyledTextArea();
 	private final VirtualizedScrollPane<StyleClassedTextArea> scrollPane = new VirtualizedScrollPane<>(textArea);
 	private ScrollBar vScrollBar;
 
 	HtmlSourcePreview() {
-		textArea.setEditable(false);
-		textArea.setFocusTraversable(false);
 		textArea.setWrapText(true);
 		textArea.getStylesheets().add("org/markdownwriterfx/preview/HtmlSourcePreview.css");
 	}
@@ -66,13 +64,8 @@ class HtmlSourcePreview
 
 	@Override
 	public void update(Renderer renderer, Path path) {
-		double scrollY = textArea.getEstimatedScrollY();
-
 		String html = renderer.getHtml();
-		textArea.replaceText(html);
-		textArea.setStyleSpans(0, computeHighlighting(html));
-
-		textArea.setEstimatedScrollY(scrollY);
+		textArea.replaceText(html, computeHighlighting(html));
 	}
 
 	@Override
