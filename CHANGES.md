@@ -6,6 +6,7 @@ Markdown Writer FX Change Log
 - Syntax highlighting for fenced code blocks in Preview that
   supports [120 languages](http://prismjs.com/#languages-list) (issue #9).
 - Syntax highlighting in HTML source view.
+- Syntax highlighting in Markdown AST view.
 
 
 ## 0.5
