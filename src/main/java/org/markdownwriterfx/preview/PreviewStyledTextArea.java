@@ -34,6 +34,7 @@ import javafx.beans.WeakInvalidationListener;
 import javafx.scene.control.IndexRange;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.richtext.model.StyleSpans;
+import org.fxmisc.undo.UndoManagerFactory;
 import org.markdownwriterfx.options.Options;
 
 /**
@@ -52,6 +53,7 @@ class PreviewStyledTextArea
 		setEditable(false);
 		setFocusTraversable(false);
 		getStyleClass().add("padding");
+		setUndoManager(UndoManagerFactory.zeroHistoryFactory());
 
 		updateFont();
 
@@ -72,7 +74,7 @@ class PreviewStyledTextArea
 		double oldScrollY = getEstimatedScrollY();
 
 		// replace text and styles
-		replaceText(text);
+		doReplaceText(text);
 		if (styleSpans != null)
 			setStyleSpans(0, styleSpans);
 
@@ -81,5 +83,42 @@ class PreviewStyledTextArea
 		Platform.runLater(() -> {
 			setEstimatedScrollY(oldScrollY);
 		});
+	}
+
+	/**
+	 * Replaces whole text in text area, but reduces the change by removing
+	 * equal leading and trailing characters.
+	 */
+	private void doReplaceText(String text) {
+		int start = 0;
+		int end = getLength();
+		String oldText = getText(start, end);
+
+		int textLength = text.length();
+		int textStart = 0;
+		int textEnd = textLength;
+
+		// trim leading equal characters
+		while (textStart < textLength && start < end) {
+			if (text.charAt(textStart) != oldText.charAt(textStart))
+				break;
+			textStart++;
+			start++;
+		}
+
+		// trim trailing equal characters
+		int oldIndex = oldText.length() - 1;
+		while (textEnd > textStart && end > start) {
+			if (text.charAt(textEnd - 1) != oldText.charAt(oldIndex))
+				break;
+			textEnd--;
+			end--;
+			oldIndex--;
+		}
+
+		if (start == end && textStart == textEnd)
+			return;
+
+		replaceText(start, end, text.substring(textStart, textEnd));
 	}
 }
