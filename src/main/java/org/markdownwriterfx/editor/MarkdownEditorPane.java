@@ -229,6 +229,9 @@ public class MarkdownEditorPane
 	public Node getMarkdownAST() { return markdownAST.get(); }
 	public ReadOnlyObjectProperty<Node> markdownASTProperty() { return markdownAST.getReadOnlyProperty(); }
 
+	// 'selection' property
+	public ObservableValue<IndexRange> selectionProperty() { return textArea.selectionProperty(); }
+
 	// 'scrollY' property
 	private final ReadOnlyDoubleWrapper scrollY = new ReadOnlyDoubleWrapper();
 	public double getScrollY() { return scrollY.get(); }

@@ -7,6 +7,7 @@ Markdown Writer FX Change Log
   supports [120 languages](http://prismjs.com/#languages-list) (issue #9).
 - Syntax highlighting in HTML source view.
 - Syntax highlighting in Markdown AST view.
+- Highlight ranges in Markdown AST view that contain the selection of the editor.
 
 
 ## 0.5

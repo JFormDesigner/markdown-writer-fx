@@ -28,10 +28,14 @@
 package org.markdownwriterfx.preview;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javafx.scene.control.IndexRange;
 import javafx.scene.control.ScrollBar;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.StyleClassedTextArea;
@@ -39,6 +43,9 @@ import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
 import org.markdownwriterfx.preview.MarkdownPreviewPane.Renderer;
 import org.markdownwriterfx.util.Utils;
+import com.vladsch.flexmark.ast.Node;
+import com.vladsch.flexmark.ast.NodeVisitor;
+import com.vladsch.flexmark.util.sequence.BasedSequence;
 
 /**
  * Markdown AST preview.
@@ -49,11 +56,14 @@ import org.markdownwriterfx.util.Utils;
 class ASTPreview
 	implements MarkdownPreviewPane.Preview
 {
+	private final MarkdownPreviewPane previewPane;
 	private final PreviewStyledTextArea textArea = new PreviewStyledTextArea();
 	private final VirtualizedScrollPane<StyleClassedTextArea> scrollPane = new VirtualizedScrollPane<>(textArea);
 	private ScrollBar vScrollBar;
 
-	ASTPreview() {
+	ASTPreview(MarkdownPreviewPane previewPane) {
+		this.previewPane = previewPane;
+
 		textArea.getStylesheets().add("org/markdownwriterfx/preview/HtmlSourcePreview.css");
 	}
 
@@ -66,6 +76,8 @@ class ASTPreview
 	public void update(Renderer renderer, Path path) {
 		String ast = renderer.getAST();
 		textArea.replaceText(ast, computeHighlighting(ast));
+
+		selectionChanged(textArea.getSelection());
 	}
 
 	@Override
@@ -77,6 +89,64 @@ class ASTPreview
 
 		double maxValue = vScrollBar.maxProperty().get();
 		vScrollBar.setValue(maxValue * value);
+	}
+
+	//---- selection highlighting ---------------------------------------------
+
+	private static final Collection<String> STYLE_SELECTION = Collections.singleton("selection");
+
+	private final HashMap<Integer, StyleSpans<Collection<String>>> oldSelectionStylesMap = new HashMap<>();
+
+	@Override
+	public void selectionChanged(IndexRange range) {
+		ArrayList<BasedSequence> sequences = findSequences(range.getStart(), range.getEnd());
+
+		// restore old styles
+		for (Map.Entry<Integer, StyleSpans<Collection<String>>> e : oldSelectionStylesMap.entrySet())
+			textArea.setStyleSpans(e.getKey(), e.getValue());
+		oldSelectionStylesMap.clear();
+
+		// set new selection styles
+		String text = textArea.getText();
+		for (BasedSequence sequence : sequences) {
+			String rangeStr = "[" + sequence.getStartOffset() + ", " + sequence.getEndOffset();
+			int index = 0;
+			while ((index = text.indexOf(rangeStr, index)) >= 0) {
+				int endIndex = index + rangeStr.length() + 1;
+				char after = text.charAt(endIndex - 1);
+				if ((after == ']' || after == ',') && !oldSelectionStylesMap.containsKey(index)) {
+					oldSelectionStylesMap.put(index, textArea.getStyleSpans(index, endIndex));
+					textArea.setStyle(index, endIndex, STYLE_SELECTION);
+				}
+				index = endIndex;
+			}
+		}
+	}
+
+	private ArrayList<BasedSequence> findSequences(int startOffset, int endOffset) {
+		ArrayList<BasedSequence> sequences = new ArrayList<>();
+		NodeVisitor visitor = new NodeVisitor(Collections.emptyList()) {
+			@Override
+			public void visit(Node node) {
+				if (isInSequence(startOffset, endOffset, node.getChars()))
+					sequences.add(node.getChars());
+
+				for (BasedSequence segment : node.getSegments()) {
+					if (isInSequence(startOffset, endOffset, segment))
+						sequences.add(segment);
+				}
+
+				visitChildren(node);
+			}
+		};
+		visitor.visit(previewPane.getMarkdownAST());
+		return sequences;
+	}
+
+	private boolean isInSequence(int start, int end, BasedSequence sequence) {
+		if (end == start)
+			end++;
+		return start < sequence.getEndOffset() && end > sequence.getStartOffset();
 	}
 
 	//---- syntax highlighting ------------------------------------------------

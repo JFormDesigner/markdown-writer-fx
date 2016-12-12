@@ -25,6 +25,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+.selection {
+	-rtfx-background-color: #FFF59D;
+}
+
 /* same colors as in prism.css */
 
 .comment {

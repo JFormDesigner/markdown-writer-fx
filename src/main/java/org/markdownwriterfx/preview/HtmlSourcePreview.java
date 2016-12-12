@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javafx.scene.control.IndexRange;
 import javafx.scene.control.ScrollBar;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.StyleClassedTextArea;
@@ -77,6 +78,10 @@ class HtmlSourcePreview
 
 		double maxValue = vScrollBar.maxProperty().get();
 		vScrollBar.setValue(maxValue * value);
+	}
+
+	@Override
+	public void selectionChanged(IndexRange range) {
 	}
 
 	//---- XML syntax highlighter ---------------------------------------------

@@ -35,6 +35,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import javafx.scene.control.IndexRange;
 import javafx.scene.web.WebView;
 import org.markdownwriterfx.preview.MarkdownPreviewPane.Renderer;
 import com.vladsch.flexmark.ast.FencedCodeBlock;
@@ -103,6 +104,10 @@ class WebViewPreview
 	public void scrollY(double value) {
 		webView.getEngine().executeScript(
 			"window.scrollTo(0, (document.body.scrollHeight - window.innerHeight) * "+value+");");
+	}
+
+	@Override
+	public void selectionChanged(IndexRange range) {
 	}
 
 	private String prismSyntaxHighlighting() {
