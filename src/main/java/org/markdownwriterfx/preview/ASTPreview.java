@@ -74,6 +74,8 @@ class ASTPreview
 
 	@Override
 	public void update(Renderer renderer, Path path) {
+		oldSelectionStylesMap.clear();
+
 		String ast = renderer.getAST();
 		textArea.replaceText(ast, computeHighlighting(ast));
 
