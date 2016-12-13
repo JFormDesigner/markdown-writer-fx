@@ -160,7 +160,6 @@ class MarkdownSyntaxHighlighter
 
 		// blocks
 		node2lineStyle.put(FencedCodeBlock.class, StyleClass.pre);
-		node2style.put(FencedCodeBlock.class, StyleClass.pre);
 		node2lineStyle.put(IndentedCodeBlock.class, StyleClass.pre);
 		node2style.put(IndentedCodeBlock.class, StyleClass.pre);
 		node2style.put(BlockQuote.class, StyleClass.blockquote);
@@ -211,6 +210,7 @@ class MarkdownSyntaxHighlighter
 			new VisitHandler<>(OrderedListItem.class, this::visit),
 			new VisitHandler<>(TaskListItem.class, this::visit),
 			new VisitHandler<>(TableCell.class, this::visit),
+			new VisitHandler<>(FencedCodeBlock.class, this::visit),
 			new VisitHandler<>(HtmlBlock.class, this::visit),
 			new VisitHandler<>(HtmlCommentBlock.class, this::visit),
 			new VisitHandler<>(HtmlInnerBlock.class, this::visit),
@@ -371,19 +371,29 @@ class MarkdownSyntaxHighlighter
 		setStyleClass(node, node.isHeader() ?  StyleClass.th : StyleClass.td);
 	}
 
+	private void visit(FencedCodeBlock node) {
+		String language = node.getInfo().toString();
+		if (highlightSequence(node.getContentChars(), language)) {
+			setStyleClass(node.getOpeningFence(), StyleClass.pre);
+			setStyleClass(node.getInfo(), StyleClass.pre);
+			setStyleClass(node.getClosingFence(), StyleClass.pre);
+		} else
+			setStyleClass(node, StyleClass.pre);
+	}
+
 	private void visit(HtmlBlockBase node) {
 		setLineStyleClass(node, StyleClass.html);
-		htmlHighlight(node);
+		highlightSequence(node.getChars(), "html");
 	}
 
 	private void visit(HtmlInlineBase node) {
 		setStyleClass(node, StyleClass.html);
-		htmlHighlight(node);
+		highlightSequence(node.getChars(), "html");
 	}
 
-	private void htmlHighlight(Node node) {
+	private boolean highlightSequence(BasedSequence sequence, String language) {
 		SyntaxHighlighter.HighlightConsumer highlighter = new SyntaxHighlighter.HighlightConsumer() {
-			private int index = node.getStartOffset();
+			private int index = sequence.getStartOffset();
 
 			@Override
 			public void accept(int length, String style) {
@@ -392,7 +402,7 @@ class MarkdownSyntaxHighlighter
 				index += length;
 			}
 		};
-		SyntaxHighlighter.highlight(node.getChars().toString(), "html", highlighter);
+		return SyntaxHighlighter.highlight(sequence.toString(), language, highlighter);
 	}
 
 	private void setStyleClass(Node node, StyleClass styleClass) {
