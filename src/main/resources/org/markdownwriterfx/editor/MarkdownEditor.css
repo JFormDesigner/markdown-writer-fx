@@ -201,8 +201,9 @@
 
 /*---- misc ----*/
 
-.markdown-editor .html {
-	-fx-fill: derive(crimson, -50%);
+.markdown-editor .html.paragraph-text,
+.markdown-editor .html.text {
+    -fx-background-color: -mwfx-inline-background-color;
 }
 
 .markdown-editor .reference {

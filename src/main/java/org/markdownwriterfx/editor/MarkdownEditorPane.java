@@ -89,6 +89,7 @@ public class MarkdownEditorPane
 		textArea.setWrapText(true);
 		textArea.getStyleClass().add("markdown-editor");
 		textArea.getStylesheets().add("org/markdownwriterfx/editor/MarkdownEditor.css");
+		textArea.getStylesheets().add("org/markdownwriterfx/prism.css");
 
 		textArea.textProperty().addListener((observable, oldText, newText) -> {
 			textChanged(newText);

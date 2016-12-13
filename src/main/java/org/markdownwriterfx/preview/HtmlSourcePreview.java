@@ -28,10 +28,10 @@
 package org.markdownwriterfx.preview;
 
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.HashMap;
 import javafx.scene.control.IndexRange;
 import javafx.scene.control.ScrollBar;
 import org.fxmisc.flowless.VirtualizedScrollPane;
@@ -39,6 +39,7 @@ import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
 import org.markdownwriterfx.preview.MarkdownPreviewPane.Renderer;
+import org.markdownwriterfx.syntaxhighlighter.SyntaxHighlighter;
 import org.markdownwriterfx.util.Utils;
 
 /**
@@ -55,7 +56,7 @@ class HtmlSourcePreview
 
 	HtmlSourcePreview() {
 		textArea.setWrapText(true);
-		textArea.getStylesheets().add("org/markdownwriterfx/preview/HtmlSourcePreview.css");
+		textArea.getStylesheets().add("org/markdownwriterfx/prism.css");
 	}
 
 	@Override
@@ -84,76 +85,27 @@ class HtmlSourcePreview
 	public void selectionChanged(IndexRange range) {
 	}
 
-	//---- XML syntax highlighter ---------------------------------------------
+	//---- selection highlighting ---------------------------------------------
 
-	// from richtextfx-demos/src/main/java/org/fxmisc/richtext/demo/XMLEditor.java
-
-	private static final Pattern XML_TAG = Pattern.compile("(?<ELEMENT>(</?\\h*)(\\w+)([^<>]*)(\\h*/?>))"
-			+"|(?<ENTITY>&#?[\\da-z]{1,8};)"
-			+"|(?<COMMENT><!--[^<>]+-->)");
-
-	private static final Pattern ATTRIBUTES = Pattern.compile("(\\w+\\h*)(=)(\\h*\"[^\"]+\")");
-
-	private static final int GROUP_ELEMENT = 1;
-	private static final int GROUP_OPEN_BRACKET = 2;
-	private static final int GROUP_ELEMENT_NAME = 3;
-	private static final int GROUP_ATTRIBUTES_SECTION = 4;
-	private static final int GROUP_CLOSE_BRACKET = 5;
-	private static final int GROUP_ENTITY = 6;
-	private static final int GROUP_COMMENT = 7;
-
-	private static final int GROUP_ATTRIBUTE_NAME = 1;
-	private static final int GROUP_EQUAL_SYMBOL = 2;
-	private static final int GROUP_ATTRIBUTE_VALUE = 3;
-
-	private static final Collection<String> STYLE_COMMENT    = Collections.singleton("comment");
-	private static final Collection<String> STYLE_PUNCTATION = Collections.singleton("punctuation");
-	private static final Collection<String> STYLE_TAG        = Collections.singleton("tag");
-	private static final Collection<String> STYLE_ATTR_NAME  = Collections.singleton("attr-name");
-	private static final Collection<String> STYLE_ATTR_VALUE = Collections.singleton("attr-value");
-	private static final Collection<String> STYLE_ENTITY     = Collections.singleton("entity");
+	private static final HashMap<String, Collection<String>> spanStyleCache = new HashMap<>();
 
 	private static StyleSpans<Collection<String>> computeHighlighting(String text) {
-
-		Matcher matcher = XML_TAG.matcher(text);
-		int lastKwEnd = 0;
 		StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
-		while(matcher.find()) {
-
-			spansBuilder.add(Collections.emptyList(), matcher.start() - lastKwEnd);
-			if(matcher.group(GROUP_ELEMENT) != null) {
-				String attributesText = matcher.group(GROUP_ATTRIBUTES_SECTION);
-
-				spansBuilder.add(STYLE_PUNCTATION, matcher.end(GROUP_OPEN_BRACKET) - matcher.start(GROUP_OPEN_BRACKET));
-				spansBuilder.add(STYLE_TAG, matcher.end(GROUP_ELEMENT_NAME) - matcher.end(GROUP_OPEN_BRACKET));
-
-				if(!attributesText.isEmpty()) {
-
-					lastKwEnd = 0;
-
-					Matcher amatcher = ATTRIBUTES.matcher(attributesText);
-					while(amatcher.find()) {
-						spansBuilder.add(Collections.emptyList(), amatcher.start() - lastKwEnd);
-						spansBuilder.add(STYLE_ATTR_NAME, amatcher.end(GROUP_ATTRIBUTE_NAME) - amatcher.start(GROUP_ATTRIBUTE_NAME));
-						spansBuilder.add(STYLE_PUNCTATION, amatcher.end(GROUP_EQUAL_SYMBOL) - amatcher.end(GROUP_ATTRIBUTE_NAME));
-						spansBuilder.add(STYLE_ATTR_VALUE, amatcher.end(GROUP_ATTRIBUTE_VALUE) - amatcher.end(GROUP_EQUAL_SYMBOL));
-						lastKwEnd = amatcher.end();
-					}
-					if(attributesText.length() > lastKwEnd)
-						spansBuilder.add(Collections.emptyList(), attributesText.length() - lastKwEnd);
-				}
-
-				lastKwEnd = matcher.end(GROUP_ATTRIBUTES_SECTION);
-
-				spansBuilder.add(STYLE_PUNCTATION, matcher.end(GROUP_CLOSE_BRACKET) - lastKwEnd);
-			} else if(matcher.group(GROUP_ENTITY) != null) {
-				spansBuilder.add(STYLE_ENTITY, matcher.end() - matcher.start());
-			} else if(matcher.group(GROUP_COMMENT) != null) {
-				spansBuilder.add(STYLE_COMMENT, matcher.end() - matcher.start());
-			}
-			lastKwEnd = matcher.end();
-		}
-		spansBuilder.add(Collections.emptyList(), text.length() - lastKwEnd);
+		SyntaxHighlighter.highlight(text, "html", (length, style) -> {
+			spansBuilder.add(toSpanStyle(style), length);
+		});
 		return spansBuilder.create();
+	}
+
+	private static Collection<String> toSpanStyle(String style) {
+		if (style == null)
+			return Collections.emptyList();
+
+		Collection<String> spanStyle = spanStyleCache.get(style);
+		if (spanStyle == null) {
+			spanStyle = Arrays.asList(style, "token");
+			spanStyleCache.put(style, spanStyle);
+		}
+		return spanStyle;
 	}
 }

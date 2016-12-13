@@ -215,6 +215,13 @@
 }
 
 
+/*---- preview ----*/
+
+.ast-preview .selection {
+	-rtfx-background-color: #FFF59D;
+}
+
+
 /*---- find/replace ----*/
 
 .find-replace {

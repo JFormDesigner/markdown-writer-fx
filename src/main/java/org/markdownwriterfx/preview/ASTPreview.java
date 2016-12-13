@@ -29,6 +29,7 @@ package org.markdownwriterfx.preview;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -64,7 +65,8 @@ class ASTPreview
 	ASTPreview(MarkdownPreviewPane previewPane) {
 		this.previewPane = previewPane;
 
-		textArea.getStylesheets().add("org/markdownwriterfx/preview/HtmlSourcePreview.css");
+		textArea.getStyleClass().add("ast-preview");
+		textArea.getStylesheets().add("org/markdownwriterfx/prism.css");
 	}
 
 	@Override
@@ -177,10 +179,10 @@ class ASTPreview
 	private static final int GROUP_FLEXMARK_NUMBER = 3;
 	private static final int GROUP_FLEXMARK_PUNCTATION = 4;
 
-	private static final Collection<String> STYLE_PUNCTATION = Collections.singleton("punctuation");
-	private static final Collection<String> STYLE_NODE       = Collections.singleton("tag");
-	private static final Collection<String> STYLE_ATTR_NAME  = Collections.singleton("attr-name");
-	private static final Collection<String> STYLE_ATTR_VALUE = Collections.singleton("attr-value");
+	private static final Collection<String> STYLE_PUNCTATION = Arrays.asList("punctuation", "token");
+	private static final Collection<String> STYLE_NODE       = Arrays.asList("tag", "token");
+	private static final Collection<String> STYLE_ATTR_NAME  = Arrays.asList("attr-name", "token");
+	private static final Collection<String> STYLE_ATTR_VALUE = Arrays.asList("attr-value", "token");
 
 	private static StyleSpans<Collection<String>> computeHighlighting(String text) {
 		Matcher matcher = PATTERN.matcher(text);
