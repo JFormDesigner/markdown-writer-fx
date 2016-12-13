@@ -103,7 +103,8 @@ class WebViewPreview
 	@Override
 	public void scrollY(double value) {
 		webView.getEngine().executeScript(
-			"window.scrollTo(0, (document.body.scrollHeight - window.innerHeight) * "+value+");");
+			"if(document.body != null)" +
+			"  window.scrollTo(0, (document.body.scrollHeight - window.innerHeight) * "+value+");");
 	}
 
 	@Override
