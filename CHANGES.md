@@ -1,6 +1,16 @@
 Markdown Writer FX Change Log
 =============================
 
+## 0.6
+
+- Syntax highlighting for HTML/XML/SVG/MathML in editor.
+- Syntax highlighting for fenced code blocks in Preview that
+  supports [120 languages](http://prismjs.com/#languages-list) (issue #9).
+- Syntax highlighting in HTML source view.
+- Syntax highlighting in Markdown AST view.
+- Highlight ranges in Markdown AST view that contain the selection of the editor.
+
+
 ## 0.5
 
 - Move selected lines up or down with `Alt+Up` or `Alt+Down`.

@@ -92,6 +92,7 @@ public class MarkdownEditorPane
 		textArea.setWrapText(true);
 		textArea.getStyleClass().add("markdown-editor");
 		textArea.getStylesheets().add("org/markdownwriterfx/editor/MarkdownEditor.css");
+		textArea.getStylesheets().add("org/markdownwriterfx/prism.css");
 
 		textArea.textProperty().addListener((observable, oldText, newText) -> {
 			textChanged(newText);
@@ -233,6 +234,9 @@ public class MarkdownEditorPane
 	private final ReadOnlyObjectWrapper<Node> markdownAST = new ReadOnlyObjectWrapper<>();
 	public Node getMarkdownAST() { return markdownAST.get(); }
 	public ReadOnlyObjectProperty<Node> markdownASTProperty() { return markdownAST.getReadOnlyProperty(); }
+
+	// 'selection' property
+	public ObservableValue<IndexRange> selectionProperty() { return textArea.selectionProperty(); }
 
 	// 'scrollY' property
 	private final ReadOnlyDoubleWrapper scrollY = new ReadOnlyDoubleWrapper();

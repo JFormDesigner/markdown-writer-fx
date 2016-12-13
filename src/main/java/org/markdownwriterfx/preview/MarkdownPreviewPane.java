@@ -34,6 +34,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.scene.control.IndexRange;
 import javafx.scene.layout.BorderPane;
 import org.markdownwriterfx.options.Options.RendererType;
 import com.vladsch.flexmark.ast.Node;
@@ -48,9 +49,9 @@ public class MarkdownPreviewPane
 	public enum Type { None, Web, Source, Ast };
 
 	private final BorderPane pane = new BorderPane();
-	private final WebViewPreview webViewPreview = new WebViewPreview();
+	private final WebViewPreview webViewPreview = new WebViewPreview(this);
 	private final HtmlSourcePreview htmlSourcePreview = new HtmlSourcePreview();
-	private final ASTPreview astPreview = new ASTPreview();
+	private final ASTPreview astPreview = new ASTPreview(this);
 
 	private RendererType activeRendererType;
 	private Renderer activeRenderer;
@@ -66,6 +67,7 @@ public class MarkdownPreviewPane
 		javafx.scene.Node getNode();
 		void update(Renderer fenderer, Path path);
 		void scrollY(double value);
+		void selectionChanged(IndexRange range);
 	}
 
 	public MarkdownPreviewPane() {
@@ -74,10 +76,8 @@ public class MarkdownPreviewPane
 		path.addListener((observable, oldValue, newValue) -> update() );
 		markdownText.addListener((observable, oldValue, newValue) -> update() );
 		markdownAST.addListener((observable, oldValue, newValue) -> update() );
-
-		scrollY.addListener((observable, oldValue, newValue) -> {
-			scrollY();
-		});
+		scrollY.addListener((observable, oldValue, newValue) -> scrollY());
+		selection.addListener((observable, oldValue, newValue) -> selectionChanged());
 	}
 
 	public javafx.scene.Node getNode() {
@@ -151,6 +151,13 @@ public class MarkdownPreviewPane
 		});
 	}
 
+	private void selectionChanged() {
+		if (activePreview == null)
+			return;
+
+		activePreview.selectionChanged(selection.get());
+	}
+
 	// 'path' property
 	private final ObjectProperty<Path> path = new SimpleObjectProperty<>();
 	public Path getPath() { return path.get(); }
@@ -164,7 +171,7 @@ public class MarkdownPreviewPane
 	public SimpleStringProperty markdownTextProperty() { return markdownText; }
 
 	// 'markdownAST' property
-	private final ObjectProperty<Node> markdownAST = new SimpleObjectProperty<Node>();
+	private final ObjectProperty<Node> markdownAST = new SimpleObjectProperty<>();
 	public Node getMarkdownAST() { return markdownAST.get(); }
 	public void setMarkdownAST(Node astRoot) { markdownAST.set(astRoot); }
 	public ObjectProperty<Node> markdownASTProperty() { return markdownAST; }
@@ -174,4 +181,8 @@ public class MarkdownPreviewPane
 	public double getScrollY() { return scrollY.get(); }
 	public void setScrollY(double value) { scrollY.set(value); }
 	public DoubleProperty scrollYProperty() { return scrollY; }
+
+	// 'selection' property
+	private final ObjectProperty<IndexRange> selection = new SimpleObjectProperty<>();
+	public ObjectProperty<IndexRange> selectionProperty() { return selection; }
 }

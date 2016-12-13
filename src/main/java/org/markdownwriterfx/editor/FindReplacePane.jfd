@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "9.9.9.9.9999" Java: "1.8.0_102" encoding: "UTF-8"
+JFDML JFormDesigner: "9.9.9.9.9999" Java: "1.8.0_112" encoding: "UTF-8"
 
 new FormModel {
 	"i18n.bundlePackage": "org.markdownwriterfx"
@@ -9,15 +9,16 @@ new FormModel {
 	root: new FormRoot {
 		add( new FormContainer( "org.tbee.javafx.scene.layout.fxml.MigPane", new FormLayoutManager( class org.tbee.javafx.scene.layout.fxml.MigPane ) {
 			"$layoutConstraints": "insets 0,hidemode 3"
-			"$columnConstraints": "[fill][fill]0[fill][pref:n,fill]1px[pref:n,fill][grow,shrinkprio 200,fill][fill]"
+			"$columnConstraints": "[shrink 0,fill][fill]0[fill][pref:n,fill]1px[pref:n,fill][grow,fill][fill]"
 			"$rowConstraints": "[fill]0[]"
 		} ) {
 			name: "pane"
 			add( new FormComponent( "org.controlsfx.control.textfield.CustomTextField" ) {
 				name: "findField"
 				"promptText": new FormMessage( null, "FindReplacePane.findField.promptText" )
+				"prefColumnCount": 15
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 0,width 200:200:200"
+				"value": "cell 0 0"
 			} )
 			add( new FormComponent( "javafx.scene.control.Button" ) {
 				name: "previousButton"
@@ -59,14 +60,15 @@ new FormModel {
 			add( new FormContainer( "org.tbee.javafx.scene.layout.fxml.MigPane", new FormLayoutManager( class org.tbee.javafx.scene.layout.fxml.MigPane ) {
 				"$layoutConstraints": "insets rel 0 0 0"
 				"$rowConstraints": "[]"
-				"$columnConstraints": "[fill][pref:n,fill][pref:n,fill][grow,shrinkprio 200,fill]"
+				"$columnConstraints": "[shrink 0,fill][pref:n,fill][pref:n,fill][grow,fill]"
 			} ) {
 				name: "replacePane"
 				add( new FormComponent( "org.controlsfx.control.textfield.CustomTextField" ) {
 					name: "replaceField"
 					"promptText": new FormMessage( null, "FindReplacePane.replaceField.promptText" )
+					"prefColumnCount": 15
 				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-					"value": "cell 0 0,width 200:200:200"
+					"value": "cell 0 0"
 				} )
 				add( new FormComponent( "javafx.scene.control.Button" ) {
 					name: "replaceButton"

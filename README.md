@@ -26,11 +26,9 @@ TODO
 ----
 
   * auto-complete
-  * improved syntax highlighting (HTML, ...)
   * more options
   * directory tree view
   * spell checker
-  * support [Kirby CMS](http://getkirby.com/) content files and tags
   * TBD
 
 Requirements
@@ -42,7 +40,7 @@ Installation
 ------------
 
 Download
-[markdown-writer-fx-0.5.zip](https://github.com/JFormDesigner/markdown-writer-fx/releases/download/0.5/markdown-writer-fx-0.5.zip)
+[markdown-writer-fx-0.6.zip](https://github.com/JFormDesigner/markdown-writer-fx/releases/download/0.6/markdown-writer-fx-0.6.zip)
 and extract it to any folder.
 
 Double-click `markdown-writer-fx.jar` to start *Markdown Writer FX*.
@@ -68,6 +66,7 @@ Credits
   * Jens Deters for [FontAwesomeFX]
   * The [ControlsFX] project
   * Matthieu Brouillard for [CSSFX]
+  * Lea Verou, Golmote & more for [Prism]
 
 License
 -------
@@ -90,3 +89,4 @@ License
    [FontAwesomeFX]: https://bitbucket.org/Jerady/fontawesomefx
    [ControlsFX]: http://fxexperience.com/controlsfx/
    [CSSFX]: https://github.com/McFoggy/cssfx
+   [Prism]: https://github.com/PrismJS/prism

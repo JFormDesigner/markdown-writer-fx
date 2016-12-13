@@ -51,6 +51,7 @@ import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.richtext.model.Paragraph;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
 import org.fxmisc.richtext.model.TwoDimensional.Bias;
+import org.markdownwriterfx.syntaxhighlighter.SyntaxHighlighter;
 import org.markdownwriterfx.util.Range;
 
 /**
@@ -108,6 +109,34 @@ class MarkdownSyntaxHighlighter
 		reference,
 		abbrdef,
 		abbr,
+
+		_c1, _c2, _c3, _c4, _c5, _c6, _c7, _c8, _c9, _c10,
+		_c11, _c12, _c13, _c14, _c15, _c16, _c17, _c18, _c19, _c20;
+
+		private static final HashMap<String, StyleClass> customMap = new HashMap<>();
+		private static int nextCustom = 1;
+		private String cssClass;
+		private String cssClass2;
+
+		static StyleClass custom(String cssClass) {
+			return custom(cssClass, null);
+		}
+
+		static StyleClass custom(String cssClass, String cssClass2) {
+			StyleClass styleClass = customMap.get(cssClass);
+			if (styleClass != null)
+				return styleClass;
+
+			styleClass = StyleClass.valueOf("_c" + nextCustom++);
+			styleClass.cssClass = cssClass;
+			styleClass.cssClass2 = cssClass2;
+			customMap.put(cssClass, styleClass);
+			return styleClass;
+		}
+
+		String cssClass() {
+			return (cssClass != null) ? cssClass : name();
+		}
 	};
 
 	private static final HashMap<Long, Collection<String>> styleClassesCache = new HashMap<>();
@@ -131,7 +160,6 @@ class MarkdownSyntaxHighlighter
 
 		// blocks
 		node2lineStyle.put(FencedCodeBlock.class, StyleClass.pre);
-		node2style.put(FencedCodeBlock.class, StyleClass.pre);
 		node2lineStyle.put(IndentedCodeBlock.class, StyleClass.pre);
 		node2style.put(IndentedCodeBlock.class, StyleClass.pre);
 		node2style.put(BlockQuote.class, StyleClass.blockquote);
@@ -151,8 +179,6 @@ class MarkdownSyntaxHighlighter
 		node2style.put(TableRow.class, StyleClass.tr);
 
 		// misc
-		node2style.put(HtmlBlock.class, StyleClass.html);
-		node2style.put(HtmlInline.class, StyleClass.html);
 		node2style.put(Reference.class, StyleClass.reference);
 		node2style.put(AbbreviationBlock.class, StyleClass.abbrdef);
 		node2style.put(Abbreviation.class, StyleClass.abbr);
@@ -183,7 +209,14 @@ class MarkdownSyntaxHighlighter
 			new VisitHandler<>(BulletListItem.class, this::visit),
 			new VisitHandler<>(OrderedListItem.class, this::visit),
 			new VisitHandler<>(TaskListItem.class, this::visit),
-			new VisitHandler<>(TableCell.class, this::visit))
+			new VisitHandler<>(TableCell.class, this::visit),
+			new VisitHandler<>(FencedCodeBlock.class, this::visit),
+			new VisitHandler<>(HtmlBlock.class, this::visit),
+			new VisitHandler<>(HtmlCommentBlock.class, this::visit),
+			new VisitHandler<>(HtmlInnerBlock.class, this::visit),
+			new VisitHandler<>(HtmlInnerBlockComment.class, this::visit),
+			new VisitHandler<>(HtmlInline.class, this::visit),
+			new VisitHandler<>(HtmlInlineComment.class, this::visit))
 		{
 			@Override
 			public void visit(Node node) {
@@ -293,8 +326,11 @@ class MarkdownSyntaxHighlighter
 
 		styleClasses = new ArrayList<>(1);
 		for (StyleClass styleClass : StyleClass.values()) {
-			if ((bits & (1L << styleClass.ordinal())) != 0)
-				styleClasses.add(styleClass.name());
+			if ((bits & (1L << styleClass.ordinal())) != 0) {
+				styleClasses.add(styleClass.cssClass());
+				if (styleClass.cssClass2 != null)
+					styleClasses.add(styleClass.cssClass2);
+			}
 		}
 		if (extraStyledRanges != null) {
 			long extraStyleBits = 1L << StyleClass.values().length;
@@ -333,6 +369,40 @@ class MarkdownSyntaxHighlighter
 
 	private void visit(TableCell node) {
 		setStyleClass(node, node.isHeader() ?  StyleClass.th : StyleClass.td);
+	}
+
+	private void visit(FencedCodeBlock node) {
+		String language = node.getInfo().toString();
+		if (highlightSequence(node.getContentChars(), language)) {
+			setStyleClass(node.getOpeningFence(), StyleClass.pre);
+			setStyleClass(node.getInfo(), StyleClass.pre);
+			setStyleClass(node.getClosingFence(), StyleClass.pre);
+		} else
+			setStyleClass(node, StyleClass.pre);
+	}
+
+	private void visit(HtmlBlockBase node) {
+		setLineStyleClass(node, StyleClass.html);
+		highlightSequence(node.getChars(), "html");
+	}
+
+	private void visit(HtmlInlineBase node) {
+		setStyleClass(node, StyleClass.html);
+		highlightSequence(node.getChars(), "html");
+	}
+
+	private boolean highlightSequence(BasedSequence sequence, String language) {
+		SyntaxHighlighter.HighlightConsumer highlighter = new SyntaxHighlighter.HighlightConsumer() {
+			private int index = sequence.getStartOffset();
+
+			@Override
+			public void accept(int length, String style) {
+				if (style != null)
+					addStyledRange(styleRanges, index, index + length, StyleClass.custom(style, "token"));
+				index += length;
+			}
+		};
+		return SyntaxHighlighter.highlight(sequence.toString(), language, highlighter);
 	}
 
 	private void setStyleClass(Node node, StyleClass styleClass) {

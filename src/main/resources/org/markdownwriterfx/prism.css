@@ -1,0 +1,61 @@
+/**
+ * JavaFX version of prism.css
+ *
+ * prism.js default theme for JavaScript, CSS and HTML
+ * Based on dabblet (http://dabblet.com)
+ * @author Lea Verou
+ */
+
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+	-fx-fill: slategray;
+}
+
+.token.punctuation {
+	-fx-fill: #999;
+}
+
+.token.property,
+.token.tag,
+.token.boolean,
+.token.number,
+.token.constant,
+.token.symbol,
+.token.deleted {
+	-fx-fill: #905;
+}
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
+	-fx-fill: #690;
+}
+
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string {
+	-fx-fill: #a67f59;
+}
+
+.token.atrule,
+.token.attr-value,
+.token.keyword {
+	-fx-fill: #07a;
+}
+
+.token.function {
+	-fx-fill: #DD4A68;
+}
+
+.token.regex,
+.token.important,
+.token.variable {
+	-fx-fill: #e90;
+}
