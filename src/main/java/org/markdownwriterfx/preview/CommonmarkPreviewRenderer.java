@@ -60,7 +60,7 @@ class CommonmarkPreviewRenderer
 	}
 
 	@Override
-	public String getHtml() {
+	public String getHtml(boolean source) {
 		if (html == null)
 			html = toHtml();
 		return html;

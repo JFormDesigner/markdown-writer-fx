@@ -29,7 +29,12 @@ package org.markdownwriterfx.preview;
 
 import org.markdownwriterfx.options.MarkdownExtensions;
 import com.vladsch.flexmark.ast.Node;
+import com.vladsch.flexmark.html.AttributeProvider;
 import com.vladsch.flexmark.html.HtmlRenderer;
+import com.vladsch.flexmark.html.IndependentAttributeProviderFactory;
+import com.vladsch.flexmark.html.renderer.AttributablePart;
+import com.vladsch.flexmark.html.renderer.NodeRendererContext;
+import com.vladsch.flexmark.util.options.Attributes;
 
 /**
  * flexmark-java preview.
@@ -41,7 +46,8 @@ class FlexmarkPreviewRenderer
 {
 	private Node astRoot;
 
-	private String html;
+	private String htmlPreview;
+	private String htmlSource;
 	private String ast;
 
 	@Override
@@ -51,15 +57,22 @@ class FlexmarkPreviewRenderer
 
 		this.astRoot = astRoot;
 
-		html = null;
+		htmlPreview = null;
+		htmlSource = null;
 		ast = null;
 	}
 
 	@Override
-	public String getHtml() {
-		if (html == null)
-			html = toHtml();
-		return html;
+	public String getHtml(boolean source) {
+		if (source) {
+			if (htmlSource == null)
+				htmlSource = toHtml(true);
+			return htmlSource;
+		} else {
+			if (htmlPreview == null)
+				htmlPreview = toHtml(false);
+			return htmlPreview;
+		}
 	}
 
 	@Override
@@ -69,14 +82,15 @@ class FlexmarkPreviewRenderer
 		return ast;
 	}
 
-	private String toHtml() {
+	private String toHtml(boolean source) {
 		if (astRoot == null)
 			return "";
 
-		HtmlRenderer renderer = HtmlRenderer.builder()
-				.extensions(MarkdownExtensions.getFlexmarkExtensions())
-				.build();
-		return renderer.render(astRoot);
+		HtmlRenderer.Builder builder = HtmlRenderer.builder()
+				.extensions(MarkdownExtensions.getFlexmarkExtensions());
+		if (!source)
+			builder.attributeProviderFactory(new MyAttributeProvider.Factory());
+		return builder.build().render(astRoot);
 	}
 
 	private String printTree() {
@@ -96,5 +110,25 @@ class FlexmarkPreviewRenderer
 		indent += "    ";
 		for (Node child = node.getFirstChild(); child != null; child = child.getNext())
 			printNode(buf, indent, child);
+	}
+
+	//---- class MyAttributeProvider ------------------------------------------
+
+	private static class MyAttributeProvider
+		implements AttributeProvider
+	{
+		private static class Factory
+			extends IndependentAttributeProviderFactory
+		{
+			@Override
+			public AttributeProvider create(NodeRendererContext context) {
+				return new MyAttributeProvider();
+			}
+		}
+
+		@Override
+		public void setAttributes(Node node, AttributablePart part, Attributes attributes) {
+			attributes.addValue("data-pos", node.getStartOffset() + ":" + node.getEndOffset());
+		}
 	}
 }

@@ -59,7 +59,7 @@ public class MarkdownPreviewPane
 
 	interface Renderer {
 		void update(String markdownText, Node astRoot);
-		String getHtml();
+		String getHtml(boolean source);
 		String getAST();
 	}
 

@@ -120,7 +120,7 @@ class WebViewPreview
 			+ base
 			+ "</head>\n"
 			+ "<body" + scrollScript + ">\n"
-			+ renderer.getHtml()
+			+ renderer.getHtml(false)
 			+ "</body>\n"
 			+ "</html>");
 	}

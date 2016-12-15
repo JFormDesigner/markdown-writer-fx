@@ -74,7 +74,7 @@ class HtmlSourcePreview
 
 	@Override
 	public void update(Renderer renderer, Path path) {
-		String html = renderer.getHtml();
+		String html = renderer.getHtml(true);
 		textArea.replaceText(html, computeHighlighting(html));
 	}
 
