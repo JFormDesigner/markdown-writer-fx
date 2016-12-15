@@ -27,14 +27,20 @@
 
 package org.markdownwriterfx.preview;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import org.markdownwriterfx.options.MarkdownExtensions;
+import org.markdownwriterfx.util.Range;
 import com.vladsch.flexmark.ast.Node;
+import com.vladsch.flexmark.ast.NodeVisitor;
 import com.vladsch.flexmark.html.AttributeProvider;
 import com.vladsch.flexmark.html.HtmlRenderer;
 import com.vladsch.flexmark.html.IndependentAttributeProviderFactory;
 import com.vladsch.flexmark.html.renderer.AttributablePart;
 import com.vladsch.flexmark.html.renderer.NodeRendererContext;
 import com.vladsch.flexmark.util.options.Attributes;
+import com.vladsch.flexmark.util.sequence.BasedSequence;
 
 /**
  * flexmark-java preview.
@@ -80,6 +86,34 @@ class FlexmarkPreviewRenderer
 		if (ast == null)
 			ast = printTree();
 		return ast;
+	}
+
+	@Override
+	public List<Range> findSequences(int startOffset, int endOffset) {
+		ArrayList<Range> sequences = new ArrayList<>();
+		NodeVisitor visitor = new NodeVisitor(Collections.emptyList()) {
+			@Override
+			public void visit(Node node) {
+				BasedSequence chars = node.getChars();
+				if (isInSequence(startOffset, endOffset, chars))
+					sequences.add(new Range(chars.getStartOffset(), chars.getEndOffset()));
+
+				for (BasedSequence segment : node.getSegments()) {
+					if (isInSequence(startOffset, endOffset, segment))
+						sequences.add(new Range(segment.getStartOffset(), segment.getEndOffset()));
+				}
+
+				visitChildren(node);
+			}
+		};
+		visitor.visit(astRoot);
+		return sequences;
+	}
+
+	private boolean isInSequence(int start, int end, BasedSequence sequence) {
+		if (end == start)
+			end++;
+		return start < sequence.getEndOffset() && end > sequence.getStartOffset();
 	}
 
 	private String toHtml(boolean source) {

@@ -27,7 +27,10 @@
 
 package org.markdownwriterfx.preview;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import org.commonmark.node.AbstractVisitor;
 import org.commonmark.node.Code;
 import org.commonmark.node.FencedCodeBlock;
 import org.commonmark.node.HtmlBlock;
@@ -37,6 +40,7 @@ import org.commonmark.node.IndentedCodeBlock;
 import org.commonmark.node.Link;
 import org.commonmark.node.Node;
 import org.commonmark.node.Text;
+import org.commonmark.node.Visitor;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.AttributeProvider;
 import org.commonmark.renderer.html.AttributeProviderContext;
@@ -95,6 +99,34 @@ class CommonmarkPreviewRenderer
 		if (ast == null)
 			ast = printTree();
 		return ast;
+	}
+
+	@Override
+	public List<Range> findSequences(int startOffset, int endOffset) {
+		ArrayList<Range> sequences = new ArrayList<>();
+
+		Node astRoot = toAstRoot();
+		if (astRoot == null)
+			return sequences;
+
+		Visitor visitor = new AbstractVisitor() {
+			@Override
+			protected void visitChildren(Node node) {
+				Range range = toSourcePositions().get(node);
+				if (range != null && isInRange(startOffset, endOffset, range))
+					sequences.add(range);
+
+				super.visitChildren(node);
+			}
+		};
+		astRoot.accept(visitor);
+		return sequences;
+	}
+
+	private boolean isInRange(int start, int end, Range range) {
+		if (end == start)
+			end++;
+		return start < range.end && end > range.start;
 	}
 
 	private Node parseMarkdown(String text) {

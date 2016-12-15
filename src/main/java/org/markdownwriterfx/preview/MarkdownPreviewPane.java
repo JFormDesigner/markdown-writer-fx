@@ -28,6 +28,7 @@
 package org.markdownwriterfx.preview;
 
 import java.nio.file.Path;
+import java.util.List;
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
@@ -37,6 +38,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.control.IndexRange;
 import javafx.scene.layout.BorderPane;
 import org.markdownwriterfx.options.Options.RendererType;
+import org.markdownwriterfx.util.Range;
 import com.vladsch.flexmark.ast.Node;
 
 /**
@@ -51,7 +53,7 @@ public class MarkdownPreviewPane
 	private final BorderPane pane = new BorderPane();
 	private final WebViewPreview webViewPreview = new WebViewPreview(this);
 	private final HtmlSourcePreview htmlSourcePreview = new HtmlSourcePreview();
-	private final ASTPreview astPreview = new ASTPreview(this);
+	private final ASTPreview astPreview = new ASTPreview();
 
 	private RendererType activeRendererType;
 	private Renderer activeRenderer;
@@ -61,6 +63,7 @@ public class MarkdownPreviewPane
 		void update(String markdownText, Node astRoot);
 		String getHtml(boolean source);
 		String getAST();
+		List<Range> findSequences(int startOffset, int endOffset);
 	}
 
 	interface Preview {
