@@ -27,10 +27,16 @@
 
 package org.markdownwriterfx.preview;
 
+import java.util.Map;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
+import org.commonmark.renderer.html.AttributeProvider;
+import org.commonmark.renderer.html.AttributeProviderContext;
+import org.commonmark.renderer.html.AttributeProviderFactory;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.markdownwriterfx.options.MarkdownExtensions;
+import org.markdownwriterfx.util.CommonmarkSourcePositions;
+import org.markdownwriterfx.util.Range;
 
 /**
  * commonmark-java preview.
@@ -43,7 +49,9 @@ class CommonmarkPreviewRenderer
 	private String markdownText;
 	private com.vladsch.flexmark.ast.Node flexAstRoot;
 	private Node astRoot;
-	private String html;
+	private CommonmarkSourcePositions sourcePositions;
+	private String htmlPreview;
+	private String htmlSource;
 	private String ast;
 
 	@Override
@@ -55,15 +63,23 @@ class CommonmarkPreviewRenderer
 		this.flexAstRoot = astRoot;
 
 		this.astRoot = null;
-		html = null;
+		sourcePositions = null;
+		htmlPreview = null;
+		htmlSource = null;
 		ast = null;
 	}
 
 	@Override
 	public String getHtml(boolean source) {
-		if (html == null)
-			html = toHtml();
-		return html;
+		if (source) {
+			if (htmlSource == null)
+				htmlSource = toHtml(true);
+			return htmlSource;
+		} else {
+			if (htmlPreview == null)
+				htmlPreview = toHtml(false);
+			return htmlPreview;
+		}
 	}
 
 	@Override
@@ -86,15 +102,22 @@ class CommonmarkPreviewRenderer
 		return astRoot;
 	}
 
-	private String toHtml() {
+	private CommonmarkSourcePositions toSourcePositions() {
+		if (sourcePositions == null)
+			sourcePositions = new CommonmarkSourcePositions(markdownText, toAstRoot());
+		return sourcePositions;
+	}
+
+	private String toHtml(boolean source) {
 		Node astRoot = toAstRoot();
 		if (astRoot == null)
 			return "";
 
-		HtmlRenderer renderer = HtmlRenderer.builder()
-				.extensions(MarkdownExtensions.getCommonmarkExtensions())
-				.build();
-		return renderer.render(astRoot);
+		HtmlRenderer.Builder builder = HtmlRenderer.builder()
+				.extensions(MarkdownExtensions.getCommonmarkExtensions());
+		if (!source)
+			builder.attributeProviderFactory(new MyAttributeProvider());
+		return builder.build().render(astRoot);
 	}
 
 	private String printTree() {
@@ -112,5 +135,23 @@ class CommonmarkPreviewRenderer
 		indent += "    ";
 		for (Node child = node.getFirstChild(); child != null; child = child.getNext())
 			printNode(buf, indent, child);
+	}
+
+	//---- class MyAttributeProvider ------------------------------------------
+
+	private class MyAttributeProvider
+		implements AttributeProviderFactory, AttributeProvider
+	{
+		@Override
+		public AttributeProvider create(AttributeProviderContext context) {
+			return this;
+		}
+
+		@Override
+		public void setAttributes(Node node, String tagName, Map<String, String> attributes) {
+			Range range = toSourcePositions().get(node);
+			if (range != null)
+				attributes.put("data-pos", range.start + ":" + range.end);
+		}
 	}
 }
