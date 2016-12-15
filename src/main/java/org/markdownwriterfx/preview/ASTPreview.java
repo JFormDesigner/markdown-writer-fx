@@ -87,8 +87,6 @@ class ASTPreview
 
 		String ast = renderer.getAST();
 		textArea.replaceText(ast, computeHighlighting(ast));
-
-		selectionChanged(textArea.getSelection());
 	}
 
 	@Override

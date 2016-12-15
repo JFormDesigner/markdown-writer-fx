@@ -135,6 +135,7 @@ public class MarkdownPreviewPane
 
 			activeRenderer.update(getMarkdownText(), getMarkdownAST());
 			activePreview.update(activeRenderer, getPath());
+			activePreview.selectionChanged(selection.get());
 		});
 	}
 
