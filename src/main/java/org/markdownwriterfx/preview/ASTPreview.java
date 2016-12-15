@@ -162,29 +162,18 @@ class ASTPreview
 
 	//---- syntax highlighting ------------------------------------------------
 
-	private static final Pattern PATTERN = Pattern.compile("(?m)^\\s*(\\w+)"
-			+ "(?:(?<COMMONMARK>\\{(.*)\\})"
-			+   "|(?<FLEXMARK>\\[.*\\]))");
-
-	private static final Pattern COMMONMARK_ATTRIBUTES = Pattern.compile("(\\w+\\h*)(=)(\\h*[^,]*)");
-	private static final Pattern FLEXMARK_ATTRIBUTES = Pattern.compile("(?:(\\w+:)|(\"[^\"]*\")|(\\d+)|([\\[\\],]))");
+	private static final Pattern PATTERN = Pattern.compile("(?m)^\\s*(\\w+)(\\[.*$)");
+	private static final Pattern ATTRIBUTES = Pattern.compile("(?:(\\w+[=:])|(\"[^\"]*\")|(\\d+)|([\\[\\],]))");
 
 	// groups in PATTERN
 	private static final int GROUP_NODE_NAME = 1;
-	private static final int GROUP_COMMONMARK = 2;
-	private static final int GROUP_COMMONMARK_ATTRS = 3;
-	private static final int GROUP_FLEXMARK = 4;
+	private static final int GROUP_ATTRS = 2;
 
-	// groups in COMMONMARK_ATTRIBUTES
-	private static final int GROUP_COMMONMARK_ATTR_NAME = 1;
-	private static final int GROUP_COMMONMARK_EQUAL_SYMBOL = 2;
-	private static final int GROUP_COMMONMARK_ATTR_VALUE = 3;
-
-	// groups in FLEXMARK_ATTRIBUTES
-	private static final int GROUP_FLEXMARK_ATTR_NAME = 1;
-	private static final int GROUP_FLEXMARK_STRING = 2;
-	private static final int GROUP_FLEXMARK_NUMBER = 3;
-	private static final int GROUP_FLEXMARK_PUNCTATION = 4;
+	// groups in ATTRIBUTES
+	private static final int GROUP_ATTR_NAME = 1;
+	private static final int GROUP_ATTR_STRING = 2;
+	private static final int GROUP_ATTR_NUMBER = 3;
+	private static final int GROUP_ATTR_PUNCTATION = 4;
 
 	private static final Collection<String> STYLE_PUNCTATION = Arrays.asList("punctuation", "token");
 	private static final Collection<String> STYLE_NODE       = Arrays.asList("tag", "token");
@@ -199,56 +188,36 @@ class ASTPreview
 			spansBuilder.add(Collections.emptyList(), matcher.start(GROUP_NODE_NAME) - lastKwEnd);
 			spansBuilder.add(STYLE_NODE, groupLength(matcher, GROUP_NODE_NAME));
 
-			String str;
-			if((str = matcher.group(GROUP_COMMONMARK_ATTRS)) != null) {
-				String attributesText = str;
+			String attributesText = matcher.group(GROUP_ATTRS);
+			if(!attributesText.isEmpty()) {
+				lastKwEnd = 0;
 
-				spansBuilder.add(STYLE_PUNCTATION, matcher.start(GROUP_COMMONMARK_ATTRS) - matcher.start(GROUP_COMMONMARK));
+				Matcher amatcher = ATTRIBUTES.matcher(attributesText);
+				while(amatcher.find()) {
+					if (amatcher.start() > lastKwEnd)
+						spansBuilder.add(Collections.emptyList(), amatcher.start() - lastKwEnd);
 
-				if(!attributesText.isEmpty()) {
-					lastKwEnd = 0;
+					Collection<String> style = null;
+					int length = amatcher.end() - amatcher.start();
+					if (amatcher.group(GROUP_ATTR_NAME) != null) {
+						style = STYLE_ATTR_NAME;
+						length--;
+					} else if (amatcher.group(GROUP_ATTR_STRING) != null)
+						style = STYLE_ATTR_VALUE;
+					else if (amatcher.group(GROUP_ATTR_NUMBER) != null)
+						style = STYLE_ATTR_VALUE;
+					else if (amatcher.group(GROUP_ATTR_PUNCTATION) != null)
+						style = STYLE_PUNCTATION;
+					else
+						style = Collections.emptyList();
+					spansBuilder.add(style, length);
+					if (style == STYLE_ATTR_NAME)
+						spansBuilder.add(STYLE_PUNCTATION, 1);
 
-					Matcher amatcher = COMMONMARK_ATTRIBUTES.matcher(attributesText);
-					while(amatcher.find()) {
-						spansBuilder.add(STYLE_PUNCTATION, amatcher.start() - lastKwEnd);
-						spansBuilder.add(STYLE_ATTR_NAME, groupLength(amatcher, GROUP_COMMONMARK_ATTR_NAME));
-						spansBuilder.add(STYLE_PUNCTATION, groupLength(amatcher, GROUP_COMMONMARK_EQUAL_SYMBOL));
-						spansBuilder.add(STYLE_ATTR_VALUE, groupLength(amatcher, GROUP_COMMONMARK_ATTR_VALUE));
-						lastKwEnd = amatcher.end();
-					}
-					if(attributesText.length() > lastKwEnd)
-						spansBuilder.add(Collections.emptyList(), attributesText.length() - lastKwEnd);
+					lastKwEnd = amatcher.end();
 				}
-
-				spansBuilder.add(STYLE_PUNCTATION, matcher.end(GROUP_COMMONMARK) - matcher.end(GROUP_COMMONMARK_ATTRS));
-			} else if((str = matcher.group(GROUP_FLEXMARK)) != null) {
-				String attributesText = str;
-				if(!attributesText.isEmpty()) {
-					lastKwEnd = 0;
-
-					Matcher amatcher = FLEXMARK_ATTRIBUTES.matcher(attributesText);
-					while(amatcher.find()) {
-						if (amatcher.start() > lastKwEnd)
-							spansBuilder.add(Collections.emptyList(), amatcher.start() - lastKwEnd);
-
-						Collection<String> style = null;
-						if (amatcher.group(GROUP_FLEXMARK_ATTR_NAME) != null)
-							style = STYLE_ATTR_NAME;
-						else if (amatcher.group(GROUP_FLEXMARK_STRING) != null)
-							style = STYLE_ATTR_VALUE;
-						else if (amatcher.group(GROUP_FLEXMARK_NUMBER) != null)
-							style = STYLE_ATTR_VALUE;
-						else if (amatcher.group(GROUP_FLEXMARK_PUNCTATION) != null)
-							style = STYLE_PUNCTATION;
-						else
-							style = Collections.emptyList();
-						spansBuilder.add(style, amatcher.end() - amatcher.start());
-
-						lastKwEnd = amatcher.end();
-					}
-					if(attributesText.length() > lastKwEnd)
-						spansBuilder.add(Collections.emptyList(), attributesText.length() - lastKwEnd);
-				}
+				if(attributesText.length() > lastKwEnd)
+					spansBuilder.add(Collections.emptyList(), attributesText.length() - lastKwEnd);
 			}
 			lastKwEnd = matcher.end();
 		}
