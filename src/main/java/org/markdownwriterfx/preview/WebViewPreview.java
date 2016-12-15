@@ -35,6 +35,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import javafx.concurrent.Worker.State;
 import javafx.scene.control.IndexRange;
 import javafx.scene.web.WebView;
 import org.markdownwriterfx.preview.MarkdownPreviewPane.Renderer;
@@ -54,6 +55,7 @@ class WebViewPreview
 
 	private final MarkdownPreviewPane previewPane;
 	private final WebView webView = new WebView();
+	private final ArrayList<Runnable> runWhenLoadedList = new ArrayList<>();
 	private int lastScrollX;
 	private int lastScrollY;
 
@@ -61,6 +63,23 @@ class WebViewPreview
 		this.previewPane = previewPane;
 
 		webView.setFocusTraversable(false);
+
+		webView.getEngine().getLoadWorker().stateProperty().addListener((ob,o,n) -> {
+			if (n == State.SUCCEEDED && !runWhenLoadedList.isEmpty()) {
+				ArrayList<Runnable> runnables = new ArrayList<>(runWhenLoadedList);
+				runWhenLoadedList.clear();
+
+				for (Runnable runnable : runnables)
+					runnable.run();
+			}
+		});
+	}
+
+	private void runWhenLoaded(Runnable runnable) {
+		if (webView.getEngine().getLoadWorker().isRunning())
+			runWhenLoadedList.add(runnable);
+		else
+			runnable.run();
 	}
 
 	@Override
@@ -102,9 +121,10 @@ class WebViewPreview
 
 	@Override
 	public void scrollY(double value) {
-		webView.getEngine().executeScript(
-			"if(document.body != null)" +
-			"  window.scrollTo(0, (document.body.scrollHeight - window.innerHeight) * "+value+");");
+		runWhenLoaded(() -> {
+			webView.getEngine().executeScript(
+				"window.scrollTo(0, (document.body.scrollHeight - window.innerHeight) * "+value+");");
+		});
 	}
 
 	@Override
