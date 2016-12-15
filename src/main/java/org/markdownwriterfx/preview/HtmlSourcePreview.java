@@ -50,17 +50,25 @@ import org.markdownwriterfx.util.Utils;
 class HtmlSourcePreview
 	implements MarkdownPreviewPane.Preview
 {
-	private final PreviewStyledTextArea textArea = new PreviewStyledTextArea();
-	private final VirtualizedScrollPane<StyleClassedTextArea> scrollPane = new VirtualizedScrollPane<>(textArea);
+	private PreviewStyledTextArea textArea;
+	private VirtualizedScrollPane<StyleClassedTextArea> scrollPane;
 	private ScrollBar vScrollBar;
 
 	HtmlSourcePreview() {
+	}
+
+	private void createNodes() {
+		textArea = new PreviewStyledTextArea();
 		textArea.setWrapText(true);
 		textArea.getStylesheets().add("org/markdownwriterfx/prism.css");
+
+		scrollPane = new VirtualizedScrollPane<>(textArea);
 	}
 
 	@Override
 	public javafx.scene.Node getNode() {
+		if (scrollPane == null)
+			createNodes();
 		return scrollPane;
 	}
 

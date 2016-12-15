@@ -54,14 +54,17 @@ class WebViewPreview
 	private static final HashMap<String, String> prismLangDependenciesMap = new HashMap<>();
 
 	private final MarkdownPreviewPane previewPane;
-	private final WebView webView = new WebView();
+	private WebView webView;
 	private final ArrayList<Runnable> runWhenLoadedList = new ArrayList<>();
 	private int lastScrollX;
 	private int lastScrollY;
 
 	WebViewPreview(MarkdownPreviewPane previewPane) {
 		this.previewPane = previewPane;
+	}
 
+	private void createNodes() {
+		webView = new WebView();
 		webView.setFocusTraversable(false);
 
 		webView.getEngine().getLoadWorker().stateProperty().addListener((ob,o,n) -> {
@@ -84,6 +87,8 @@ class WebViewPreview
 
 	@Override
 	public javafx.scene.Node getNode() {
+		if (webView == null)
+			createNodes();
 		return webView;
 	}
 
