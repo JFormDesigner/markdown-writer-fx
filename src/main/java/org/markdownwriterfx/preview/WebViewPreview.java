@@ -115,6 +115,7 @@ class WebViewPreview
 			+ "<html>\n"
 			+ "<head>\n"
 			+ "<link rel=\"stylesheet\" href=\"" + getClass().getResource("markdownpad-github.css") + "\">\n"
+			+ "<script src=\"" + getClass().getResource("preview.js") + "\"></script>\n"
 			+ prismSyntaxHighlighting()
 			+ base
 			+ "</head>\n"
@@ -127,8 +128,7 @@ class WebViewPreview
 	@Override
 	public void scrollY(double value) {
 		runWhenLoaded(() -> {
-			webView.getEngine().executeScript(
-				"window.scrollTo(0, (document.body.scrollHeight - window.innerHeight) * "+value+");");
+			webView.getEngine().executeScript("preview.scrollTo(" + value + ");");
 		});
 	}
 
