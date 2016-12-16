@@ -59,6 +59,9 @@ class FlexmarkPreviewRenderer
 
 	@Override
 	public void update(String markdownText, Node astRoot) {
+		assert markdownText != null;
+		assert astRoot != null;
+
 		if (this.astRoot == astRoot)
 			return;
 
@@ -118,9 +121,6 @@ class FlexmarkPreviewRenderer
 	}
 
 	private String toHtml(boolean source) {
-		if (astRoot == null)
-			return "";
-
 		HtmlRenderer.Builder builder = HtmlRenderer.builder()
 				.extensions(MarkdownExtensions.getFlexmarkExtensions());
 		if (!source)
@@ -129,9 +129,6 @@ class FlexmarkPreviewRenderer
 	}
 
 	private String printTree() {
-		if (astRoot == null)
-			return "";
-
 		StringBuilder buf = new StringBuilder(100);
 		printNode(buf, "", astRoot);
 		return buf.toString().replace(Node.SPLICE, "...");

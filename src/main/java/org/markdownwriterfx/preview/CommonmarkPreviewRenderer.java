@@ -69,6 +69,9 @@ class CommonmarkPreviewRenderer
 
 	@Override
 	public void update(String markdownText, com.vladsch.flexmark.ast.Node astRoot) {
+		assert markdownText != null;
+		assert astRoot != null;
+
 		if (this.flexAstRoot == astRoot)
 			return;
 
@@ -134,7 +137,7 @@ class CommonmarkPreviewRenderer
 		Parser parser = Parser.builder()
 				.extensions(MarkdownExtensions.getCommonmarkExtensions())
 				.build();
-		return parser.parse(text != null ? text : "");
+		return parser.parse(text);
 	}
 
 	private Node toAstRoot() {

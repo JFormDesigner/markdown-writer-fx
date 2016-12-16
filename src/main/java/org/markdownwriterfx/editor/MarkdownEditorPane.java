@@ -125,6 +125,10 @@ public class MarkdownEditorPane
 		updateShowLineNo();
 		updateShowWhitespace();
 
+		// initialize properties
+		markdownText.set("");
+		markdownAST.set(parseMarkdown(""));
+
 		// find/replace
 		findReplacePane = new FindReplacePane(textArea);
 		findHitsChangeListener = this::findHitsChanged;
