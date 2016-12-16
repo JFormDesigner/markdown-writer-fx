@@ -137,7 +137,7 @@ class WebViewPreview
 	}
 
 	private String prismSyntaxHighlighting() {
-		Node astRoot = previewPane.getMarkdownAST();
+		Node astRoot = previewPane.markdownASTProperty().get();
 		if (astRoot == null)
 			return "";
 

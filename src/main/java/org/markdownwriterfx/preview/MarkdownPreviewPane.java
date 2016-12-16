@@ -133,8 +133,8 @@ public class MarkdownPreviewPane
 		Platform.runLater(() -> {
 			updateRunLaterPending = false;
 
-			activeRenderer.update(getMarkdownText(), getMarkdownAST());
-			activePreview.update(activeRenderer, getPath());
+			activeRenderer.update(markdownText.get(), markdownAST.get());
+			activePreview.update(activeRenderer, path.get());
 			activePreview.selectionChanged(selection.get());
 		});
 	}
@@ -151,7 +151,7 @@ public class MarkdownPreviewPane
 
 		Platform.runLater(() -> {
 			scrollYrunLaterPending = false;
-			activePreview.scrollY(getScrollY());
+			activePreview.scrollY(scrollY.get());
 		});
 	}
 
@@ -164,26 +164,18 @@ public class MarkdownPreviewPane
 
 	// 'path' property
 	private final ObjectProperty<Path> path = new SimpleObjectProperty<>();
-	public Path getPath() { return path.get(); }
-	public void setPath(Path path) { this.path.set(path); }
 	public ObjectProperty<Path> pathProperty() { return path; }
 
 	// 'markdownText' property
 	private final SimpleStringProperty markdownText = new SimpleStringProperty();
-	public String getMarkdownText() { return markdownText.get(); }
-	public void getMarkdownText(String text) { markdownText.set(text); }
 	public SimpleStringProperty markdownTextProperty() { return markdownText; }
 
 	// 'markdownAST' property
 	private final ObjectProperty<Node> markdownAST = new SimpleObjectProperty<>();
-	public Node getMarkdownAST() { return markdownAST.get(); }
-	public void setMarkdownAST(Node astRoot) { markdownAST.set(astRoot); }
 	public ObjectProperty<Node> markdownASTProperty() { return markdownAST; }
 
 	// 'scrollY' property
 	private final DoubleProperty scrollY = new SimpleDoubleProperty();
-	public double getScrollY() { return scrollY.get(); }
-	public void setScrollY(double value) { scrollY.set(value); }
 	public DoubleProperty scrollYProperty() { return scrollY; }
 
 	// 'selection' property
