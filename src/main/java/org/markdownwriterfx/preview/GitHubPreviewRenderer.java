@@ -29,8 +29,11 @@ package org.markdownwriterfx.preview;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.Collections;
+import java.util.List;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.github.GitHub;
+import org.markdownwriterfx.util.Range;
 import com.vladsch.flexmark.ast.Node;
 
 /**
@@ -55,7 +58,7 @@ class GitHubPreviewRenderer
 	}
 
 	@Override
-	public String getHtml() {
+	public String getHtml(boolean source) {
 		if (html == null)
 			html = toHtml();
 		return html;
@@ -64,6 +67,11 @@ class GitHubPreviewRenderer
 	@Override
 	public String getAST() {
 		return "not supported";
+	}
+
+	@Override
+	public List<Range> findSequences(int startOffset, int endOffset) {
+		return Collections.emptyList();
 	}
 
 	private String toHtml() {
