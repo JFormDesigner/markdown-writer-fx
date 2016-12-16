@@ -33,6 +33,7 @@ import java.util.Map;
 import org.commonmark.node.AbstractVisitor;
 import org.commonmark.node.Code;
 import org.commonmark.node.FencedCodeBlock;
+import org.commonmark.node.Heading;
 import org.commonmark.node.HtmlBlock;
 import org.commonmark.node.HtmlInline;
 import org.commonmark.node.Image;
@@ -203,7 +204,8 @@ class CommonmarkPreviewRenderer
 		} else if (node instanceof Image) {
 			printAttribute(buf, "destination", ((Image)node).getDestination());
 			printAttribute(buf, "title", ((Image)node).getTitle());
-		}
+		} else if (node instanceof Heading)
+			printAttribute(buf, "level", ((Heading)node).getLevel());
 	}
 
 	private void printAttribute(StringBuilder buf, String name, String value) {
@@ -226,6 +228,10 @@ class CommonmarkPreviewRenderer
 			buf.setCharAt(posIndex - 1, '=');
 			buf.setLength(buf.length() - 1);
 		}
+	}
+
+	private void printAttribute(StringBuilder buf, String name, Object value) {
+		buf.append(' ').append(name).append('=').append(value);
 	}
 
 	//---- class MyAttributeProvider ------------------------------------------

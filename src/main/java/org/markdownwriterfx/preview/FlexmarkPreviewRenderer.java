@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.List;
 import org.markdownwriterfx.options.MarkdownExtensions;
 import org.markdownwriterfx.util.Range;
+import com.vladsch.flexmark.ast.Heading;
 import com.vladsch.flexmark.ast.Node;
 import com.vladsch.flexmark.ast.NodeVisitor;
 import com.vladsch.flexmark.html.AttributeProvider;
@@ -139,11 +140,21 @@ class FlexmarkPreviewRenderer
 	private void printNode(StringBuilder buf, String indent, Node node) {
 		buf.append(indent);
 		node.astString(buf, true);
+		printAttributes(buf, node);
 		buf.append('\n');
 
 		indent += "    ";
 		for (Node child = node.getFirstChild(); child != null; child = child.getNext())
 			printNode(buf, indent, child);
+	}
+
+	private void printAttributes(StringBuilder buf, Node node) {
+		if (node instanceof Heading)
+			printAttribute(buf, "level", ((Heading)node).getLevel());
+	}
+
+	private void printAttribute(StringBuilder buf, String name, Object value) {
+		buf.append(' ').append(name).append(':').append(value);
 	}
 
 	//---- class MyAttributeProvider ------------------------------------------
