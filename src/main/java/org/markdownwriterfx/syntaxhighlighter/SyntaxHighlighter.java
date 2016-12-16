@@ -59,7 +59,7 @@ public class SyntaxHighlighter
 			+"|(?<ENTITY>&#?[\\da-z]{1,8};)"
 			+"|(?<COMMENT><!--[^<>]+-->)");
 
-	private static final Pattern ATTRIBUTES = Pattern.compile("(\\w+\\h*)(=)(\\h*\"[^\"]+\")");
+	private static final Pattern ATTRIBUTES = Pattern.compile("([^\\s>\\/]+\\h*)(=)(\\h*\"[^\"]+\")");
 
 	private static final int GROUP_ELEMENT = 1;
 	private static final int GROUP_OPEN_BRACKET = 2;
