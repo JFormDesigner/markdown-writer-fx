@@ -29,11 +29,18 @@ package org.markdownwriterfx.util;
 
 import java.util.IdentityHashMap;
 import org.commonmark.node.AbstractVisitor;
+import org.commonmark.node.BlockQuote;
 import org.commonmark.node.Code;
+import org.commonmark.node.Delimited;
+import org.commonmark.node.Document;
 import org.commonmark.node.FencedCodeBlock;
+import org.commonmark.node.Heading;
 import org.commonmark.node.HtmlBlock;
 import org.commonmark.node.HtmlInline;
+import org.commonmark.node.Image;
 import org.commonmark.node.IndentedCodeBlock;
+import org.commonmark.node.Link;
+import org.commonmark.node.ListItem;
 import org.commonmark.node.Node;
 import org.commonmark.node.Text;
 import org.commonmark.node.Visitor;
@@ -52,52 +59,271 @@ public class CommonmarkSourcePositions
 			private int textIndex = 0;
 
 			@Override
+			public void visit(Document node) {
+				super.visit(node);
+
+				positionsMap.put(node, new Range(0, markdownText.length()));
+			}
+
+			@Override
 			public void visit(Text node) {
 				positionForLiteral(node, node.getLiteral());
+			}
+
+			@Override
+			public void visit(Link node) {
 				super.visit(node);
+
+				if (Utils.safeEquals(node.getDestination(), ((Text)node.getFirstChild()).getLiteral())) {
+					// Syntax: <destination> or without <> if autolinks extension is enabled
+					Range range = get(node);
+					if (range != null && isAt(range.start - 1, '<') && isAt(range.end, '>'))
+						positionsMap.put(node, new Range(range.start - 1, range.end + 1));
+				} else {
+					// Syntax: [text](destination "title")
+					sanitizeLinkOrImage(node, node.getDestination(), node.getTitle(), false);
+				}
+			}
+
+			@Override
+			public void visit(Image node) {
+				super.visit(node);
+
+				// Syntax: ![text](destination "title")
+				sanitizeLinkOrImage(node, node.getDestination(), node.getTitle(), true);
+			}
+
+			private void sanitizeLinkOrImage(Node node, String destination, String title, boolean image) {
+				Range range = get(node);
+				if (range == null)
+					return;
+
+				int start = range.start;
+				int end = range.end;
+				//TODO support ref
+				Range destRange = rangeForText(node, destination);
+				Range titleRange = (title != null) ? rangeForText(node, title) : null;
+				if (titleRange != null) {
+					end = titleRange.end;
+					if (isAt(end, '"'))
+						end++;
+				} else if (destRange != null)
+					end = destRange.end;
+
+				if (isAt(start - 1, '['))
+					start--;
+				if (image && isAt(start - 1, '!'))
+					start--;
+
+				end = skipWhitespaceAfter(end);
+				if (isAt(end, ')'))
+					end++;
+
+				positionsMap.put(node, new Range(start, end));
 			}
 
 			@Override
 			public void visit(Code node) {
-				positionForLiteral(node, node.getLiteral());
+				Range range = rangeForText(node, node.getLiteral());
+				if (range != null) {
+					int start = skipWhitespaceBefore(range.start);
+					int end = skipWhitespaceAfter(range.end);
+					while (isAt(start - 1, '`') && isAt(end, '`')) {
+						start--;
+						end++;
+					}
+					positionsMap.put(node, new Range(start, end));
+				}
+			}
+
+			@Override
+			public void visit(Heading node) {
 				super.visit(node);
+
+				Range range = get(node);
+				if (range != null) {
+					int start = skipSpacesBefore(range.start);
+					int end = skipSpacesAfter(range.end);
+					if (isAt(start - 1, '#')) {
+						// ATX heading
+						for (int i = 0; i < node.getLevel(); i++) {
+							if (!isAt(start - 1, '#'))
+								break;
+							start--;
+						}
+					} else {
+						// Setext heading
+						if (isAt(end, '\n'))
+							end++;
+						end = skipSpacesAfter(end);
+						char ch = markdownText.charAt(end);
+						if (ch == '=' || ch == '-') {
+							end++;
+							for (int i = end; i < markdownText.length(); i++) {
+								if (markdownText.charAt(i) != ch)
+									break;
+								end++;
+							}
+						}
+					}
+					positionsMap.put(node, new Range(start, end));
+				} else {
+					// ATX heading without contents
+					//TODO
+				}
+			}
+
+			@Override
+			public void visit(ListItem node) {
+				super.visit(node);
+
+				Range range = get(node);
+				if (range != null) {
+					int start = skipWhitespaceBefore(range.start);
+					if (isAt(start - 1, '-') || isAt(start - 1, '+') || isAt(start - 1, '*'))
+						start--;
+					else if (isAt(start - 1, '.') || isAt(start - 1, ')')) {
+						start--;
+						for (int i = start; i > 0; i--) {
+							if (!Character.isDigit(markdownText.charAt(i - 1)))
+								break;
+							start--;
+						}
+					}
+					positionsMap.put(node, new Range(start, range.end));
+				}
+			}
+
+			@Override
+			public void visit(BlockQuote node) {
+				super.visit(node);
+
+				Range range = get(node);
+				if (range != null) {
+					int start = skipWhitespaceBefore(range.start);
+					if (isAt(start - 1, '>'))
+						start--;
+					positionsMap.put(node, new Range(start, range.end));
+				}
 			}
 
 			@Override
 			public void visit(IndentedCodeBlock node) {
+				//TODO literal does not contain indent of next lines
 				positionForLiteral(node, node.getLiteral());
-				super.visit(node);
 			}
 
 			@Override
 			public void visit(FencedCodeBlock node) {
-				positionForLiteral(node, node.getLiteral());
-				super.visit(node);
+				Range range = rangeForText(node, node.getLiteral());
+				if (range != null) {
+					int start = skipWhitespaceBefore(range.start);
+					int end = skipWhitespaceAfter(range.end);
+
+					for (int i = start; i > 0; i--) {
+						char ch = markdownText.charAt(i - 1);
+						if ((ch == '`' || ch == '~') && isAt(i - 3, 3, ch)) {
+							start = i - 3;
+							break;
+						}
+					}
+
+					if (isAt(end, 3, '`') || isAt(end, 3, '~'))
+						end += 3;
+					positionsMap.put(node, new Range(start, end));
+				}
 			}
 
 			@Override
 			public void visit(HtmlBlock node) {
 				positionForLiteral(node, node.getLiteral());
-				super.visit(node);
 			}
 
 			@Override
 			public void visit(HtmlInline node) {
 				positionForLiteral(node, node.getLiteral());
-				super.visit(node);
 			}
 
-			private void positionForLiteral(Node node, String literal) {
-				if (literal == null)
-					return;
+			@Override
+			protected void visitChildren(Node node) {
+				super.visitChildren(node);
+
+				// sanitize Emphasis, StrongEmphasis, Strikethrough and Ins
+				if (node instanceof Delimited) {
+					Range range = get(node);
+					if (range != null) {
+						positionsMap.put(node, new Range(
+							range.start - ((Delimited)node).getOpeningDelimiter().length(),
+							range.end + ((Delimited)node).getClosingDelimiter().length()));
+					}
+				}
+			}
+
+			private void positionForLiteral(Node node, String text) {
+				Range range = rangeForText(node, text);
+				if (range != null)
+					positionsMap.put(node, range);
+			}
+
+			private Range rangeForText(Node node, String text) {
+				if (text == null)
+					return null;
 
 				// TODO handle escaped characters
-				int index = markdownText.indexOf(literal, textIndex);
-				if (index >= 0) {
-					int end = index + literal.length();
-					positionsMap.put(node, new Range(index, end));
-					textIndex = end;
+				int index = markdownText.indexOf(text, textIndex);
+				if (index < 0)
+					return null;
+				int end = index + text.length();
+				textIndex = end;
+				return new Range(index, end);
+			}
+
+			private boolean isAt(int offset, char ch) {
+				if (offset < 0 || offset >= markdownText.length())
+					return false;
+				return markdownText.charAt(offset) == ch;
+			}
+
+			private boolean isAt(int offset, int count, char ch) {
+				for (int i = 0; i < count; i++) {
+					if (!isAt(offset + i, ch))
+						return false;
 				}
+				return true;
+			}
+
+			private int skipWhitespaceBefore(int offset) {
+				for (int i = offset; i > 0; i--) {
+					if (!Character.isWhitespace(markdownText.charAt(i - 1)))
+						return i;
+				}
+				return 0;
+			}
+
+			private int skipWhitespaceAfter(int offset) {
+				for (int i = offset; i < markdownText.length(); i++) {
+					if (!Character.isWhitespace(markdownText.charAt(i)))
+						return i;
+				}
+				return markdownText.length();
+			}
+
+			private int skipSpacesBefore(int offset) {
+				for (int i = offset; i > 0; i--) {
+					char ch = markdownText.charAt(i - 1);
+					if (ch != ' ' && ch != '\t')
+						return i;
+				}
+				return 0;
+			}
+
+			private int skipSpacesAfter(int offset) {
+				for (int i = offset; i < markdownText.length(); i++) {
+					char ch = markdownText.charAt(i);
+					if (ch != ' ' && ch != '\t')
+						return i;
+				}
+				return markdownText.length();
 			}
 		};
 		astRoot.accept(visitor);
