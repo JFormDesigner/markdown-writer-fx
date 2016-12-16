@@ -27,7 +27,6 @@
 
 package org.markdownwriterfx.preview;
 
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -42,6 +41,7 @@ import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
+import org.markdownwriterfx.preview.MarkdownPreviewPane.PreviewContext;
 import org.markdownwriterfx.preview.MarkdownPreviewPane.Renderer;
 import org.markdownwriterfx.util.Range;
 import org.markdownwriterfx.util.Utils;
@@ -58,8 +58,6 @@ class ASTPreview
 	private PreviewStyledTextArea textArea;
 	private VirtualizedScrollPane<StyleClassedTextArea> scrollPane;
 	private ScrollBar vScrollBar;
-
-	private Renderer renderer;
 
 	ASTPreview() {
 	}
@@ -80,17 +78,17 @@ class ASTPreview
 	}
 
 	@Override
-	public void update(Renderer renderer, Path path) {
-		this.renderer = renderer;
-
+	public void update(PreviewContext context, Renderer renderer) {
 		oldSelectionStylesMap.clear();
 
 		String ast = renderer.getAST();
 		textArea.replaceText(ast, computeHighlighting(ast));
+
+		editorSelectionChanged(context, context.getEditorSelection());
 	}
 
 	@Override
-	public void scrollY(double value) {
+	public void scrollY(PreviewContext context, double value) {
 		if (vScrollBar == null)
 			vScrollBar = Utils.findVScrollBar(scrollPane);
 		if (vScrollBar == null)
@@ -107,8 +105,8 @@ class ASTPreview
 	private final HashMap<Integer, StyleSpans<Collection<String>>> oldSelectionStylesMap = new HashMap<>();
 
 	@Override
-	public void selectionChanged(IndexRange range) {
-		List<Range> sequences = renderer.findSequences(range.getStart(), range.getEnd());
+	public void editorSelectionChanged(PreviewContext context, IndexRange range) {
+		List<Range> sequences = context.getRenderer().findSequences(range.getStart(), range.getEnd());
 
 		// restore old styles
 		for (Map.Entry<Integer, StyleSpans<Collection<String>>> e : oldSelectionStylesMap.entrySet())

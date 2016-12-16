@@ -27,7 +27,6 @@
 
 package org.markdownwriterfx.preview;
 
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -38,6 +37,7 @@ import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
+import org.markdownwriterfx.preview.MarkdownPreviewPane.PreviewContext;
 import org.markdownwriterfx.preview.MarkdownPreviewPane.Renderer;
 import org.markdownwriterfx.syntaxhighlighter.SyntaxHighlighter;
 import org.markdownwriterfx.util.Utils;
@@ -73,13 +73,13 @@ class HtmlSourcePreview
 	}
 
 	@Override
-	public void update(Renderer renderer, Path path) {
+	public void update(PreviewContext context, Renderer renderer) {
 		String html = renderer.getHtml(true);
 		textArea.replaceText(html, computeHighlighting(html));
 	}
 
 	@Override
-	public void scrollY(double value) {
+	public void scrollY(PreviewContext context, double value) {
 		if (vScrollBar == null)
 			vScrollBar = Utils.findVScrollBar(scrollPane);
 		if (vScrollBar == null)
@@ -90,7 +90,7 @@ class HtmlSourcePreview
 	}
 
 	@Override
-	public void selectionChanged(IndexRange range) {
+	public void editorSelectionChanged(PreviewContext context, IndexRange range) {
 	}
 
 	//---- selection highlighting ---------------------------------------------

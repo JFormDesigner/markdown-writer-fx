@@ -213,7 +213,7 @@ class FileEditor
 		markdownPreviewPane.pathProperty().bind(pathProperty());
 		markdownPreviewPane.markdownTextProperty().bind(markdownEditorPane.markdownTextProperty());
 		markdownPreviewPane.markdownASTProperty().bind(markdownEditorPane.markdownASTProperty());
-		markdownPreviewPane.selectionProperty().bind(markdownEditorPane.selectionProperty());
+		markdownPreviewPane.editorSelectionProperty().bind(markdownEditorPane.selectionProperty());
 		markdownPreviewPane.scrollYProperty().bind(markdownEditorPane.scrollYProperty());
 
 		// bind the editor undo manager to the properties

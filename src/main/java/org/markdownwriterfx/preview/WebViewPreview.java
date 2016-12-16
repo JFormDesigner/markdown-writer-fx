@@ -38,6 +38,7 @@ import java.util.HashMap;
 import javafx.concurrent.Worker.State;
 import javafx.scene.control.IndexRange;
 import javafx.scene.web.WebView;
+import org.markdownwriterfx.preview.MarkdownPreviewPane.PreviewContext;
 import org.markdownwriterfx.preview.MarkdownPreviewPane.Renderer;
 import com.vladsch.flexmark.ast.FencedCodeBlock;
 import com.vladsch.flexmark.ast.Node;
@@ -53,14 +54,12 @@ class WebViewPreview
 {
 	private static final HashMap<String, String> prismLangDependenciesMap = new HashMap<>();
 
-	private final MarkdownPreviewPane previewPane;
 	private WebView webView;
 	private final ArrayList<Runnable> runWhenLoadedList = new ArrayList<>();
 	private int lastScrollX;
 	private int lastScrollY;
 
-	WebViewPreview(MarkdownPreviewPane previewPane) {
-		this.previewPane = previewPane;
+	WebViewPreview() {
 	}
 
 	private void createNodes() {
@@ -93,7 +92,7 @@ class WebViewPreview
 	}
 
 	@Override
-	public void update(Renderer renderer, Path path) {
+	public void update(PreviewContext context, Renderer renderer) {
 		if (!webView.getEngine().getLoadWorker().isRunning()) {
 			// get window.scrollX and window.scrollY from web engine,
 			// but only if no worker is running (in this case the result would be zero)
@@ -103,6 +102,7 @@ class WebViewPreview
 			lastScrollY = (scrollYobj instanceof Number) ? ((Number)scrollYobj).intValue() : 0;
 		}
 
+		Path path = context.getPath();
 		String base = (path != null)
 				? ("<base href=\"" + path.getParent().toUri().toString() + "\">\n")
 				: "";
@@ -116,7 +116,7 @@ class WebViewPreview
 			+ "<head>\n"
 			+ "<link rel=\"stylesheet\" href=\"" + getClass().getResource("markdownpad-github.css") + "\">\n"
 			+ "<script src=\"" + getClass().getResource("preview.js") + "\"></script>\n"
-			+ prismSyntaxHighlighting()
+			+ prismSyntaxHighlighting(context.getMarkdownAST())
 			+ base
 			+ "</head>\n"
 			+ "<body" + scrollScript + ">\n"
@@ -126,21 +126,17 @@ class WebViewPreview
 	}
 
 	@Override
-	public void scrollY(double value) {
+	public void scrollY(PreviewContext context, double value) {
 		runWhenLoaded(() -> {
 			webView.getEngine().executeScript("preview.scrollTo(" + value + ");");
 		});
 	}
 
 	@Override
-	public void selectionChanged(IndexRange range) {
+	public void editorSelectionChanged(PreviewContext context, IndexRange range) {
 	}
 
-	private String prismSyntaxHighlighting() {
-		Node astRoot = previewPane.markdownASTProperty().get();
-		if (astRoot == null)
-			return "";
-
+	private String prismSyntaxHighlighting(Node astRoot) {
 		initPrismLangDependencies();
 
 		// check whether markdown contains fenced code blocks and remember languages

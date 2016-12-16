@@ -51,9 +51,10 @@ public class MarkdownPreviewPane
 	public enum Type { None, Web, Source, Ast };
 
 	private final BorderPane pane = new BorderPane();
-	private final WebViewPreview webViewPreview = new WebViewPreview(this);
+	private final WebViewPreview webViewPreview = new WebViewPreview();
 	private final HtmlSourcePreview htmlSourcePreview = new HtmlSourcePreview();
 	private final ASTPreview astPreview = new ASTPreview();
+	private final PreviewContext previewContext;
 
 	private RendererType activeRendererType;
 	private Renderer activeRenderer;
@@ -68,19 +69,35 @@ public class MarkdownPreviewPane
 
 	interface Preview {
 		javafx.scene.Node getNode();
-		void update(Renderer fenderer, Path path);
-		void scrollY(double value);
-		void selectionChanged(IndexRange range);
+		void update(PreviewContext context, Renderer renderer);
+		void scrollY(PreviewContext context, double value);
+		void editorSelectionChanged(PreviewContext context, IndexRange range);
+	}
+
+	interface PreviewContext {
+		Renderer getRenderer();
+		String getMarkdownText();
+		Node getMarkdownAST();
+		Path getPath();
+		IndexRange getEditorSelection();
 	}
 
 	public MarkdownPreviewPane() {
 		pane.getStyleClass().add("preview-pane");
 
+		previewContext = new PreviewContext() {
+			@Override public Renderer getRenderer() { return activeRenderer; }
+			@Override public String getMarkdownText() { return markdownText.get(); }
+			@Override public Node getMarkdownAST() { return markdownAST.get(); }
+			@Override public Path getPath() { return path.get(); }
+			@Override public IndexRange getEditorSelection() { return editorSelection.get(); }
+		};
+
 		path.addListener((observable, oldValue, newValue) -> update() );
 		markdownText.addListener((observable, oldValue, newValue) -> update() );
 		markdownAST.addListener((observable, oldValue, newValue) -> update() );
 		scrollY.addListener((observable, oldValue, newValue) -> scrollY());
-		selection.addListener((observable, oldValue, newValue) -> selectionChanged());
+		editorSelection.addListener((observable, oldValue, newValue) -> selectionChanged());
 	}
 
 	public javafx.scene.Node getNode() {
@@ -134,8 +151,7 @@ public class MarkdownPreviewPane
 			updateRunLaterPending = false;
 
 			activeRenderer.update(markdownText.get(), markdownAST.get());
-			activePreview.update(activeRenderer, path.get());
-			activePreview.selectionChanged(selection.get());
+			activePreview.update(previewContext, activeRenderer);
 		});
 	}
 
@@ -151,7 +167,7 @@ public class MarkdownPreviewPane
 
 		Platform.runLater(() -> {
 			scrollYrunLaterPending = false;
-			activePreview.scrollY(scrollY.get());
+			activePreview.scrollY(previewContext, scrollY.get());
 		});
 	}
 
@@ -159,7 +175,7 @@ public class MarkdownPreviewPane
 		if (activePreview == null)
 			return;
 
-		activePreview.selectionChanged(selection.get());
+		activePreview.editorSelectionChanged(previewContext, editorSelection.get());
 	}
 
 	// 'path' property
@@ -178,7 +194,7 @@ public class MarkdownPreviewPane
 	private final DoubleProperty scrollY = new SimpleDoubleProperty();
 	public DoubleProperty scrollYProperty() { return scrollY; }
 
-	// 'selection' property
-	private final ObjectProperty<IndexRange> selection = new SimpleObjectProperty<>();
-	public ObjectProperty<IndexRange> selectionProperty() { return selection; }
+	// 'editorSelection' property
+	private final ObjectProperty<IndexRange> editorSelection = new SimpleObjectProperty<>();
+	public ObjectProperty<IndexRange> editorSelectionProperty() { return editorSelection; }
 }
