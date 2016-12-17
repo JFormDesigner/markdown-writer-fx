@@ -81,7 +81,7 @@ public class CommonmarkSourcePositions
 					if (range != null && isAt(range.start - 1, '<') && isAt(range.end, '>'))
 						positionsMap.put(node, new Range(range.start - 1, range.end + 1));
 				} else {
-					// Syntax: [text](destination "title")
+					// Syntax: [text](destination "title") or [text]
 					sanitizeLinkOrImage(node, node.getDestination(), node.getTitle(), false);
 				}
 			}
@@ -90,7 +90,7 @@ public class CommonmarkSourcePositions
 			public void visit(Image node) {
 				super.visit(node);
 
-				// Syntax: ![text](destination "title")
+				// Syntax: ![text](destination "title") or ![text]
 				sanitizeLinkOrImage(node, node.getDestination(), node.getTitle(), true);
 			}
 
@@ -101,26 +101,48 @@ public class CommonmarkSourcePositions
 
 				int start = range.start;
 				int end = range.end;
-				//TODO support ref
-				Range destRange = rangeForText(node, destination);
-				Range titleRange = (title != null) ? rangeForText(node, title) : null;
-				if (titleRange != null) {
-					end = titleRange.end;
-					if (isAt(end, '"'))
-						end++;
-				} else if (destRange != null)
-					end = destRange.end;
 
 				if (isAt(start - 1, '['))
 					start--;
 				if (image && isAt(start - 1, '!'))
 					start--;
 
-				end = skipWhitespaceAfter(end);
-				if (isAt(end, ')'))
+				if (isAt(end, ']'))
 					end++;
 
+				end = findEndOfLinkOrImage(end, destination, title);
+
 				positionsMap.put(node, new Range(start, end));
+			}
+
+			private int findEndOfLinkOrImage(int end, String destination, String title) {
+				if (!isAt(end, '('))
+					return end; // reference link
+
+				int end2 = skipSpacesAfter(end + 1);
+				if ((end2 = equalsAtEscaped(markdownText, destination, end2)) < 0)
+					return end;
+
+				end2 = skipSpacesAfter(end2);
+
+				if (title != null) {
+					if (!isAt(end2++, '"'))
+						return end;
+
+					end2 = skipSpacesAfter(end2);
+					if ((end2 = equalsAtEscaped(markdownText, title, end2)) < 0)
+						return end;
+
+					end2 = skipSpacesAfter(end2);
+					if (!isAt(end2++, '"'))
+						return end;
+				}
+
+				if (!isAt(end2++, ')'))
+					return end;
+
+				textIndex = end2;
+				return end2;
 			}
 
 			@Override
@@ -270,55 +292,65 @@ public class CommonmarkSourcePositions
 				if (text == null || text.length() == 0)
 					return null;
 
-				// TODO handle escaped characters
-				int textLength = text.length();
-				int index = indexOfEscaped(markdownText, text, textIndex);
-				if (index < 0)
+				Range range = indexOfEscaped(markdownText, text, textIndex);
+				if (range == null)
 					return null;
 
+				int start = range.start;
+				int end = range.end;
+
 				// include leading escape characters
-				for (int i = index - 1; i >= 0; i--) {
+				for (int i = start - 1; i >= 0; i--) {
 					if (markdownText.charAt(i) != '\\')
 						break;
-					index--;
-					textLength++;
+					start--;
 				}
 
-				int end = index + textLength;
 				textIndex = end;
-				return new Range(index, end);
+				return new Range(start, end);
 			}
 
-			private int indexOfEscaped(String str, String searchStr, int fromIndex) {
+			private Range indexOfEscaped(String str, String searchStr, int fromIndex) {
 				int index = str.indexOf(searchStr, fromIndex);
 				if (index >= 0)
-					return index;
+					return new Range(index, index + searchStr.length());
 
 				// maybe the markdown text contains escape characters, but the search string does not
-				int strLength = str.length();
-				int searchStrLength = searchStr.length();
 				char firstSearchChar = searchStr.charAt(0);
 				for (index = fromIndex; (index = str.indexOf(firstSearchChar, index)) >= 0; index++) {
-					if (index + searchStrLength > strLength)
-						return -1;
-
-					int i = 1;
-					for (int j = index + 1; i < searchStrLength && j < strLength; i++, j++) {
-						char searchChar = searchStr.charAt(i);
-						char ch = str.charAt(j);
-						if (ch == '\\' && ch != searchChar) {
-							// skip escape character
-							j++;
-							if (j < strLength)
-								ch = str.charAt(j);
-						}
-						if (ch != searchChar)
-							break;
-					}
-					if (i == searchStrLength)
-						return index;
+					int end;
+					if ((end = equalsAtEscaped(str, searchStr, index)) >= 0)
+						return new Range(index, end);
 				}
-				return -1;
+				return null;
+			}
+
+			/**
+			 * Checks whether `searchStr` is in `str` at `index`.
+			 * Considers markdown escaping in `str`.
+			 * Returns the end index of the matched string including escape characters; otherwise -1
+			 */
+			private int equalsAtEscaped(String str, String searchStr, int index) {
+				int strLength = str.length();
+				int searchStrLength = searchStr.length();
+				if (index + searchStrLength > strLength)
+					return -1;
+
+				int i = 0;
+				int j = index;
+				for (; i < searchStrLength && j < strLength; i++, j++) {
+					char searchChar = searchStr.charAt(i);
+					char ch = str.charAt(j);
+					if (ch == '\\' && ch != searchChar) {
+						// skip escape character
+						j++;
+						if (j < strLength)
+							ch = str.charAt(j);
+					}
+					if (ch != searchChar)
+						break;
+				}
+				return (i == searchStrLength) ? j : -1;
 			}
 
 			private boolean isAt(int offset, char ch) {
