@@ -201,9 +201,11 @@
 
 /*---- misc ----*/
 
-.markdown-editor .html.paragraph-text,
-.markdown-editor .html.text {
+.markdown-editor .html.paragraph-text {
     -fx-background-color: -mwfx-inline-background-color;
+}
+.markdown-editor .html.text {
+    -rtfx-background-color: -mwfx-inline-background-color;
 }
 
 .markdown-editor .reference {
