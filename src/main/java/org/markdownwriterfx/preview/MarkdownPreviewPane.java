@@ -97,7 +97,7 @@ public class MarkdownPreviewPane
 		markdownText.addListener((observable, oldValue, newValue) -> update() );
 		markdownAST.addListener((observable, oldValue, newValue) -> update() );
 		scrollY.addListener((observable, oldValue, newValue) -> scrollY());
-		editorSelection.addListener((observable, oldValue, newValue) -> selectionChanged());
+		editorSelection.addListener((observable, oldValue, newValue) -> editorSelectionChanged());
 	}
 
 	public javafx.scene.Node getNode() {
@@ -171,11 +171,25 @@ public class MarkdownPreviewPane
 		});
 	}
 
-	private void selectionChanged() {
+	private boolean editorSelectionChangedRunLaterPending;
+	private void editorSelectionChanged() {
 		if (activePreview == null)
 			return;
 
-		activePreview.editorSelectionChanged(previewContext, editorSelection.get());
+		// avoid too many (and useless) runLater() invocations
+		if (editorSelectionChangedRunLaterPending)
+			return;
+		editorSelectionChangedRunLaterPending = true;
+
+		Platform.runLater(() -> {
+			editorSelectionChangedRunLaterPending = false;
+
+			// use another runLater() to make sure that activePreview.editorSelectionChanged()
+			// is invoked after activePreview.update(), so that it can work on already updated text
+			Platform.runLater(() -> {
+				activePreview.editorSelectionChanged(previewContext, editorSelection.get());
+			});
+		});
 	}
 
 	// 'path' property

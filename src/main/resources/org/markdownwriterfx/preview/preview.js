@@ -31,4 +31,45 @@ var preview = {
 		window.scrollTo(0, (document.body.scrollHeight - window.innerHeight) * value);
 	},
 
+	highlightedNodes: [],
+
+	highlightNodesAt: function(offset) {
+		// remove previous highlights
+		for (node of this.highlightedNodes)
+			node.classList.remove('mwfx-editor-selection');
+		this.highlightedNodes = [];
+
+		// find nodes to highlight
+		var result = []
+		this.findNodesAt(document.body, offset, result);
+		if (result.length == 0)
+			return;
+
+		// highlight nodes
+		for (node of result.reverse()) {
+			if (node.__proto__ != HTMLElement.prototype && node.__proto__ != HTMLAnchorElement.prototype) {
+				node.classList.add('mwfx-editor-selection');
+				this.highlightedNodes = [node];
+				break;
+			}
+		}
+	},
+
+	findNodesAt: function(node, offset, result) {
+		if (node.dataset.pos) {
+			// get value of data-pos attribute
+			var pos = node.dataset.pos.split(':');
+			var start = +pos[0];
+			var end = +pos[1];
+			if (offset >= start && offset <= end)
+				result.push(node);
+
+			if (offset > end)
+				return;
+		}
+
+		var children = node.children
+		for (var i=0; i < children.length; i++)
+			this.findNodesAt(children[i], offset, result);
+	},
 };

@@ -59,6 +59,8 @@ class ASTPreview
 	private VirtualizedScrollPane<StyleClassedTextArea> scrollPane;
 	private ScrollBar vScrollBar;
 
+	private IndexRange lastEditorSelection;
+
 	ASTPreview() {
 	}
 
@@ -84,6 +86,7 @@ class ASTPreview
 		String ast = renderer.getAST();
 		textArea.replaceText(ast, computeHighlighting(ast));
 
+		lastEditorSelection = null;
 		editorSelectionChanged(context, context.getEditorSelection());
 	}
 
@@ -106,6 +109,10 @@ class ASTPreview
 
 	@Override
 	public void editorSelectionChanged(PreviewContext context, IndexRange range) {
+		if (range.equals(lastEditorSelection))
+			return;
+		lastEditorSelection = range;
+
 		List<Range> sequences = context.getRenderer().findSequences(range.getStart(), range.getEnd());
 
 		// restore old styles

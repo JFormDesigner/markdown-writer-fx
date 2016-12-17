@@ -58,6 +58,7 @@ class WebViewPreview
 	private final ArrayList<Runnable> runWhenLoadedList = new ArrayList<>();
 	private int lastScrollX;
 	private int lastScrollY;
+	private IndexRange lastEditorSelection;
 
 	WebViewPreview() {
 	}
@@ -101,6 +102,7 @@ class WebViewPreview
 			lastScrollX = (scrollXobj instanceof Number) ? ((Number)scrollXobj).intValue() : 0;
 			lastScrollY = (scrollYobj instanceof Number) ? ((Number)scrollYobj).intValue() : 0;
 		}
+		lastEditorSelection = context.getEditorSelection();
 
 		Path path = context.getPath();
 		String base = (path != null)
@@ -115,12 +117,20 @@ class WebViewPreview
 			+ "<html>\n"
 			+ "<head>\n"
 			+ "<link rel=\"stylesheet\" href=\"" + getClass().getResource("markdownpad-github.css") + "\">\n"
+			+ "<style>\n"
+			+ ".mwfx-editor-selection {\n"
+			+ "  border-right: 5px solid #f47806;\n"
+			+ "  margin-right: -5px;\n"
+			+ "  background-color: rgb(253, 247, 241);\n"
+			+ "}\n"
+			+ "</style>\n"
 			+ "<script src=\"" + getClass().getResource("preview.js") + "\"></script>\n"
 			+ prismSyntaxHighlighting(context.getMarkdownAST())
 			+ base
 			+ "</head>\n"
 			+ "<body" + scrollScript + ">\n"
 			+ renderer.getHtml(false)
+			+ "<script>" + highlightNodesAt(lastEditorSelection) + "</script>\n"
 			+ "</body>\n"
 			+ "</html>");
 	}
@@ -134,6 +144,17 @@ class WebViewPreview
 
 	@Override
 	public void editorSelectionChanged(PreviewContext context, IndexRange range) {
+		if (range.equals(lastEditorSelection))
+			return;
+		lastEditorSelection = range;
+
+		runWhenLoaded(() -> {
+			webView.getEngine().executeScript(highlightNodesAt(range));
+		});
+	}
+
+	private String highlightNodesAt(IndexRange range) {
+		return "preview.highlightNodesAt(" + range.getEnd() + ")";
 	}
 
 	private String prismSyntaxHighlighting(Node astRoot) {
