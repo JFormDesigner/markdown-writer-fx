@@ -28,6 +28,7 @@
 package org.markdownwriterfx.util;
 
 import java.util.IdentityHashMap;
+import org.apache.commons.lang3.StringUtils;
 import org.commonmark.node.AbstractVisitor;
 import org.commonmark.node.BlockQuote;
 import org.commonmark.node.Code;
@@ -169,7 +170,7 @@ public class CommonmarkSourcePositions
 					positionsMap.put(node, new Range(start, end));
 				} else {
 					// ATX heading without contents
-					//TODO
+					positionForLiteral(node, StringUtils.repeat('#', node.getLevel()));
 				}
 			}
 
@@ -266,16 +267,58 @@ public class CommonmarkSourcePositions
 			}
 
 			private Range rangeForText(Node node, String text) {
-				if (text == null)
+				if (text == null || text.length() == 0)
 					return null;
 
 				// TODO handle escaped characters
-				int index = markdownText.indexOf(text, textIndex);
+				int textLength = text.length();
+				int index = indexOfEscaped(markdownText, text, textIndex);
 				if (index < 0)
 					return null;
-				int end = index + text.length();
+
+				// include leading escape characters
+				for (int i = index - 1; i >= 0; i--) {
+					if (markdownText.charAt(i) != '\\')
+						break;
+					index--;
+					textLength++;
+				}
+
+				int end = index + textLength;
 				textIndex = end;
 				return new Range(index, end);
+			}
+
+			private int indexOfEscaped(String str, String searchStr, int fromIndex) {
+				int index = str.indexOf(searchStr, fromIndex);
+				if (index >= 0)
+					return index;
+
+				// maybe the markdown text contains escape characters, but the search string does not
+				int strLength = str.length();
+				int searchStrLength = searchStr.length();
+				char firstSearchChar = searchStr.charAt(0);
+				for (index = fromIndex; (index = str.indexOf(firstSearchChar, index)) >= 0; index++) {
+					if (index + searchStrLength > strLength)
+						return -1;
+
+					int i = 1;
+					for (int j = index + 1; i < searchStrLength && j < strLength; i++, j++) {
+						char searchChar = searchStr.charAt(i);
+						char ch = str.charAt(j);
+						if (ch == '\\' && ch != searchChar) {
+							// skip escape character
+							j++;
+							if (j < strLength)
+								ch = str.charAt(j);
+						}
+						if (ch != searchChar)
+							break;
+					}
+					if (i == searchStrLength)
+						return index;
+				}
+				return -1;
 			}
 
 			private boolean isAt(int offset, char ch) {
