@@ -216,7 +216,8 @@ class MarkdownSyntaxHighlighter
 			new VisitHandler<>(HtmlInnerBlock.class, this::visit),
 			new VisitHandler<>(HtmlInnerBlockComment.class, this::visit),
 			new VisitHandler<>(HtmlInline.class, this::visit),
-			new VisitHandler<>(HtmlInlineComment.class, this::visit))
+			new VisitHandler<>(HtmlInlineComment.class, this::visit),
+			new VisitHandler<>(HtmlEntity.class, this::visit))
 		{
 			@Override
 			public void visit(Node node) {
@@ -389,6 +390,11 @@ class MarkdownSyntaxHighlighter
 	private void visit(HtmlInlineBase node) {
 		setStyleClass(node, StyleClass.html);
 		highlightSequence(node.getChars(), "html");
+	}
+
+	private void visit(HtmlEntity node) {
+		setStyleClass(node, StyleClass.html);
+		setStyleClass(node, StyleClass.custom("entity", "token"));
 	}
 
 	private boolean highlightSequence(BasedSequence sequence, String language) {
