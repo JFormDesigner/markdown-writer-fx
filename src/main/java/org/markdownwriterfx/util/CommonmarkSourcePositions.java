@@ -232,28 +232,34 @@ public class CommonmarkSourcePositions
 
 			@Override
 			public void visit(IndentedCodeBlock node) {
-				//TODO literal does not contain indent of next lines
-				positionForLiteral(node, node.getLiteral());
+				Range range = rangeForCode(node, node.getLiteral());
+				if (range != null)
+					positionsMap.put(node, range);
 			}
 
 			@Override
 			public void visit(FencedCodeBlock node) {
-				Range range = rangeForText(node, node.getLiteral());
-				if (range != null) {
-					int start = skipWhitespaceBefore(range.start);
-					int end = skipWhitespaceAfter(range.end);
+				for (int i = textIndex; i < markdownText.length(); i++) {
+					char ch = markdownText.charAt(i);
+					if ((ch == '`' || ch == '~') && isAt(i, 3, ch)) {
+						// found fenced code start
+						int start = i;
+						int end = markdownText.length();
 
-					for (int i = start; i > 0; i--) {
-						char ch = markdownText.charAt(i - 1);
-						if ((ch == '`' || ch == '~') && isAt(i - 3, 3, ch)) {
-							start = i - 3;
-							break;
+						int nlIndex = markdownText.indexOf('\n', i);
+						if (nlIndex >= 0) {
+							textIndex = nlIndex + 1;
+							Range range = rangeForCode(node, node.getLiteral());
+							if (range != null) {
+								end = skipWhitespaceAfter(range.end);
+								while (isAt(end, ch))
+									end++;
+								textIndex = end;
+							}
 						}
+						positionsMap.put(node, new Range(start, end));
+						break;
 					}
-
-					if (isAt(end, 3, '`') || isAt(end, 3, '~'))
-						end += 3;
-					positionsMap.put(node, new Range(start, end));
 				}
 			}
 
@@ -325,6 +331,50 @@ public class CommonmarkSourcePositions
 				return null;
 			}
 
+			private Range rangeForCode(Node node, String text) {
+				if (text == null || text.length() == 0)
+					return null;
+
+				int start = skipWhitespaceAfter(textIndex);
+				int i = skipWhitespaceAfter(text, 0);
+				int j = start;
+				do {
+					int ilen = lineLength(text, i);
+					int jlen = lineLength(markdownText, j);
+					if (ilen != jlen || !equalsAt(markdownText, j, text, i, ilen))
+						return null;
+
+					i = skipSpacesAfter(text, i + ilen + 1);
+					j = skipSpacesAfter(markdownText, j + jlen + 1);
+				} while (i < text.length() && j < markdownText.length());
+
+				textIndex = j;
+				return new Range(start, j);
+			}
+
+			private int lineLength(String str, int fromIndex) {
+				int index = str.indexOf('\n', fromIndex);
+				return (index >= 0 ? index : str.length()) - fromIndex;
+			}
+
+			/**
+			 * Checks whether parts of two strings are equal.
+			 */
+			private boolean equalsAt(String str1, int index1, String str2, int index2, int length2) {
+				int str1Length = str1.length();
+				int str2Length = Math.min(index2 + length2, str2.length());
+				if (index1 + length2 > str1Length)
+					return false;
+
+				int i1 = index1;
+				int i2 = index2;
+				for (; i1 < str1Length && i2 < str2Length; i1++, i2++) {
+					if (str1.charAt(i1) != str2.charAt(i2))
+						break;
+				}
+				return (i2 == str2Length);
+			}
+
 			/**
 			 * Checks whether `searchStr` is in `str` at `index`.
 			 * Considers markdown escaping in `str`.
@@ -341,14 +391,20 @@ public class CommonmarkSourcePositions
 				for (; i < searchStrLength && j < strLength; i++, j++) {
 					char searchChar = searchStr.charAt(i);
 					char ch = str.charAt(j);
-					if (ch == '\\' && ch != searchChar) {
-						// skip escape character
-						j++;
-						if (j < strLength)
-							ch = str.charAt(j);
-					}
-					if (ch != searchChar)
+					if (ch != searchChar) {
+						if (ch == '\\') {
+							// skip escape character
+							j++;
+							if (j < strLength)
+								ch = str.charAt(j);
+							if (ch == searchChar)
+								continue;
+						} else if (ch == '\n' && searchChar == ' ') {
+							// skip line break in inline
+							continue;
+						}
 						break;
+					}
 				}
 				return (i == searchStrLength) ? j : -1;
 			}
@@ -376,11 +432,15 @@ public class CommonmarkSourcePositions
 			}
 
 			private int skipWhitespaceAfter(int offset) {
-				for (int i = offset; i < markdownText.length(); i++) {
-					if (!Character.isWhitespace(markdownText.charAt(i)))
+				return skipWhitespaceAfter(markdownText, offset);
+			}
+
+			private int skipWhitespaceAfter(String str, int offset) {
+				for (int i = offset; i < str.length(); i++) {
+					if (!Character.isWhitespace(str.charAt(i)))
 						return i;
 				}
-				return markdownText.length();
+				return str.length();
 			}
 
 			private int skipSpacesBefore(int offset) {
@@ -393,12 +453,16 @@ public class CommonmarkSourcePositions
 			}
 
 			private int skipSpacesAfter(int offset) {
-				for (int i = offset; i < markdownText.length(); i++) {
-					char ch = markdownText.charAt(i);
+				return skipSpacesAfter(markdownText, offset);
+			}
+
+			private int skipSpacesAfter(String str, int offset) {
+				for (int i = offset; i < str.length(); i++) {
+					char ch = str.charAt(i);
 					if (ch != ' ' && ch != '\t')
 						return i;
 				}
-				return markdownText.length();
+				return str.length();
 			}
 		};
 		astRoot.accept(visitor);
