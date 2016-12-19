@@ -30,6 +30,9 @@
 }
 
 /* editor padding */
+/* disabled because this may cause layout/painting issues
+   (e.g. enter "a\nb\nc" into new document, move caret to first character,
+         hit Del key twice --> "c" is painted over "b")
 .markdown-editor .paragraph-box .paragraph-text {
     -fx-padding: 0 1em 0 1em;
 }
@@ -39,6 +42,7 @@
 .markdown-editor .paragraph-box:first-paragraph .paragraph-text {
     -fx-padding: 1em 1em 0 1em;
 }
+*/
 
 /* highlight current line */
 .markdown-editor .paragraph-box:has-caret {
@@ -59,12 +63,14 @@
 }
 
 /* editor padding */
+/* disabled because this may cause layout/painting issues
 .markdown-editor .paragraph-box:first-paragraph .paragraph-graphic .gutter {
     -fx-padding: 1em 0 0 0;
 }
 .markdown-editor .paragraph-box:first-paragraph .paragraph-graphic .gutter.lineno {
 	-fx-padding: 1em 0.25em 0 0.25em;
 }
+*/
 
 
 /*---- headers ----*/
@@ -201,9 +207,11 @@
 
 /*---- misc ----*/
 
-.markdown-editor .html.paragraph-text,
-.markdown-editor .html.text {
+.markdown-editor .html.paragraph-text {
     -fx-background-color: -mwfx-inline-background-color;
+}
+.markdown-editor .html.text {
+    -rtfx-background-color: -mwfx-inline-background-color;
 }
 
 .markdown-editor .reference {

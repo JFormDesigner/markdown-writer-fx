@@ -35,8 +35,10 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import javafx.concurrent.Worker.State;
 import javafx.scene.control.IndexRange;
 import javafx.scene.web.WebView;
+import org.markdownwriterfx.preview.MarkdownPreviewPane.PreviewContext;
 import org.markdownwriterfx.preview.MarkdownPreviewPane.Renderer;
 import com.vladsch.flexmark.ast.FencedCodeBlock;
 import com.vladsch.flexmark.ast.Node;
@@ -52,24 +54,46 @@ class WebViewPreview
 {
 	private static final HashMap<String, String> prismLangDependenciesMap = new HashMap<>();
 
-	private final MarkdownPreviewPane previewPane;
-	private final WebView webView = new WebView();
+	private WebView webView;
+	private final ArrayList<Runnable> runWhenLoadedList = new ArrayList<>();
 	private int lastScrollX;
 	private int lastScrollY;
+	private IndexRange lastEditorSelection;
 
-	WebViewPreview(MarkdownPreviewPane previewPane) {
-		this.previewPane = previewPane;
+	WebViewPreview() {
+	}
 
+	private void createNodes() {
+		webView = new WebView();
 		webView.setFocusTraversable(false);
+
+		webView.getEngine().getLoadWorker().stateProperty().addListener((ob,o,n) -> {
+			if (n == State.SUCCEEDED && !runWhenLoadedList.isEmpty()) {
+				ArrayList<Runnable> runnables = new ArrayList<>(runWhenLoadedList);
+				runWhenLoadedList.clear();
+
+				for (Runnable runnable : runnables)
+					runnable.run();
+			}
+		});
+	}
+
+	private void runWhenLoaded(Runnable runnable) {
+		if (webView.getEngine().getLoadWorker().isRunning())
+			runWhenLoadedList.add(runnable);
+		else
+			runnable.run();
 	}
 
 	@Override
 	public javafx.scene.Node getNode() {
+		if (webView == null)
+			createNodes();
 		return webView;
 	}
 
 	@Override
-	public void update(Renderer renderer, Path path) {
+	public void update(PreviewContext context, Renderer renderer) {
 		if (!webView.getEngine().getLoadWorker().isRunning()) {
 			// get window.scrollX and window.scrollY from web engine,
 			// but only if no worker is running (in this case the result would be zero)
@@ -78,7 +102,9 @@ class WebViewPreview
 			lastScrollX = (scrollXobj instanceof Number) ? ((Number)scrollXobj).intValue() : 0;
 			lastScrollY = (scrollYobj instanceof Number) ? ((Number)scrollYobj).intValue() : 0;
 		}
+		lastEditorSelection = context.getEditorSelection();
 
+		Path path = context.getPath();
 		String base = (path != null)
 				? ("<base href=\"" + path.getParent().toUri().toString() + "\">\n")
 				: "";
@@ -91,31 +117,47 @@ class WebViewPreview
 			+ "<html>\n"
 			+ "<head>\n"
 			+ "<link rel=\"stylesheet\" href=\"" + getClass().getResource("markdownpad-github.css") + "\">\n"
-			+ prismSyntaxHighlighting()
+			+ "<style>\n"
+			+ ".mwfx-editor-selection {\n"
+			+ "  border-right: 5px solid #f47806;\n"
+			+ "  margin-right: -5px;\n"
+			+ "  background-color: rgb(253, 247, 241);\n"
+			+ "}\n"
+			+ "</style>\n"
+			+ "<script src=\"" + getClass().getResource("preview.js") + "\"></script>\n"
+			+ prismSyntaxHighlighting(context.getMarkdownAST())
 			+ base
 			+ "</head>\n"
 			+ "<body" + scrollScript + ">\n"
-			+ renderer.getHtml()
+			+ renderer.getHtml(false)
+			+ "<script>" + highlightNodesAt(lastEditorSelection) + "</script>\n"
 			+ "</body>\n"
 			+ "</html>");
 	}
 
 	@Override
-	public void scrollY(double value) {
-		webView.getEngine().executeScript(
-			"if(document.body != null)" +
-			"  window.scrollTo(0, (document.body.scrollHeight - window.innerHeight) * "+value+");");
+	public void scrollY(PreviewContext context, double value) {
+		runWhenLoaded(() -> {
+			webView.getEngine().executeScript("preview.scrollTo(" + value + ");");
+		});
 	}
 
 	@Override
-	public void selectionChanged(IndexRange range) {
+	public void editorSelectionChanged(PreviewContext context, IndexRange range) {
+		if (range.equals(lastEditorSelection))
+			return;
+		lastEditorSelection = range;
+
+		runWhenLoaded(() -> {
+			webView.getEngine().executeScript(highlightNodesAt(range));
+		});
 	}
 
-	private String prismSyntaxHighlighting() {
-		Node astRoot = previewPane.getMarkdownAST();
-		if (astRoot == null)
-			return "";
+	private String highlightNodesAt(IndexRange range) {
+		return "preview.highlightNodesAt(" + range.getEnd() + ")";
+	}
 
+	private String prismSyntaxHighlighting(Node astRoot) {
 		initPrismLangDependencies();
 
 		// check whether markdown contains fenced code blocks and remember languages

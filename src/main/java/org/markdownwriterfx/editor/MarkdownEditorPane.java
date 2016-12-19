@@ -128,6 +128,10 @@ public class MarkdownEditorPane
 		updateShowLineNo();
 		updateShowWhitespace();
 
+		// initialize properties
+		markdownText.set("");
+		markdownAST.set(parseMarkdown(""));
+
 		spellChecker = new SpellChecker(textArea, overlayGraphicFactory);
 
 		// find/replace

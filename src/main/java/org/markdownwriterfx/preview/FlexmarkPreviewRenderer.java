@@ -27,9 +27,21 @@
 
 package org.markdownwriterfx.preview;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import org.markdownwriterfx.options.MarkdownExtensions;
+import org.markdownwriterfx.util.Range;
+import com.vladsch.flexmark.ast.Heading;
 import com.vladsch.flexmark.ast.Node;
+import com.vladsch.flexmark.ast.NodeVisitor;
+import com.vladsch.flexmark.html.AttributeProvider;
 import com.vladsch.flexmark.html.HtmlRenderer;
+import com.vladsch.flexmark.html.IndependentAttributeProviderFactory;
+import com.vladsch.flexmark.html.renderer.AttributablePart;
+import com.vladsch.flexmark.html.renderer.NodeRendererContext;
+import com.vladsch.flexmark.util.options.Attributes;
+import com.vladsch.flexmark.util.sequence.BasedSequence;
 
 /**
  * flexmark-java preview.
@@ -41,25 +53,36 @@ class FlexmarkPreviewRenderer
 {
 	private Node astRoot;
 
-	private String html;
+	private String htmlPreview;
+	private String htmlSource;
 	private String ast;
 
 	@Override
 	public void update(String markdownText, Node astRoot) {
+		assert markdownText != null;
+		assert astRoot != null;
+
 		if (this.astRoot == astRoot)
 			return;
 
 		this.astRoot = astRoot;
 
-		html = null;
+		htmlPreview = null;
+		htmlSource = null;
 		ast = null;
 	}
 
 	@Override
-	public String getHtml() {
-		if (html == null)
-			html = toHtml();
-		return html;
+	public String getHtml(boolean source) {
+		if (source) {
+			if (htmlSource == null)
+				htmlSource = toHtml(true);
+			return htmlSource;
+		} else {
+			if (htmlPreview == null)
+				htmlPreview = toHtml(false);
+			return htmlPreview;
+		}
 	}
 
 	@Override
@@ -69,20 +92,43 @@ class FlexmarkPreviewRenderer
 		return ast;
 	}
 
-	private String toHtml() {
-		if (astRoot == null)
-			return "";
+	@Override
+	public List<Range> findSequences(int startOffset, int endOffset) {
+		ArrayList<Range> sequences = new ArrayList<>();
+		NodeVisitor visitor = new NodeVisitor(Collections.emptyList()) {
+			@Override
+			public void visit(Node node) {
+				BasedSequence chars = node.getChars();
+				if (isInSequence(startOffset, endOffset, chars))
+					sequences.add(new Range(chars.getStartOffset(), chars.getEndOffset()));
 
-		HtmlRenderer renderer = HtmlRenderer.builder()
-				.extensions(MarkdownExtensions.getFlexmarkExtensions())
-				.build();
-		return renderer.render(astRoot);
+				for (BasedSequence segment : node.getSegments()) {
+					if (isInSequence(startOffset, endOffset, segment))
+						sequences.add(new Range(segment.getStartOffset(), segment.getEndOffset()));
+				}
+
+				visitChildren(node);
+			}
+		};
+		visitor.visit(astRoot);
+		return sequences;
+	}
+
+	private boolean isInSequence(int start, int end, BasedSequence sequence) {
+		if (end == start)
+			end++;
+		return start < sequence.getEndOffset() && end > sequence.getStartOffset();
+	}
+
+	private String toHtml(boolean source) {
+		HtmlRenderer.Builder builder = HtmlRenderer.builder()
+				.extensions(MarkdownExtensions.getFlexmarkExtensions());
+		if (!source)
+			builder.attributeProviderFactory(new MyAttributeProvider.Factory());
+		return builder.build().render(astRoot);
 	}
 
 	private String printTree() {
-		if (astRoot == null)
-			return "";
-
 		StringBuilder buf = new StringBuilder(100);
 		printNode(buf, "", astRoot);
 		return buf.toString().replace(Node.SPLICE, "...");
@@ -91,10 +137,40 @@ class FlexmarkPreviewRenderer
 	private void printNode(StringBuilder buf, String indent, Node node) {
 		buf.append(indent);
 		node.astString(buf, true);
+		printAttributes(buf, node);
 		buf.append('\n');
 
 		indent += "    ";
 		for (Node child = node.getFirstChild(); child != null; child = child.getNext())
 			printNode(buf, indent, child);
+	}
+
+	private void printAttributes(StringBuilder buf, Node node) {
+		if (node instanceof Heading)
+			printAttribute(buf, "level", ((Heading)node).getLevel());
+	}
+
+	private void printAttribute(StringBuilder buf, String name, Object value) {
+		buf.append(' ').append(name).append(':').append(value);
+	}
+
+	//---- class MyAttributeProvider ------------------------------------------
+
+	private static class MyAttributeProvider
+		implements AttributeProvider
+	{
+		private static class Factory
+			extends IndependentAttributeProviderFactory
+		{
+			@Override
+			public AttributeProvider create(NodeRendererContext context) {
+				return new MyAttributeProvider();
+			}
+		}
+
+		@Override
+		public void setAttributes(Node node, AttributablePart part, Attributes attributes) {
+			attributes.addValue("data-pos", node.getStartOffset() + ":" + node.getEndOffset());
+		}
 	}
 }

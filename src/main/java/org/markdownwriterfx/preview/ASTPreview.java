@@ -27,12 +27,11 @@
 
 package org.markdownwriterfx.preview;
 
-import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -42,11 +41,10 @@ import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
+import org.markdownwriterfx.preview.MarkdownPreviewPane.PreviewContext;
 import org.markdownwriterfx.preview.MarkdownPreviewPane.Renderer;
+import org.markdownwriterfx.util.Range;
 import org.markdownwriterfx.util.Utils;
-import com.vladsch.flexmark.ast.Node;
-import com.vladsch.flexmark.ast.NodeVisitor;
-import com.vladsch.flexmark.util.sequence.BasedSequence;
 
 /**
  * Markdown AST preview.
@@ -57,35 +55,43 @@ import com.vladsch.flexmark.util.sequence.BasedSequence;
 class ASTPreview
 	implements MarkdownPreviewPane.Preview
 {
-	private final MarkdownPreviewPane previewPane;
-	private final PreviewStyledTextArea textArea = new PreviewStyledTextArea();
-	private final VirtualizedScrollPane<StyleClassedTextArea> scrollPane = new VirtualizedScrollPane<>(textArea);
+	private PreviewStyledTextArea textArea;
+	private VirtualizedScrollPane<StyleClassedTextArea> scrollPane;
 	private ScrollBar vScrollBar;
 
-	ASTPreview(MarkdownPreviewPane previewPane) {
-		this.previewPane = previewPane;
+	private IndexRange lastEditorSelection;
 
+	ASTPreview() {
+	}
+
+	private void createNodes() {
+		textArea = new PreviewStyledTextArea();
 		textArea.getStyleClass().add("ast-preview");
 		textArea.getStylesheets().add("org/markdownwriterfx/prism.css");
+
+		scrollPane = new VirtualizedScrollPane<>(textArea);
 	}
 
 	@Override
 	public javafx.scene.Node getNode() {
+		if (scrollPane == null)
+			createNodes();
 		return scrollPane;
 	}
 
 	@Override
-	public void update(Renderer renderer, Path path) {
+	public void update(PreviewContext context, Renderer renderer) {
 		oldSelectionStylesMap.clear();
 
 		String ast = renderer.getAST();
 		textArea.replaceText(ast, computeHighlighting(ast));
 
-		selectionChanged(textArea.getSelection());
+		lastEditorSelection = null;
+		editorSelectionChanged(context, context.getEditorSelection());
 	}
 
 	@Override
-	public void scrollY(double value) {
+	public void scrollY(PreviewContext context, double value) {
 		if (vScrollBar == null)
 			vScrollBar = Utils.findVScrollBar(scrollPane);
 		if (vScrollBar == null)
@@ -102,8 +108,12 @@ class ASTPreview
 	private final HashMap<Integer, StyleSpans<Collection<String>>> oldSelectionStylesMap = new HashMap<>();
 
 	@Override
-	public void selectionChanged(IndexRange range) {
-		ArrayList<BasedSequence> sequences = findSequences(range.getStart(), range.getEnd());
+	public void editorSelectionChanged(PreviewContext context, IndexRange range) {
+		if (range.equals(lastEditorSelection))
+			return;
+		lastEditorSelection = range;
+
+		List<Range> sequences = context.getRenderer().findSequences(range.getStart(), range.getEnd());
 
 		// restore old styles
 		for (Map.Entry<Integer, StyleSpans<Collection<String>>> e : oldSelectionStylesMap.entrySet())
@@ -112,8 +122,8 @@ class ASTPreview
 
 		// set new selection styles
 		String text = textArea.getText();
-		for (BasedSequence sequence : sequences) {
-			String rangeStr = "[" + sequence.getStartOffset() + ", " + sequence.getEndOffset();
+		for (Range sequence : sequences) {
+			String rangeStr = "[" + sequence.start + ", " + sequence.end;
 			int index = 0;
 			while ((index = text.indexOf(rangeStr, index)) >= 0) {
 				int endIndex = index + rangeStr.length() + 1;
@@ -127,57 +137,20 @@ class ASTPreview
 		}
 	}
 
-	private ArrayList<BasedSequence> findSequences(int startOffset, int endOffset) {
-		ArrayList<BasedSequence> sequences = new ArrayList<>();
-		NodeVisitor visitor = new NodeVisitor(Collections.emptyList()) {
-			@Override
-			public void visit(Node node) {
-				if (isInSequence(startOffset, endOffset, node.getChars()))
-					sequences.add(node.getChars());
-
-				for (BasedSequence segment : node.getSegments()) {
-					if (isInSequence(startOffset, endOffset, segment))
-						sequences.add(segment);
-				}
-
-				visitChildren(node);
-			}
-		};
-		visitor.visit(previewPane.getMarkdownAST());
-		return sequences;
-	}
-
-	private boolean isInSequence(int start, int end, BasedSequence sequence) {
-		if (end == start)
-			end++;
-		return start < sequence.getEndOffset() && end > sequence.getStartOffset();
-	}
-
 	//---- syntax highlighting ------------------------------------------------
 
-	private static final Pattern PATTERN = Pattern.compile("(?m)^\\s*(\\w+)"
-			+ "(?:(?<COMMONMARK>\\{(.*)\\})"
-			+   "|(?<FLEXMARK>\\[.*\\]))");
-
-	private static final Pattern COMMONMARK_ATTRIBUTES = Pattern.compile("(\\w+\\h*)(=)(\\h*[^,]*)");
-	private static final Pattern FLEXMARK_ATTRIBUTES = Pattern.compile("(?:(\\w+:)|(\"[^\"]*\")|(\\d+)|([\\[\\],]))");
+	private static final Pattern PATTERN = Pattern.compile("(?m)^\\s*(\\w+)(\\[.*$)");
+	private static final Pattern ATTRIBUTES = Pattern.compile("(?:(\\w+[=:])|(\"[^\"]*\")|(\\d+)|([\\[\\],]))");
 
 	// groups in PATTERN
 	private static final int GROUP_NODE_NAME = 1;
-	private static final int GROUP_COMMONMARK = 2;
-	private static final int GROUP_COMMONMARK_ATTRS = 3;
-	private static final int GROUP_FLEXMARK = 4;
+	private static final int GROUP_ATTRS = 2;
 
-	// groups in COMMONMARK_ATTRIBUTES
-	private static final int GROUP_COMMONMARK_ATTR_NAME = 1;
-	private static final int GROUP_COMMONMARK_EQUAL_SYMBOL = 2;
-	private static final int GROUP_COMMONMARK_ATTR_VALUE = 3;
-
-	// groups in FLEXMARK_ATTRIBUTES
-	private static final int GROUP_FLEXMARK_ATTR_NAME = 1;
-	private static final int GROUP_FLEXMARK_STRING = 2;
-	private static final int GROUP_FLEXMARK_NUMBER = 3;
-	private static final int GROUP_FLEXMARK_PUNCTATION = 4;
+	// groups in ATTRIBUTES
+	private static final int GROUP_ATTR_NAME = 1;
+	private static final int GROUP_ATTR_STRING = 2;
+	private static final int GROUP_ATTR_NUMBER = 3;
+	private static final int GROUP_ATTR_PUNCTATION = 4;
 
 	private static final Collection<String> STYLE_PUNCTATION = Arrays.asList("punctuation", "token");
 	private static final Collection<String> STYLE_NODE       = Arrays.asList("tag", "token");
@@ -192,56 +165,36 @@ class ASTPreview
 			spansBuilder.add(Collections.emptyList(), matcher.start(GROUP_NODE_NAME) - lastKwEnd);
 			spansBuilder.add(STYLE_NODE, groupLength(matcher, GROUP_NODE_NAME));
 
-			String str;
-			if((str = matcher.group(GROUP_COMMONMARK_ATTRS)) != null) {
-				String attributesText = str;
+			String attributesText = matcher.group(GROUP_ATTRS);
+			if(!attributesText.isEmpty()) {
+				lastKwEnd = 0;
 
-				spansBuilder.add(STYLE_PUNCTATION, matcher.start(GROUP_COMMONMARK_ATTRS) - matcher.start(GROUP_COMMONMARK));
+				Matcher amatcher = ATTRIBUTES.matcher(attributesText);
+				while(amatcher.find()) {
+					if (amatcher.start() > lastKwEnd)
+						spansBuilder.add(Collections.emptyList(), amatcher.start() - lastKwEnd);
 
-				if(!attributesText.isEmpty()) {
-					lastKwEnd = 0;
+					Collection<String> style = null;
+					int length = amatcher.end() - amatcher.start();
+					if (amatcher.group(GROUP_ATTR_NAME) != null) {
+						style = STYLE_ATTR_NAME;
+						length--;
+					} else if (amatcher.group(GROUP_ATTR_STRING) != null)
+						style = STYLE_ATTR_VALUE;
+					else if (amatcher.group(GROUP_ATTR_NUMBER) != null)
+						style = STYLE_ATTR_VALUE;
+					else if (amatcher.group(GROUP_ATTR_PUNCTATION) != null)
+						style = STYLE_PUNCTATION;
+					else
+						style = Collections.emptyList();
+					spansBuilder.add(style, length);
+					if (style == STYLE_ATTR_NAME)
+						spansBuilder.add(STYLE_PUNCTATION, 1);
 
-					Matcher amatcher = COMMONMARK_ATTRIBUTES.matcher(attributesText);
-					while(amatcher.find()) {
-						spansBuilder.add(STYLE_PUNCTATION, amatcher.start() - lastKwEnd);
-						spansBuilder.add(STYLE_ATTR_NAME, groupLength(amatcher, GROUP_COMMONMARK_ATTR_NAME));
-						spansBuilder.add(STYLE_PUNCTATION, groupLength(amatcher, GROUP_COMMONMARK_EQUAL_SYMBOL));
-						spansBuilder.add(STYLE_ATTR_VALUE, groupLength(amatcher, GROUP_COMMONMARK_ATTR_VALUE));
-						lastKwEnd = amatcher.end();
-					}
-					if(attributesText.length() > lastKwEnd)
-						spansBuilder.add(Collections.emptyList(), attributesText.length() - lastKwEnd);
+					lastKwEnd = amatcher.end();
 				}
-
-				spansBuilder.add(STYLE_PUNCTATION, matcher.end(GROUP_COMMONMARK) - matcher.end(GROUP_COMMONMARK_ATTRS));
-			} else if((str = matcher.group(GROUP_FLEXMARK)) != null) {
-				String attributesText = str;
-				if(!attributesText.isEmpty()) {
-					lastKwEnd = 0;
-
-					Matcher amatcher = FLEXMARK_ATTRIBUTES.matcher(attributesText);
-					while(amatcher.find()) {
-						if (amatcher.start() > lastKwEnd)
-							spansBuilder.add(Collections.emptyList(), amatcher.start() - lastKwEnd);
-
-						Collection<String> style = null;
-						if (amatcher.group(GROUP_FLEXMARK_ATTR_NAME) != null)
-							style = STYLE_ATTR_NAME;
-						else if (amatcher.group(GROUP_FLEXMARK_STRING) != null)
-							style = STYLE_ATTR_VALUE;
-						else if (amatcher.group(GROUP_FLEXMARK_NUMBER) != null)
-							style = STYLE_ATTR_VALUE;
-						else if (amatcher.group(GROUP_FLEXMARK_PUNCTATION) != null)
-							style = STYLE_PUNCTATION;
-						else
-							style = Collections.emptyList();
-						spansBuilder.add(style, amatcher.end() - amatcher.start());
-
-						lastKwEnd = amatcher.end();
-					}
-					if(attributesText.length() > lastKwEnd)
-						spansBuilder.add(Collections.emptyList(), attributesText.length() - lastKwEnd);
-				}
+				if(attributesText.length() > lastKwEnd)
+					spansBuilder.add(Collections.emptyList(), attributesText.length() - lastKwEnd);
 			}
 			lastKwEnd = matcher.end();
 		}

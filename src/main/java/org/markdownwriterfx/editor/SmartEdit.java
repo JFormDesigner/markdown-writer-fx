@@ -112,7 +112,12 @@ public class SmartEdit
 		if (matcher.matches()) {
 			if (!matcher.group(2).isEmpty()) {
 				// indent new line with same whitespace characters and auto-indentable markers as current line
-				newText = newText.concat(matcher.group(1));
+				String indent = matcher.group(1);
+				int caretColumn = textArea.getCaretColumn();
+				if (caretColumn >= indent.length())
+					newText = newText.concat(indent);
+				else if (caretColumn > 0)
+					newText = newText.concat(indent.substring(0, caretColumn));
 			} else {
 				// current line contains only whitespace characters and auto-indentable markers
 				// --> empty current line

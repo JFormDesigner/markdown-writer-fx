@@ -1,6 +1,12 @@
 Markdown Writer FX Change Log
 =============================
 
+## 0.7
+
+- Highlight paragraph in Preview that contain the caret of the editor.
+- Show source positions for CommonMark in Markdown AST view.
+
+
 ## 0.6
 
 - Syntax highlighting for HTML/XML/SVG/MathML in editor.

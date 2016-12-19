@@ -27,9 +27,12 @@
 
 package org.markdownwriterfx;
 
+import static org.fxmisc.wellbehaved.event.EventPattern.keyPressed;
+import static org.fxmisc.wellbehaved.event.InputMap.consume;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -47,8 +50,10 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabClosingPolicy;
+import javafx.scene.input.KeyCode;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
+import org.fxmisc.wellbehaved.event.Nodes;
 import org.markdownwriterfx.options.Options;
 import org.markdownwriterfx.util.PrefsBooleanProperty;
 import org.markdownwriterfx.util.Utils;
@@ -230,6 +235,17 @@ class FileEditorTabPane
 			Messages.get("FileEditorTabPane.closeAlert.title"),
 			Messages.get("FileEditorTabPane.closeAlert.message"), fileEditor.getTab().getText());
 		alert.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO, ButtonType.CANCEL);
+
+		// register first characters of Yes and No buttons as keys to close the alert
+		for (ButtonType buttonType : Arrays.asList(ButtonType.YES, ButtonType.NO)) {
+			Nodes.addInputMap(alert.getDialogPane(),
+				consume(keyPressed(KeyCode.getKeyCode(buttonType.getText().substring(0, 1).toUpperCase())), e -> {
+					if (!e.isConsumed()) {
+						alert.setResult(buttonType);
+						alert.close();
+					}
+				}));
+		}
 
 		ButtonType result = alert.showAndWait().get();
 		if (result != ButtonType.YES)
