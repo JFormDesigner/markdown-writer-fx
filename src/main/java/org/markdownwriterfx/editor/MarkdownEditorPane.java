@@ -132,7 +132,7 @@ public class MarkdownEditorPane
 		markdownText.set("");
 		markdownAST.set(parseMarkdown(""));
 
-		spellChecker = new SpellChecker(textArea, overlayGraphicFactory);
+		spellChecker = new SpellChecker(this, textArea, overlayGraphicFactory);
 
 		// find/replace
 		findReplacePane = new FindReplacePane(textArea);

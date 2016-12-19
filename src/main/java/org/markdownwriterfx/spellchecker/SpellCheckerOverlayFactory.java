@@ -45,15 +45,15 @@ import org.markdownwriterfx.editor.ParagraphOverlayGraphicFactory.OverlayFactory
 class SpellCheckerOverlayFactory
 	extends OverlayFactory
 {
-	private final Supplier<List<SpellProblem>> spellProblemsSupplier;
+	private final Supplier<List<SpellBlockProblems>> spellProblemsSupplier;
 
-	SpellCheckerOverlayFactory(Supplier<List<SpellProblem>> spellProblemsSupplier) {
+	SpellCheckerOverlayFactory(Supplier<List<SpellBlockProblems>> spellProblemsSupplier) {
 		this.spellProblemsSupplier = spellProblemsSupplier;
 	}
 
 	@Override
 	public Node[] createOverlayNodes(int paragraphIndex) {
-		List<SpellProblem> spellProblems = this.spellProblemsSupplier.get();
+		List<SpellBlockProblems> spellProblems = this.spellProblemsSupplier.get();
 		if (spellProblems == null || spellProblems.isEmpty())
 			return null;
 
@@ -63,21 +63,26 @@ class SpellCheckerOverlayFactory
 		int parEnd = parStart + parLength;
 
 		ArrayList<Node> nodes = new ArrayList<>();
-		for (SpellProblem problem : spellProblems) {
-			if (!problem.isValid() || problem.getFromPos() >= parEnd || problem.getToPos() < parStart)
-				continue; // not in this paragraph
+		for (SpellBlockProblems blockProblems : spellProblems) {
+			if (!blockProblems.isValid() || blockProblems.getFromPos() >= parEnd || blockProblems.getToPos() < parStart)
+				continue; // not in this line
 
-			int start = Math.max(problem.getFromPos() - parStart, 0);
-			int end = Math.min(problem.getToPos() - parStart, parLength);
-			boolean spellError = problem.isError();
+			for (SpellProblem problem : blockProblems.problems) {
+				if (!problem.isValid() || problem.getFromPos() >= parEnd || problem.getToPos() < parStart)
+					continue; // not in this line
 
-			PathElement[] shape = getShape(start, end);
+				int start = Math.max(problem.getFromPos() - parStart, 0);
+				int end = Math.min(problem.getToPos() - parStart, parLength);
+				boolean spellError = problem.isError();
 
-			Path path = new Path(shape);
-			path.setFill(spellError ? Color.RED : Color.ORANGE);
-			path.setStrokeWidth(0);
-			path.setOpacity(0.3);
-			nodes.add(path);
+				PathElement[] shape = getShape(start, end);
+
+				Path path = new Path(shape);
+				path.setFill(spellError ? Color.RED : Color.ORANGE);
+				path.setStrokeWidth(0);
+				path.setOpacity(0.3);
+				nodes.add(path);
+			}
 		}
 
 		return nodes.toArray(new Node[nodes.size()]);

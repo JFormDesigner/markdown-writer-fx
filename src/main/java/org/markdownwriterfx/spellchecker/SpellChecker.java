@@ -30,6 +30,7 @@ package org.markdownwriterfx.spellchecker;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -41,11 +42,17 @@ import org.fxmisc.richtext.model.PlainTextChange;
 import org.languagetool.JLanguageTool;
 import org.languagetool.language.AmericanEnglish;
 import org.languagetool.rules.RuleMatch;
+import org.markdownwriterfx.editor.MarkdownEditorPane;
 import org.markdownwriterfx.editor.ParagraphOverlayGraphicFactory;
 import org.markdownwriterfx.options.Options;
 import org.reactfx.EventStream;
 import org.reactfx.Subscription;
 import org.reactfx.util.Try;
+import com.vladsch.flexmark.ast.Block;
+import com.vladsch.flexmark.ast.Heading;
+import com.vladsch.flexmark.ast.Node;
+import com.vladsch.flexmark.ast.NodeVisitor;
+import com.vladsch.flexmark.ast.Paragraph;
 
 /**
  * Spell checker for an instance of StyleClassedTextArea
@@ -54,10 +61,11 @@ import org.reactfx.util.Try;
  */
 public class SpellChecker
 {
+	private final MarkdownEditorPane editor;
 	private final StyleClassedTextArea textArea;
 	private final ParagraphOverlayGraphicFactory overlayGraphicFactory;
 	private final InvalidationListener optionsListener;
-	private List<SpellProblem> spellProblems;
+	private List<SpellBlockProblems> spellProblems;
 
 	private Subscription textChangesSubscribtion;
 	private SpellCheckerOverlayFactory spellCheckerOverlayFactory;
@@ -68,7 +76,10 @@ public class SpellChecker
 	// global JLanguageTool used in executor
 	private static JLanguageTool languageTool;
 
-	public SpellChecker(StyleClassedTextArea textArea, ParagraphOverlayGraphicFactory overlayGraphicFactory) {
+	public SpellChecker(MarkdownEditorPane editor, StyleClassedTextArea textArea,
+		ParagraphOverlayGraphicFactory overlayGraphicFactory)
+	{
+		this.editor = editor;
 		this.textArea = textArea;
 		this.overlayGraphicFactory = overlayGraphicFactory;
 
@@ -125,19 +136,19 @@ public class SpellChecker
 		}
 	}
 
-	private Task<List<SpellProblem>> checkAsync() {
-        String text = textArea.getText();
-        Task<List<SpellProblem>> task = new Task<List<SpellProblem>>() {
+	private Task<List<SpellBlockProblems>> checkAsync() {
+        Node astRoot = editor.getMarkdownAST();
+        Task<List<SpellBlockProblems>> task = new Task<List<SpellBlockProblems>>() {
             @Override
-            protected List<SpellProblem> call() throws Exception {
-                return check(text);
+            protected List<SpellBlockProblems> call() throws Exception {
+                return check(astRoot);
             }
         };
         executor.execute(task);
         return task;
     }
 
-	private void checkFinished(Try<List<SpellProblem>> result) {
+	private void checkFinished(Try<List<SpellBlockProblems>> result) {
 		if (overlayGraphicFactory == null)
 			return; // ignore result; user turned spell checking off
 
@@ -150,17 +161,32 @@ public class SpellChecker
 		}
 	}
 
-	private List<SpellProblem> check(String text) throws IOException {
+	private List<SpellBlockProblems> check(Node astRoot) throws IOException {
 		if (languageTool == null)
 			languageTool = new JLanguageTool(new AmericanEnglish());
 
-		// check spelling
-		List<RuleMatch> ruleMatches = languageTool.check(text);
+		// find nodes that should be checked
+		ArrayList<Node> nodesToCheck = new ArrayList<>();
+		NodeVisitor visitor = new NodeVisitor(Collections.emptyList()) {
+			@Override
+			public void visit(Node node) {
+				if (node instanceof Paragraph || node instanceof Heading)
+					nodesToCheck.add(node);
 
-		// convert RuleMatch to SpellProblem
-		ArrayList<SpellProblem> spellProblems = new ArrayList<>(ruleMatches.size());
-		for (RuleMatch ruleMatch : ruleMatches)
-			spellProblems.add(new SpellProblem(ruleMatch));
+				if (node instanceof Block)
+					visitChildren(node);
+			}
+		};
+		visitor.visit(astRoot);
+
+		// check spelling of nodes
+		ArrayList<SpellBlockProblems> spellProblems = new ArrayList<>();
+		for (Node node : nodesToCheck) {
+			String text = node.getChars().toString();
+			List<RuleMatch> ruleMatches = languageTool.check(text);
+
+			spellProblems.add(new SpellBlockProblems(node.getStartOffset(), node.getEndOffset(), ruleMatches));
+		}
 
 		return spellProblems;
 	}
@@ -173,7 +199,9 @@ public class SpellChecker
 		int inserted = e.getInserted().length();
 		int removed = e.getRemoved().length();
 
-		for (SpellProblem problem : spellProblems)
-			problem.updateOffsets(position, inserted, removed);
+		for (SpellBlockProblems blockProblems : spellProblems) {
+			for (SpellProblem problem : blockProblems.problems)
+				problem.updateOffsets(position, inserted, removed);
+		}
 	}
 }

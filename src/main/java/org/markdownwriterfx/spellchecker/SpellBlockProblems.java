@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2015 Karl Tauber <karl at jformdesigner dot com>
+ * Copyright (c) 2016 Karl Tauber <karl at jformdesigner dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- *  o Redistributions of source code must retain the above copyright
+ *  * Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  *
- *  o Redistributions in binary form must reproduce the above copyright
+ *  * Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
@@ -27,32 +27,25 @@
 
 package org.markdownwriterfx.spellchecker;
 
-import org.languagetool.rules.ITSIssueType;
+import java.util.ArrayList;
+import java.util.List;
 import org.languagetool.rules.RuleMatch;
 
 /**
- * Encapsulates a spell checker match (RuleMatch) and
- * updates its fromPos and toPos immediately on text changes by the user,
- * which keeps existing spell range highlights in place while the user types.
- * Spell checking is done deferred and in a background thread.
+ * Spell checker problems of a block (e.g. paragraph).
  *
  * @author Karl Tauber
  */
-class SpellProblem
+class SpellBlockProblems
 	extends SpellRange
 {
-	private final RuleMatch ruleMatch;
+	final List<SpellProblem> problems;
 
-	SpellProblem(int offset, RuleMatch ruleMatch) {
-		super(offset + ruleMatch.getFromPos(), offset + ruleMatch.getToPos());
-		this.ruleMatch = ruleMatch;
-	}
+	SpellBlockProblems(int fromPos, int toPos, List<RuleMatch> ruleMatches) {
+		super(fromPos, toPos);
 
-	boolean isError() {
-		return ruleMatch.getRule().getLocQualityIssueType() == ITSIssueType.Misspelling;
-	}
-
-	String getMessage() {
-		return ruleMatch.getMessage();
+		problems = new ArrayList<>(ruleMatches.size());
+		for (RuleMatch ruleMatch : ruleMatches)
+			problems.add(new SpellProblem(fromPos, ruleMatch));
 	}
 }
