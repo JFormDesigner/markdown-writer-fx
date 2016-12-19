@@ -31,12 +31,15 @@ import org.languagetool.rules.ITSIssueType;
 import org.languagetool.rules.RuleMatch;
 
 /**
- * Encapsulates a RuleMatch
+ * Encapsulates a spell checker match (RuleMatch) and
+ * updates its fromPos and toPos immediately on text changes by the user,
+ * which keeps existing spell match highlights in place while the user types.
+ * Spell checking is done deferred and in a background thread.
  *
  * @author Karl Tauber
  */
 class SpellRuleMatch
-	extends SpellMatch
+	extends SpellRange
 {
 	private final RuleMatch ruleMatch;
 
@@ -45,12 +48,10 @@ class SpellRuleMatch
 		this.ruleMatch = ruleMatch;
 	}
 
-	@Override
 	boolean isError() {
 		return ruleMatch.getRule().getLocQualityIssueType() == ITSIssueType.Misspelling;
 	}
 
-	@Override
 	String getMessage() {
 		return ruleMatch.getMessage();
 	}

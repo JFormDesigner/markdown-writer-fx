@@ -45,15 +45,15 @@ import org.markdownwriterfx.editor.ParagraphOverlayGraphicFactory.OverlayFactory
 class SpellCheckerOverlayFactory
 	extends OverlayFactory
 {
-	private final Supplier<List<SpellMatch>> spellMatchesSupplier;
+	private final Supplier<List<SpellRuleMatch>> spellMatchesSupplier;
 
-	SpellCheckerOverlayFactory(Supplier<List<SpellMatch>> spellMatchesSupplier) {
+	SpellCheckerOverlayFactory(Supplier<List<SpellRuleMatch>> spellMatchesSupplier) {
 		this.spellMatchesSupplier = spellMatchesSupplier;
 	}
 
 	@Override
 	public Node[] createOverlayNodes(int paragraphIndex) {
-		List<SpellMatch> spellMatches = this.spellMatchesSupplier.get();
+		List<SpellRuleMatch> spellMatches = this.spellMatchesSupplier.get();
 		if (spellMatches == null || spellMatches.isEmpty())
 			return null;
 
@@ -63,7 +63,7 @@ class SpellCheckerOverlayFactory
 		int parEnd = parStart + parLength;
 
 		ArrayList<Node> nodes = new ArrayList<>();
-		for (SpellMatch match : spellMatches) {
+		for (SpellRuleMatch match : spellMatches) {
 			if (!match.isValid() || match.getFromPos() >= parEnd || match.getToPos() < parStart)
 				continue; // not in this paragraph
 

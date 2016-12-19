@@ -57,7 +57,7 @@ public class SpellChecker
 	private final StyleClassedTextArea textArea;
 	private final ParagraphOverlayGraphicFactory overlayGraphicFactory;
 	private final InvalidationListener optionsListener;
-	private List<SpellMatch> spellMatches;
+	private List<SpellRuleMatch> spellMatches;
 
 	private Subscription textChangesSubscribtion;
 	private SpellCheckerOverlayFactory spellCheckerOverlayFactory;
@@ -125,11 +125,11 @@ public class SpellChecker
 		}
 	}
 
-	private Task<List<SpellMatch>> checkAsync() {
+	private Task<List<SpellRuleMatch>> checkAsync() {
         String text = textArea.getText();
-        Task<List<SpellMatch>> task = new Task<List<SpellMatch>>() {
+        Task<List<SpellRuleMatch>> task = new Task<List<SpellRuleMatch>>() {
             @Override
-            protected List<SpellMatch> call() throws Exception {
+            protected List<SpellRuleMatch> call() throws Exception {
                 return check(text);
             }
         };
@@ -137,7 +137,7 @@ public class SpellChecker
         return task;
     }
 
-	private void checkFinished(Try<List<SpellMatch>> result) {
+	private void checkFinished(Try<List<SpellRuleMatch>> result) {
 		if (overlayGraphicFactory == null)
 			return; // ignore result; user turned spell checking off
 
@@ -150,15 +150,15 @@ public class SpellChecker
 		}
 	}
 
-	private List<SpellMatch> check(String text) throws IOException {
+	private List<SpellRuleMatch> check(String text) throws IOException {
 		if (languageTool == null)
 			languageTool = new JLanguageTool(new AmericanEnglish());
 
 		// check spelling
 		List<RuleMatch> ruleMatches = languageTool.check(text);
 
-		// convert RuleMatch to SpellMatch
-		ArrayList<SpellMatch> spellMatches = new ArrayList<>(ruleMatches.size());
+		// convert RuleMatch to SpellRuleMatch
+		ArrayList<SpellRuleMatch> spellMatches = new ArrayList<>(ruleMatches.size());
 		for (RuleMatch ruleMatch : ruleMatches)
 			spellMatches.add(new SpellRuleMatch(ruleMatch));
 
@@ -173,7 +173,7 @@ public class SpellChecker
 		int inserted = e.getInserted().length();
 		int removed = e.getRemoved().length();
 
-		for (SpellMatch match : spellMatches)
+		for (SpellRuleMatch match : spellMatches)
 			match.updateOffsets(position, inserted, removed);
 	}
 }

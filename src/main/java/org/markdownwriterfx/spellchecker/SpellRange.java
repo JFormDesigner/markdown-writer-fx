@@ -28,20 +28,19 @@
 package org.markdownwriterfx.spellchecker;
 
 /**
- * Encapsulates a spell checker match (e.g. RuleMatch) and
- * updates its fromPos and toPos immediately on text changes by the user,
- * which keeps existing spell match highlights in place while the user types.
+ * Range that updates its fromPos and toPos immediately on text changes by the user,
+ * which keeps existing spell range highlights in place while the user types.
  * Spell checking is done deferred and in a background thread.
  *
  * @author Karl Tauber
  */
-abstract class SpellMatch
+class SpellRange
 {
 	private int fromPos;
 	private int toPos;
 	private boolean valid = true;
 
-	SpellMatch(int fromPos, int toPos) {
+	SpellRange(int fromPos, int toPos) {
 		this.fromPos = fromPos;
 		this.toPos = toPos;
 	}
@@ -58,37 +57,31 @@ abstract class SpellMatch
 		return valid;
 	}
 
-	boolean isError() {
-		return true;
-	}
-
-	abstract String getMessage();
-
 	void updateOffsets(int position, int inserted, int removed) {
 		if (position > toPos)
-			return; // changed area is after this match
+			return; // changed area is after this range
 
 		int diff = inserted - removed;
 
 		if (position + removed <= fromPos) {
-			// changed area is before this match
+			// changed area is before this range
 			fromPos += diff;
 			toPos += diff;
 		} else if (position >= fromPos) {
-			// changed area starts within this match
+			// changed area starts within this range
 			if( position + removed <= toPos ) {
-				// changed area is within this match
+				// changed area is within this range
 				toPos += diff;
 			} else {
-				// changed area starts within this match and ends after it
-				// --> the new text does not belong to this match
+				// changed area starts within this range and ends after it
+				// --> the new text does not belong to this range
 				toPos = position;
 			}
 		} else { // position < fromPos
-			// changed area starts before this match
+			// changed area starts before this range
 			if( position + removed <= toPos ) {
-				// changed area starts before this match and ends within it
-				// --> the new text does not belong to this match
+				// changed area starts before this range and ends within it
+				// --> the new text does not belong to this range
 				fromPos = position + inserted;
 				toPos += diff;
 			} else {
@@ -101,6 +94,6 @@ abstract class SpellMatch
 
 	@Override
 	public String toString() {
-		return (valid ? "" : "INVALID ") + fromPos + "-" + toPos + ": " + getMessage();
+		return (valid ? "" : "INVALID ") + fromPos + "-" + toPos;
 	}
 }
