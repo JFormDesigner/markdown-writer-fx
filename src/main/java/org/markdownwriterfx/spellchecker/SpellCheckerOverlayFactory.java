@@ -45,16 +45,16 @@ import org.markdownwriterfx.editor.ParagraphOverlayGraphicFactory.OverlayFactory
 class SpellCheckerOverlayFactory
 	extends OverlayFactory
 {
-	private final Supplier<List<SpellRuleMatch>> spellMatchesSupplier;
+	private final Supplier<List<SpellProblem>> spellProblemsSupplier;
 
-	SpellCheckerOverlayFactory(Supplier<List<SpellRuleMatch>> spellMatchesSupplier) {
-		this.spellMatchesSupplier = spellMatchesSupplier;
+	SpellCheckerOverlayFactory(Supplier<List<SpellProblem>> spellProblemsSupplier) {
+		this.spellProblemsSupplier = spellProblemsSupplier;
 	}
 
 	@Override
 	public Node[] createOverlayNodes(int paragraphIndex) {
-		List<SpellRuleMatch> spellMatches = this.spellMatchesSupplier.get();
-		if (spellMatches == null || spellMatches.isEmpty())
+		List<SpellProblem> spellProblems = this.spellProblemsSupplier.get();
+		if (spellProblems == null || spellProblems.isEmpty())
 			return null;
 
 		StyleClassedTextArea textArea = getTextArea();
@@ -63,13 +63,13 @@ class SpellCheckerOverlayFactory
 		int parEnd = parStart + parLength;
 
 		ArrayList<Node> nodes = new ArrayList<>();
-		for (SpellRuleMatch match : spellMatches) {
-			if (!match.isValid() || match.getFromPos() >= parEnd || match.getToPos() < parStart)
+		for (SpellProblem problem : spellProblems) {
+			if (!problem.isValid() || problem.getFromPos() >= parEnd || problem.getToPos() < parStart)
 				continue; // not in this paragraph
 
-			int start = Math.max(match.getFromPos() - parStart, 0);
-			int end = Math.min(match.getToPos() - parStart, parLength);
-			boolean spellError = match.isError();
+			int start = Math.max(problem.getFromPos() - parStart, 0);
+			int end = Math.min(problem.getToPos() - parStart, parLength);
+			boolean spellError = problem.isError();
 
 			PathElement[] shape = getShape(start, end);
 

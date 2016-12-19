@@ -33,17 +33,17 @@ import org.languagetool.rules.RuleMatch;
 /**
  * Encapsulates a spell checker match (RuleMatch) and
  * updates its fromPos and toPos immediately on text changes by the user,
- * which keeps existing spell match highlights in place while the user types.
+ * which keeps existing spell range highlights in place while the user types.
  * Spell checking is done deferred and in a background thread.
  *
  * @author Karl Tauber
  */
-class SpellRuleMatch
+class SpellProblem
 	extends SpellRange
 {
 	private final RuleMatch ruleMatch;
 
-	SpellRuleMatch(RuleMatch ruleMatch) {
+	SpellProblem(RuleMatch ruleMatch) {
 		super(ruleMatch.getFromPos(), ruleMatch.getToPos());
 		this.ruleMatch = ruleMatch;
 	}

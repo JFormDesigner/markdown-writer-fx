@@ -57,7 +57,7 @@ public class SpellChecker
 	private final StyleClassedTextArea textArea;
 	private final ParagraphOverlayGraphicFactory overlayGraphicFactory;
 	private final InvalidationListener optionsListener;
-	private List<SpellRuleMatch> spellMatches;
+	private List<SpellProblem> spellProblems;
 
 	private Subscription textChangesSubscribtion;
 	private SpellCheckerOverlayFactory spellCheckerOverlayFactory;
@@ -99,13 +99,13 @@ public class SpellChecker
 
 	        EventStream<PlainTextChange> textChanges = textArea.plainTextChanges();
 			textChangesSubscribtion = textChanges
-				.hook(this::updateSpellMatchesOffsets)
+				.hook(this::updateSpellRangeOffsets)
 				.successionEnds(Duration.ofMillis(500))
 				.supplyTask(this::checkAsync)
 				.awaitLatest(textChanges)
 				.subscribe(this::checkFinished);
 
-	        spellCheckerOverlayFactory = new SpellCheckerOverlayFactory(() -> spellMatches);
+	        spellCheckerOverlayFactory = new SpellCheckerOverlayFactory(() -> spellProblems);
 			overlayGraphicFactory.addOverlayFactory(spellCheckerOverlayFactory);
 
 			//TODO check current text
@@ -125,11 +125,11 @@ public class SpellChecker
 		}
 	}
 
-	private Task<List<SpellRuleMatch>> checkAsync() {
+	private Task<List<SpellProblem>> checkAsync() {
         String text = textArea.getText();
-        Task<List<SpellRuleMatch>> task = new Task<List<SpellRuleMatch>>() {
+        Task<List<SpellProblem>> task = new Task<List<SpellProblem>>() {
             @Override
-            protected List<SpellRuleMatch> call() throws Exception {
+            protected List<SpellProblem> call() throws Exception {
                 return check(text);
             }
         };
@@ -137,12 +137,12 @@ public class SpellChecker
         return task;
     }
 
-	private void checkFinished(Try<List<SpellRuleMatch>> result) {
+	private void checkFinished(Try<List<SpellProblem>> result) {
 		if (overlayGraphicFactory == null)
 			return; // ignore result; user turned spell checking off
 
 		if (result.isSuccess()) {
-			spellMatches = result.get();
+			spellProblems = result.get();
 			overlayGraphicFactory.update();
 		} else {
 			//TODO
@@ -150,30 +150,30 @@ public class SpellChecker
 		}
 	}
 
-	private List<SpellRuleMatch> check(String text) throws IOException {
+	private List<SpellProblem> check(String text) throws IOException {
 		if (languageTool == null)
 			languageTool = new JLanguageTool(new AmericanEnglish());
 
 		// check spelling
 		List<RuleMatch> ruleMatches = languageTool.check(text);
 
-		// convert RuleMatch to SpellRuleMatch
-		ArrayList<SpellRuleMatch> spellMatches = new ArrayList<>(ruleMatches.size());
+		// convert RuleMatch to SpellProblem
+		ArrayList<SpellProblem> spellProblems = new ArrayList<>(ruleMatches.size());
 		for (RuleMatch ruleMatch : ruleMatches)
-			spellMatches.add(new SpellRuleMatch(ruleMatch));
+			spellProblems.add(new SpellProblem(ruleMatch));
 
-		return spellMatches;
+		return spellProblems;
 	}
 
-	private void updateSpellMatchesOffsets(PlainTextChange e) {
-		if (spellMatches == null)
+	private void updateSpellRangeOffsets(PlainTextChange e) {
+		if (spellProblems == null)
 			return;
 
 		int position = e.getPosition();
 		int inserted = e.getInserted().length();
 		int removed = e.getRemoved().length();
 
-		for (SpellRuleMatch match : spellMatches)
-			match.updateOffsets(position, inserted, removed);
+		for (SpellProblem problem : spellProblems)
+			problem.updateOffsets(position, inserted, removed);
 	}
 }
