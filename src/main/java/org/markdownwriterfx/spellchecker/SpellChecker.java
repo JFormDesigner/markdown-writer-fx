@@ -334,7 +334,18 @@ public class SpellChecker
 		if (pos < message.length())
 			texts.add(new javafx.scene.text.Text(message.substring(pos)));
 
-		TextFlow textFlow = new TextFlow(texts.toArray(new javafx.scene.text.Text[texts.size()]));
+		TextFlow textFlow = new TextFlow(texts.toArray(new javafx.scene.text.Text[texts.size()])) {
+			@Override
+			protected double computePrefWidth(double height) {
+				// limit width to 300
+				return Math.min(super.computePrefWidth(height), 300);
+			}
+			@Override
+			protected double computePrefHeight(double width) {
+				// compute height based on maximum width
+				return super.computePrefHeight(300);
+			}
+		};
 		textFlow.getStyleClass().add("spell-menu-message");
 		return textFlow;
 	}
