@@ -27,6 +27,7 @@
 
 package org.markdownwriterfx.spellchecker;
 
+import java.util.List;
 import org.languagetool.rules.ITSIssueType;
 import org.languagetool.rules.RuleMatch;
 
@@ -54,5 +55,9 @@ class SpellProblem
 
 	String getMessage() {
 		return ruleMatch.getMessage();
+	}
+
+	List<String> getSuggestedReplacements() {
+		return ruleMatch.getSuggestedReplacements();
 	}
 }

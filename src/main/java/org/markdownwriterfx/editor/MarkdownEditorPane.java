@@ -87,7 +87,6 @@ public class MarkdownEditorPane
 	private final FindReplacePane findReplacePane;
 	private final HitsChangeListener findHitsChangeListener;
 	private Parser parser;
-	@SuppressWarnings("unused")
 	private final SpellChecker spellChecker;
 	private final InvalidationListener optionsListener;
 	private String lineSeparator = getLineSeparatorOrDefault();
@@ -379,9 +378,11 @@ public class MarkdownEditorPane
 	}
 
 	private void initContextMenu() {
+		spellChecker.initContextMenu(contextMenu);
 	}
 
 	private void updateContextMenu(int characterIndex, int insertionIndex) {
+		spellChecker.updateContextMenu(contextMenu, characterIndex);
 	}
 
 	//---- find/replace -------------------------------------------------------

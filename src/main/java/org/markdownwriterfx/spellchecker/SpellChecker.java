@@ -34,9 +34,17 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javafx.beans.InvalidationListener;
 import javafx.beans.WeakInvalidationListener;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.CustomMenuItem;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.text.TextFlow;
 import org.apache.commons.lang3.StringUtils;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.richtext.model.PlainTextChange;
@@ -254,5 +262,99 @@ public class SpellChecker
 			for (SpellProblem problem : blockProblems.problems)
 				problem.updateOffsets(position, inserted, removed);
 		}
+	}
+
+	//---- context menu -------------------------------------------------------
+
+	private static final String CONTEXT_SPELL_PROBLEM_ITEM = "spell-problem-item";
+	private static final Pattern SUGGESTION_PATTERN = Pattern.compile("<suggestion>(.*?)</suggestion>");
+
+	public void initContextMenu(ContextMenu contextMenu) {
+	}
+
+	public void updateContextMenu(ContextMenu contextMenu, int characterIndex) {
+		ObservableList<MenuItem> menuItems = contextMenu.getItems();
+
+		// remove old menu items
+		menuItems.removeAll(menuItems.filtered(menuItem -> CONTEXT_SPELL_PROBLEM_ITEM.equals(menuItem.getUserData())));
+
+		// find problems
+		List<SpellProblem> problems = findProblemsAt(characterIndex);
+		if (problems.isEmpty())
+			return;
+
+		// create menu items
+		ArrayList<MenuItem> newItems = new ArrayList<>();
+		for (SpellProblem problem : problems) {
+			CustomMenuItem problemItem = new SeparatorMenuItem();
+			problemItem.setContent(buildMessage(problem.getMessage()));
+			problemItem.setUserData(CONTEXT_SPELL_PROBLEM_ITEM);
+			newItems.add(problemItem);
+
+			for (String suggestedReplacement : problem.getSuggestedReplacements()) {
+				MenuItem item = new MenuItem(suggestedReplacement);
+				item.getStyleClass().add("spell-menu-suggestion");
+				item.setUserData(CONTEXT_SPELL_PROBLEM_ITEM);
+				item.setOnAction(e -> {
+					textArea.replaceText(problem.getFromPos(), problem.getToPos(), suggestedReplacement);
+				});
+				newItems.add(item);
+			}
+		}
+
+		// add separator (if necessary)
+		if (!newItems.isEmpty() && !menuItems.isEmpty()) {
+			SeparatorMenuItem separator = new SeparatorMenuItem();
+			separator.setUserData(CONTEXT_SPELL_PROBLEM_ITEM);
+			newItems.add(separator);
+		}
+
+		// add new menu items to context menu
+		menuItems.addAll(0, newItems);
+	}
+
+
+	private TextFlow buildMessage(String message) {
+		ArrayList<javafx.scene.text.Text> texts = new ArrayList<>();
+		Matcher matcher = SUGGESTION_PATTERN.matcher(message);
+		int pos = 0;
+		while (matcher.find(pos)) {
+			int start = matcher.start();
+			if (start > pos)
+				texts.add(new javafx.scene.text.Text(message.substring(pos, start)));
+
+			javafx.scene.text.Text text = new javafx.scene.text.Text(matcher.group(1));
+			text.getStyleClass().add("spell-menu-message-suggestion");
+			texts.add(new javafx.scene.text.Text("\""));
+			texts.add(text);
+			texts.add(new javafx.scene.text.Text("\""));
+
+			pos = matcher.end();
+		}
+		if (pos < message.length())
+			texts.add(new javafx.scene.text.Text(message.substring(pos)));
+
+		TextFlow textFlow = new TextFlow(texts.toArray(new javafx.scene.text.Text[texts.size()]));
+		textFlow.getStyleClass().add("spell-menu-message");
+		return textFlow;
+	}
+
+	//---- utility ------------------------------------------------------------
+
+	private List<SpellProblem> findProblemsAt(int index) {
+		if (index < 0 || spellProblems == null || spellProblems.isEmpty())
+			return Collections.emptyList();
+
+		ArrayList<SpellProblem> result = new ArrayList<>();
+		for (SpellBlockProblems blockProblems : spellProblems) {
+			if (!blockProblems.contains(index))
+				continue;
+
+			for (SpellProblem problem : blockProblems.problems) {
+				if (problem.contains(index))
+					result.add(problem);
+			}
+		}
+		return result;
 	}
 }

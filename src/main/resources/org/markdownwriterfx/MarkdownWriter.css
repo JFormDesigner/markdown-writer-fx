@@ -276,3 +276,21 @@
 .scroll-bar > .track {
 	-mwfx-hit: #FBC02D;
 }
+
+
+/*---- spell checker ----*/
+
+.spell-menu-message {
+	-fx-padding: 0.5em;
+	-fx-background-color: -fx-background;
+}
+.spell-menu-message > * {
+	-fx-fill: -fx-text-background-color;
+}
+.spell-menu-message-suggestion {
+	-fx-fill: #07a;
+	-fx-font-weight: bold;
+}
+.spell-menu-suggestion {
+	-fx-font-weight: bold;
+}
