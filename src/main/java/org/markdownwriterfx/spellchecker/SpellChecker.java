@@ -37,10 +37,13 @@ import java.util.concurrent.Executors;
 import javafx.beans.InvalidationListener;
 import javafx.beans.WeakInvalidationListener;
 import javafx.concurrent.Task;
+import org.apache.commons.lang3.StringUtils;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.richtext.model.PlainTextChange;
 import org.languagetool.JLanguageTool;
 import org.languagetool.language.AmericanEnglish;
+import org.languagetool.markup.AnnotatedText;
+import org.languagetool.markup.AnnotatedTextBuilder;
 import org.languagetool.rules.RuleMatch;
 import org.markdownwriterfx.editor.MarkdownEditorPane;
 import org.markdownwriterfx.editor.ParagraphOverlayGraphicFactory;
@@ -49,10 +52,14 @@ import org.reactfx.EventStream;
 import org.reactfx.Subscription;
 import org.reactfx.util.Try;
 import com.vladsch.flexmark.ast.Block;
+import com.vladsch.flexmark.ast.Code;
+import com.vladsch.flexmark.ast.HardLineBreak;
 import com.vladsch.flexmark.ast.Heading;
 import com.vladsch.flexmark.ast.Node;
 import com.vladsch.flexmark.ast.NodeVisitor;
 import com.vladsch.flexmark.ast.Paragraph;
+import com.vladsch.flexmark.ast.SoftLineBreak;
+import com.vladsch.flexmark.ast.Text;
 
 /**
  * Spell checker for an instance of StyleClassedTextArea
@@ -164,6 +171,7 @@ public class SpellChecker
 	private List<SpellBlockProblems> check(Node astRoot) throws IOException {
 		if (languageTool == null)
 			languageTool = new JLanguageTool(new AmericanEnglish());
+		languageTool.disableRule("WHITESPACE_RULE");
 
 		// find nodes that should be checked
 		ArrayList<Node> nodesToCheck = new ArrayList<>();
@@ -182,13 +190,55 @@ public class SpellChecker
 		// check spelling of nodes
 		ArrayList<SpellBlockProblems> spellProblems = new ArrayList<>();
 		for (Node node : nodesToCheck) {
-			String text = node.getChars().toString();
-			List<RuleMatch> ruleMatches = languageTool.check(text);
+			AnnotatedText annotatedText = annotatedNodeText(node);
+			List<RuleMatch> ruleMatches = languageTool.check(annotatedText);
 
 			spellProblems.add(new SpellBlockProblems(node.getStartOffset(), node.getEndOffset(), ruleMatches));
 		}
 
 		return spellProblems;
+	}
+
+	private AnnotatedText annotatedNodeText(Node node) {
+		AnnotatedTextBuilder builder = new AnnotatedTextBuilder();
+		NodeVisitor visitor = new NodeVisitor(Collections.emptyList()) {
+			int prevTextEnd = node.getStartOffset();
+
+			@Override
+			public void visit(Node node) {
+				if (node instanceof Text)
+					addText(node.getStartOffset(), node.getChars().toString());
+				else if (node instanceof Code)
+					addText(((Code)node).getText().getStartOffset(), ((Code)node).getText().toString());
+				else if (node instanceof SoftLineBreak)
+					addText(node.getStartOffset(), " ");
+				else if (node instanceof HardLineBreak)
+					addText(node.getStartOffset(), "\n");
+				else
+					visitChildren(node);
+			}
+
+			private void addText(int start, String text) {
+				if (start > prevTextEnd)
+					builder.addMarkup(getMarkupFiller(start - prevTextEnd));
+				builder.addText(text);
+				prevTextEnd = start + text.length();
+			}
+		};
+		visitor.visit(node);
+		return builder.build();
+	}
+
+	private static final ArrayList<String> markupFiller = new ArrayList<>();
+	private String getMarkupFiller(int length) {
+		if (markupFiller.isEmpty()) {
+			for (int i = 1; i <= 16; i++)
+				markupFiller.add(StringUtils.repeat('#', i));
+		}
+
+		if (length <= markupFiller.size())
+			return markupFiller.get(length - 1);
+		return StringUtils.repeat('#', length);
 	}
 
 	private void updateSpellRangeOffsets(PlainTextChange e) {
@@ -200,6 +250,7 @@ public class SpellChecker
 		int removed = e.getRemoved().length();
 
 		for (SpellBlockProblems blockProblems : spellProblems) {
+			blockProblems.updateOffsets(position, inserted, removed);
 			for (SpellProblem problem : blockProblems.problems)
 				problem.updateOffsets(position, inserted, removed);
 		}
