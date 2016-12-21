@@ -240,6 +240,33 @@ public class ParagraphOverlayGraphicFactory
 			return new Rectangle2D(minX, minY, maxX - minX, maxY - minY);
 		}
 
+		protected List<Rectangle2D> getAllBounds(int start, int end) {
+			PathElement[] shape = getShape(start, end);
+
+			ArrayList<Rectangle2D> rectangles = new ArrayList<>(shape.length / 4);
+			double minX = 0, minY = 0, maxX = 0, maxY = 0;
+			for (PathElement pathElement : shape) {
+				if (pathElement instanceof MoveTo) {
+					if (pathElement != shape[0])
+						rectangles.add(new Rectangle2D(minX, minY, maxX - minX, maxY - minY));
+
+					MoveTo moveTo = (MoveTo) pathElement;
+					minX = maxX = moveTo.getX();
+					minY = maxY = moveTo.getY();
+				} else if (pathElement instanceof LineTo) {
+					LineTo lineTo = (LineTo) pathElement;
+					double x = lineTo.getX();
+					double y = lineTo.getY();
+					minX = Math.min(minX, x);
+					minY = Math.min(minY, y);
+					maxX = Math.max(maxX, x);
+					maxY = Math.max(maxY, y);
+				}
+			}
+			rectangles.add(new Rectangle2D(minX, minY, maxX - minX, maxY - minY));
+			return rectangles;
+		}
+
 		protected Insets getInsets() {
 			Insets insets = ((Region)paragraphTextNode).getInsets();
 			if (gutter != null) {

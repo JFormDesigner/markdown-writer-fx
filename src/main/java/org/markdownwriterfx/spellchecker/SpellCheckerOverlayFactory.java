@@ -32,8 +32,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 import javafx.geometry.Insets;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.LineTo;
+import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
 import javafx.scene.shape.PathElement;
 import org.fxmisc.richtext.StyleClassedTextArea;
@@ -49,6 +52,7 @@ class SpellCheckerOverlayFactory
 	extends OverlayFactory
 {
 	private final Supplier<List<SpellBlockProblems>> spellProblemsSupplier;
+	private final boolean wavyLines = true;
 
 	SpellCheckerOverlayFactory(Supplier<List<SpellBlockProblems>> spellProblemsSupplier) {
 		this.spellProblemsSupplier = spellProblemsSupplier;
@@ -79,9 +83,15 @@ class SpellCheckerOverlayFactory
 				boolean spellError = problem.isError();
 
 				Path path = new Path();
-				path.setFill(spellError ? Color.RED : Color.ORANGE);
-				path.setStrokeWidth(0);
-				path.setOpacity(0.3);
+				if (wavyLines) {
+					path.setStroke(spellError ? Color.RED : Color.ORANGE);
+					path.setStrokeWidth(1);
+					path.setOpacity(0.7);
+				} else {
+					path.setFill(spellError ? Color.RED : Color.ORANGE);
+					path.setStrokeWidth(0);
+					path.setOpacity(0.3);
+				}
 				path.setUserData(new Range(start, end));
 				nodes.add(path);
 			}
@@ -97,13 +107,67 @@ class SpellCheckerOverlayFactory
 		double topInsets = insets.getTop();
 
 		for (Node node : nodes) {
-			Range range = (Range) node.getUserData();
-
-			PathElement[] shape = getShape(range.start, range.end);
-			((Path)node).getElements().setAll(shape);
-
 			node.setLayoutX(leftInsets);
 			node.setLayoutY(topInsets);
+
+			Range range = (Range) node.getUserData();
+
+			if (wavyLines) {
+				List<Rectangle2D> boundsList = getAllBounds(range.start, range.end);
+				List<PathElement> wavyLinesShape = wavyLines(boundsList);
+				((Path)node).getElements().setAll(wavyLinesShape);
+			} else {
+				PathElement[] shape = getShape(range.start, range.end);
+				((Path)node).getElements().setAll(shape);
+			}
 		}
+	}
+
+	private List<PathElement> wavyLines(List<Rectangle2D> boundsList) {
+		if (boundsList.size() == 1)
+			return wavyLines(boundsList.get(0));
+
+		ArrayList<PathElement> elements = new ArrayList<>();
+		for (Rectangle2D bounds : boundsList)
+			elements.addAll(wavyLines(bounds));
+		return elements;
+	}
+
+	private List<PathElement> wavyLines(Rectangle2D bounds) {
+		double x = bounds.getMinX();
+		double y = bounds.getMaxY() - 2;
+		double x2 = bounds.getMaxX();
+		int inc = 2;
+
+		ArrayList<PathElement> elements = new ArrayList<>();
+		elements.add(new MoveTo(x, y));
+		for (int i = 0; i < 10000; i++) {
+			// bottom horizontal
+			x += 1;
+			if (x >= x2)
+				break;
+			elements.add(new LineTo(x, y));
+
+			// bottom to top
+			x += inc;
+			y -= inc;
+			if (x >= x2)
+				break;
+			elements.add(new LineTo(x, y));
+
+			// top horizontal
+			x += 1;
+			if (x >= x2)
+				break;
+			elements.add(new LineTo(x, y));
+
+			// top to bottom
+			x += inc;
+			y += inc;
+			if (x >= x2)
+				break;
+			elements.add(new LineTo(x, y));
+		}
+		return elements;
 	}
 }
