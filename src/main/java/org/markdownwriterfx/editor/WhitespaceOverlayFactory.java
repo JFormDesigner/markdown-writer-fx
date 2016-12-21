@@ -29,6 +29,8 @@ package org.markdownwriterfx.editor;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import javafx.geometry.Insets;
 import javafx.geometry.Rectangle2D;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
@@ -36,7 +38,7 @@ import javafx.scene.text.Text;
 import org.fxmisc.richtext.model.Paragraph;
 import org.fxmisc.richtext.model.StyledText;
 import org.markdownwriterfx.editor.ParagraphOverlayGraphicFactory.OverlayFactory;
-import org.reactfx.collection.LiveList;
+import org.markdownwriterfx.util.Range;
 
 /**
  * Shows whitespace characters.
@@ -46,10 +48,13 @@ import org.reactfx.collection.LiveList;
 class WhitespaceOverlayFactory
 	extends OverlayFactory
 {
+	private static final String SPACE = "\u00B7";
+	private static final String TAB   = "\u00BB";
+	private static final String EOL   = "\u00B6";
+
 	@Override
-	public Node[] createOverlayNodes(int paragraphIndex) {
-		LiveList<Paragraph<Collection<String>, Collection<String>>> paragraphs = getTextArea().getParagraphs();
-		Paragraph<Collection<String>, Collection<String>> par = paragraphs.get(paragraphIndex);
+	public List<Node> createOverlayNodes(int paragraphIndex) {
+		Paragraph<Collection<String>, Collection<String>> par = getTextArea().getParagraph(paragraphIndex);
 
 		ArrayList<Node> nodes = new ArrayList<>();
 		int segmentStart = 0;
@@ -61,41 +66,49 @@ class WhitespaceOverlayFactory
 				if (ch != ' ' && ch != '\t')
 					continue;
 
-				Rectangle2D bounds = getBounds(segmentStart + i, segmentStart + i + 1);
-
 				nodes.add(createTextNode(
-						(ch == ' ') ? "\u00B7" : "\u00BB",
+						(ch == ' ') ? SPACE : TAB,
 						segment.getStyle(),
-						bounds.getMinX(),
-						bounds.getMinY()));
+						segmentStart + i, segmentStart + i + 1));
 			}
 
 			segmentStart += textLength;
 		}
 
-		if (paragraphIndex < paragraphs.size() - 1) {
-			// all paragraphs except last one have line separators
-			Rectangle2D bounds = getBounds(segmentStart - 1, segmentStart);
+		nodes.add(createTextNode(EOL,
+				par.getStyleAtPosition(segmentStart),
+				segmentStart - 1, segmentStart));
 
-			nodes.add(createTextNode("\u00B6",
-					par.getStyleAtPosition(segmentStart),
-					bounds.getMaxX(),
-					bounds.getMinY()));
-		}
-
-		return nodes.toArray(new Node[nodes.size()]);
+		return nodes;
 	}
 
-	private Text createTextNode(String text, Collection<String> styleClasses,
-			double x, double y)
-	{
+	private Text createTextNode(String text, Collection<String> styleClasses, int start, int end) {
 		Text t = new Text(text);
 		t.setTextOrigin(VPos.TOP);
 		t.getStyleClass().add("text");
 		t.setOpacity(0.3);
 		t.getStyleClass().addAll(styleClasses);
-		t.setLayoutX(x);
-		t.setLayoutY(y);
+		t.setUserData(new Range(start, end));
 		return t;
+	}
+
+	@Override
+	public void layoutOverlayNodes(int paragraphIndex, List<Node> nodes) {
+		Insets insets = getInsets();
+		double leftInsets = insets.getLeft();
+		double topInsets = insets.getTop();
+
+		// all paragraphs except last one have line separators
+		boolean showEOL = (paragraphIndex < getTextArea().getParagraphs().size() - 1);
+		Node eolNode = nodes.get(nodes.size() - 1);
+		if (eolNode.isVisible() != showEOL)
+			eolNode.setVisible(showEOL);
+
+		for (Node node : nodes) {
+			Range range = (Range) node.getUserData();
+			Rectangle2D bounds = getBounds(range.start, range.end);
+			node.setLayoutX(leftInsets + (node == eolNode ? bounds.getMaxX() : bounds.getMinX()));
+			node.setLayoutY(topInsets + bounds.getMinY());
+		}
 	}
 }
