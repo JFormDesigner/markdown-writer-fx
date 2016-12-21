@@ -30,6 +30,7 @@ package org.markdownwriterfx.editor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.function.IntFunction;
 import javafx.collections.ObservableList;
@@ -109,6 +110,9 @@ class ParagraphOverlayGraphicFactory
 	{
 		private final int paragraphIndex;
 		private final Node gutter;
+		private final IdentityHashMap<OverlayFactory, List<Node>> overlayNodesMap
+			= new IdentityHashMap<>(overlayFactories.size());
+		private Node paragraphTextNode;
 
 		ParagraphGraphic(int paragraphIndex) {
 			this.paragraphIndex = paragraphIndex;
@@ -128,9 +132,17 @@ class ParagraphOverlayGraphicFactory
 			} else
 				gutter = null;
 
-			// make this node is the first child so that its nodes are rendered
-			// 'under' the paragraph text
 			parentProperty().addListener((observable, oldParent, newParent) -> {
+				// this node also "need layout" if parent "needs layout"
+				if (newParent != null) {
+					newParent.needsLayoutProperty().addListener((ob, o, n) -> {
+						if (n)
+							setNeedsLayout(true);
+					});
+				}
+
+				// make this node is the first child so that its nodes are rendered
+				// 'under' the paragraph text
 				if (newParent != null && newParent.getChildrenUnmodifiable().get(0) != this) {
 					@SuppressWarnings("unchecked")
 					ObservableList<Node> children = (ObservableList<Node>) invoke(mGetChildren, newParent);
@@ -152,42 +164,40 @@ class ParagraphOverlayGraphicFactory
 
 		@Override
 		protected void layoutChildren() {
-			update();
-		}
-
-		private void update() {
-			getChildren().clear();
-
-			if (getParent() == null)
-				return;
-
-			Node paragraphTextNode = getParent().lookup(".paragraph-text");
-			Insets insets = ((Region)paragraphTextNode).getInsets();
-			double leftInsets = insets.getLeft();
-			double topInsets = insets.getTop();
-
+			// layout gutter
 			if (gutter != null) {
-				double prefGutterWidth = gutter.prefWidth(-1);
-				layoutInArea(gutter, 0, 0, prefGutterWidth, getHeight(), -1, null, true, true, HPos.LEFT, VPos.TOP);
-				getChildren().add(gutter);
-
-				leftInsets += prefGutterWidth;
+				double gutterWidth = gutter.prefWidth(-1);
+				layoutInArea(gutter, 0, 0, gutterWidth, getHeight(), -1, null, true, true, HPos.LEFT, VPos.TOP);
 			}
 
-			for (OverlayFactory overlayFactory : overlayFactories) {
-				overlayFactory.init(textArea, paragraphTextNode);
-				Node[] nodes = overlayFactory.createOverlayNodes(paragraphIndex);
-				if (nodes == null)
-					continue;
+			// create overlay nodes
+			if (overlayNodesMap.isEmpty() && !overlayFactories.isEmpty())
+				createOverlayNodes();
 
-				for (Node node : nodes) {
+			// layout overlay nodes
+			layoutOverlayNodes();
+		}
+
+		private void createOverlayNodes() {
+
+			paragraphTextNode = getParent().lookup(".paragraph-text");
+
+			for (OverlayFactory overlayFactory : overlayFactories) {
+				overlayFactory.init(textArea, paragraphTextNode, gutter);
+				List<Node> nodes = overlayFactory.createOverlayNodes(paragraphIndex);
+				overlayNodesMap.put(overlayFactory, nodes);
+
+				for (Node node : nodes)
 					node.setManaged(false);
-					if (leftInsets != 0)
-						node.setLayoutX(node.getLayoutX() + leftInsets);
-					if (topInsets != 0)
-						node.setLayoutY(node.getLayoutY() + topInsets);
-				}
+
 				getChildren().addAll(nodes);
+			}
+		}
+
+		private void layoutOverlayNodes() {
+			for (OverlayFactory overlayFactory : overlayFactories) {
+				overlayFactory.init(textArea, paragraphTextNode, gutter);
+				overlayFactory.layoutOverlayNodes(paragraphIndex, overlayNodesMap.get(overlayFactory));
 			}
 		}
 	}
@@ -198,13 +208,18 @@ class ParagraphOverlayGraphicFactory
 	{
 		private StyleClassedTextArea textArea;
 		private Node paragraphTextNode;
+		private Node gutter;
+		private double gutterWidth;
 
-		private void init(StyleClassedTextArea textArea, Node paragraphTextNode) {
+		private void init(StyleClassedTextArea textArea, Node paragraphTextNode, Node gutter) {
 			this.textArea = textArea;
 			this.paragraphTextNode = paragraphTextNode;
+			this.gutter = gutter;
+			this.gutterWidth = -1;
 		}
 
-		abstract Node[] createOverlayNodes(int paragraphIndex);
+		abstract List<Node> createOverlayNodes(int paragraphIndex);
+		abstract void layoutOverlayNodes(int paragraphIndex, List<Node> nodes);
 
 		protected StyleClassedTextArea getTextArea() {
 			return textArea;
@@ -233,6 +248,16 @@ class ParagraphOverlayGraphicFactory
 				}
 			}
 			return new Rectangle2D(minX, minY, maxX - minX, maxY - minY);
+		}
+
+		protected Insets getInsets() {
+			Insets insets = ((Region)paragraphTextNode).getInsets();
+			if (gutter != null) {
+				if (gutterWidth < 0)
+					gutterWidth = gutter.prefWidth(-1);
+				insets = new Insets(insets.getTop(), insets.getRight(), insets.getBottom(), gutterWidth + insets.getLeft());
+			}
+			return insets;
 		}
 	}
 
