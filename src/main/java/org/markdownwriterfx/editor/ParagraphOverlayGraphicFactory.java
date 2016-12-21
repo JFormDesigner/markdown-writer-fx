@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.function.IntFunction;
-import javafx.collections.ObservableList;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Rectangle2D;
@@ -139,15 +138,6 @@ class ParagraphOverlayGraphicFactory
 						if (n)
 							setNeedsLayout(true);
 					});
-				}
-
-				// make this node is the first child so that its nodes are rendered
-				// 'under' the paragraph text
-				if (newParent != null && newParent.getChildrenUnmodifiable().get(0) != this) {
-					@SuppressWarnings("unchecked")
-					ObservableList<Node> children = (ObservableList<Node>) invoke(mGetChildren, newParent);
-					children.remove(this);
-					children.add(0, this);
 				}
 			});
 		}
