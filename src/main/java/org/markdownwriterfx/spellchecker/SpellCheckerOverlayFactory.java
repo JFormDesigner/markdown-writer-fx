@@ -28,14 +28,17 @@
 package org.markdownwriterfx.spellchecker;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Path;
 import javafx.scene.shape.PathElement;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.markdownwriterfx.editor.ParagraphOverlayGraphicFactory.OverlayFactory;
+import org.markdownwriterfx.util.Range;
 
 /**
  * Highlights spelling problems
@@ -52,10 +55,10 @@ class SpellCheckerOverlayFactory
 	}
 
 	@Override
-	public Node[] createOverlayNodes(int paragraphIndex) {
+	public List<Node> createOverlayNodes(int paragraphIndex) {
 		List<SpellBlockProblems> spellProblems = this.spellProblemsSupplier.get();
 		if (spellProblems == null || spellProblems.isEmpty())
-			return null;
+			return Collections.emptyList();
 
 		StyleClassedTextArea textArea = getTextArea();
 		int parStart = textArea.position(paragraphIndex, 0).toOffset();
@@ -75,16 +78,32 @@ class SpellCheckerOverlayFactory
 				int end = Math.min(problem.getToPos() - parStart, parLength);
 				boolean spellError = problem.isError();
 
-				PathElement[] shape = getShape(start, end);
-
-				Path path = new Path(shape);
+				Path path = new Path();
 				path.setFill(spellError ? Color.RED : Color.ORANGE);
 				path.setStrokeWidth(0);
 				path.setOpacity(0.3);
+				path.setUserData(new Range(start, end));
 				nodes.add(path);
 			}
 		}
 
-		return nodes.toArray(new Node[nodes.size()]);
+		return nodes;
+	}
+
+	@Override
+	public void layoutOverlayNodes(int paragraphIndex, List<Node> nodes) {
+		Insets insets = getInsets();
+		double leftInsets = insets.getLeft();
+		double topInsets = insets.getTop();
+
+		for (Node node : nodes) {
+			Range range = (Range) node.getUserData();
+
+			PathElement[] shape = getShape(range.start, range.end);
+			((Path)node).getElements().setAll(shape);
+
+			node.setLayoutX(leftInsets);
+			node.setLayoutY(topInsets);
+		}
 	}
 }
