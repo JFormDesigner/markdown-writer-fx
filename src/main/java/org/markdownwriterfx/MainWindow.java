@@ -179,14 +179,8 @@ class MainWindow
 		Action insertStrikethroughAction = new Action(Messages.get("MainWindow.insertStrikethroughAction"), "Shortcut+T", STRIKETHROUGH,
 				e -> getActiveSmartEdit().insertStrikethrough(Messages.get("MainWindow.insertStrikethroughText")),
 				activeFileEditorIsNull);
-		Action insertBlockquoteAction = new Action(Messages.get("MainWindow.insertBlockquoteAction"), "Ctrl+Q", QUOTE_LEFT, // not Shortcut+Q because of conflict on Mac
-				e -> getActiveSmartEdit().surroundSelection("\n\n> ", ""),
-				activeFileEditorIsNull);
 		Action insertCodeAction = new Action(Messages.get("MainWindow.insertCodeAction"), "Shortcut+K", CODE,
 				e -> getActiveSmartEdit().insertInlineCode(Messages.get("MainWindow.insertCodeText")),
-				activeFileEditorIsNull);
-		Action insertFencedCodeBlockAction = new Action(Messages.get("MainWindow.insertFencedCodeBlockAction"), "Shortcut+Shift+K", FILE_CODE_ALT,
-				e -> getActiveSmartEdit().surroundSelection("\n\n```\n", "\n```\n\n", Messages.get("MainWindow.insertFencedCodeBlockText")),
 				activeFileEditorIsNull);
 
 		Action insertLinkAction = new Action(Messages.get("MainWindow.insertLinkAction"), "Shortcut+L", LINK,
@@ -194,6 +188,19 @@ class MainWindow
 				activeFileEditorIsNull);
 		Action insertImageAction = new Action(Messages.get("MainWindow.insertImageAction"), "Shortcut+G", PICTURE_ALT,
 				e -> getActiveSmartEdit().insertImage(),
+				activeFileEditorIsNull);
+
+		Action insertUnorderedListAction = new Action(Messages.get("MainWindow.insertUnorderedListAction"), "Shortcut+U", LIST_UL,
+				e -> getActiveSmartEdit().insertUnorderedList(),
+				activeFileEditorIsNull);
+		Action insertOrderedListAction = new Action(Messages.get("MainWindow.insertOrderedListAction"), "Shortcut+Shift+O", LIST_OL,
+				e -> getActiveSmartEdit().surroundSelection("\n\n1. ", ""),
+				activeFileEditorIsNull);
+		Action insertBlockquoteAction = new Action(Messages.get("MainWindow.insertBlockquoteAction"), "Ctrl+Q", QUOTE_LEFT, // not Shortcut+Q because of conflict on Mac
+				e -> getActiveSmartEdit().surroundSelection("\n\n> ", ""),
+				activeFileEditorIsNull);
+		Action insertFencedCodeBlockAction = new Action(Messages.get("MainWindow.insertFencedCodeBlockAction"), "Shortcut+Shift+K", FILE_CODE_ALT,
+				e -> getActiveSmartEdit().surroundSelection("\n\n```\n", "\n```\n\n", Messages.get("MainWindow.insertFencedCodeBlockText")),
 				activeFileEditorIsNull);
 
 		Action insertHeader1Action = new Action(Messages.get("MainWindow.insertHeader1Action"), "Shortcut+1", HEADER,
@@ -215,12 +222,6 @@ class MainWindow
 				e -> getActiveSmartEdit().insertHeading(6, Messages.get("MainWindow.insertHeader6Text")),
 				activeFileEditorIsNull);
 
-		Action insertUnorderedListAction = new Action(Messages.get("MainWindow.insertUnorderedListAction"), "Shortcut+U", LIST_UL,
-				e -> getActiveSmartEdit().insertUnorderedList(),
-				activeFileEditorIsNull);
-		Action insertOrderedListAction = new Action(Messages.get("MainWindow.insertOrderedListAction"), "Shortcut+Shift+O", LIST_OL,
-				e -> getActiveSmartEdit().surroundSelection("\n\n1. ", ""),
-				activeFileEditorIsNull);
 		Action insertHorizontalRuleAction = new Action(Messages.get("MainWindow.insertHorizontalRuleAction"), null, null,
 				e -> getActiveSmartEdit().surroundSelection("\n\n---\n\n", ""),
 				activeFileEditorIsNull);
@@ -266,12 +267,15 @@ class MainWindow
 				insertBoldAction,
 				insertItalicAction,
 				insertStrikethroughAction,
-				insertBlockquoteAction,
 				insertCodeAction,
-				insertFencedCodeBlockAction,
 				null,
 				insertLinkAction,
 				insertImageAction,
+				null,
+				insertUnorderedListAction,
+				insertOrderedListAction,
+				insertBlockquoteAction,
+				insertFencedCodeBlockAction,
 				null,
 				insertHeader1Action,
 				insertHeader2Action,
@@ -280,8 +284,6 @@ class MainWindow
 				insertHeader5Action,
 				insertHeader6Action,
 				null,
-				insertUnorderedListAction,
-				insertOrderedListAction,
 				insertHorizontalRuleAction);
 
 		Menu toolsMenu = ActionUtils.createMenu(Messages.get("MainWindow.toolsMenu"),
@@ -305,17 +307,17 @@ class MainWindow
 				null,
 				insertBoldAction,
 				insertItalicAction,
-				insertBlockquoteAction,
 				insertCodeAction,
-				insertFencedCodeBlockAction,
 				null,
 				insertLinkAction,
 				insertImageAction,
 				null,
-				insertHeader1Action,
-				null,
 				insertUnorderedListAction,
-				insertOrderedListAction);
+				insertOrderedListAction,
+				insertBlockquoteAction,
+				insertFencedCodeBlockAction,
+				null,
+				insertHeader1Action);
 
 		// horizontal spacer
 		Region spacer = new Region();

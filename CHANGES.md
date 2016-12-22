@@ -5,6 +5,7 @@ Markdown Writer FX Change Log
 
 - Highlight paragraph in Preview that contain the caret of the editor.
 - Show source positions for CommonMark in Markdown AST view.
+- Reordered items in "Insert" menu and toolbar.
 
 
 ## 0.6
