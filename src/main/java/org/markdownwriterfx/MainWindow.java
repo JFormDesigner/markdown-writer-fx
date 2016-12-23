@@ -34,6 +34,7 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableBooleanValue;
 import javafx.event.Event;
 import javafx.scene.Node;
@@ -305,19 +306,19 @@ class MainWindow
 				editUndoAction,
 				editRedoAction,
 				null,
-				insertBoldAction,
-				insertItalicAction,
-				insertCodeAction,
+				new Action(insertBoldAction, createActiveEditBooleanProperty(SmartEdit::boldProperty)),
+				new Action(insertItalicAction, createActiveEditBooleanProperty(SmartEdit::italicProperty)),
+				new Action(insertCodeAction, createActiveEditBooleanProperty(SmartEdit::codeProperty)),
 				null,
-				insertLinkAction,
-				insertImageAction,
+				new Action(insertLinkAction, createActiveEditBooleanProperty(SmartEdit::linkProperty)),
+				new Action(insertImageAction, createActiveEditBooleanProperty(SmartEdit::imageProperty)),
 				null,
-				insertUnorderedListAction,
-				insertOrderedListAction,
-				insertBlockquoteAction,
-				insertFencedCodeBlockAction,
+				new Action(insertUnorderedListAction, createActiveEditBooleanProperty(SmartEdit::unorderedListProperty)),
+				new Action(insertOrderedListAction, createActiveEditBooleanProperty(SmartEdit::orderedListProperty)),
+				new Action(insertBlockquoteAction, createActiveEditBooleanProperty(SmartEdit::blockquoteProperty)),
+				new Action(insertFencedCodeBlockAction, createActiveEditBooleanProperty(SmartEdit::fencedCodeProperty)),
 				null,
-				insertHeader1Action);
+				new Action(insertHeader1Action, createActiveEditBooleanProperty(SmartEdit::headerProperty)));
 
 		// horizontal spacer
 		Region spacer = new Region();
@@ -388,6 +389,39 @@ class MainWindow
 			else
 				b.set(false);
 		});
+		return b;
+	}
+
+	/**
+	 * Creates a boolean property that is bound to another boolean value
+	 * of the active editor's SmartEdit.
+	 */
+	private BooleanProperty createActiveEditBooleanProperty(Function<SmartEdit, ObservableBooleanValue> func) {
+		BooleanProperty b = new SimpleBooleanProperty() {
+			@Override
+			public void set(boolean newValue) {
+				// invoked when the user invokes an action
+				// do not try to change SmartEdit properties because this
+				// would throw a "bound value cannot be set" exception
+			}
+		};
+
+		ChangeListener<? super FileEditor> listener = (observable, oldFileEditor, newFileEditor) -> {
+			b.unbind();
+			if (newFileEditor != null) {
+				if (newFileEditor.getEditor() != null)
+					b.bind(func.apply(newFileEditor.getEditor().getSmartEdit()));
+				else {
+					newFileEditor.editorProperty().addListener((ob, o, n) -> {
+						b.bind(func.apply(n.getSmartEdit()));
+					});
+				}
+			} else
+				b.set(false);
+		};
+		FileEditor fileEditor = fileEditorTabPane.getActiveFileEditor();
+		listener.changed(null, null, fileEditor);
+		fileEditorTabPane.activeFileEditorProperty().addListener(listener);
 		return b;
 	}
 

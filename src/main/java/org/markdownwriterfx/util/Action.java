@@ -71,4 +71,13 @@ public class Action
 		this.disable = disable;
 		this.selected = selected;
 	}
+
+	public Action(Action action, BooleanProperty selected) {
+		this.text = action.text;
+		this.accelerator = action.accelerator;
+		this.icon = action.icon;
+		this.action = action.action;
+		this.disable = action.disable;
+		this.selected = selected;
+	}
 }
