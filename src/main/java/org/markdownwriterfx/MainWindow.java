@@ -29,6 +29,7 @@ package org.markdownwriterfx;
 
 import java.text.MessageFormat;
 import java.util.function.Function;
+
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
@@ -79,6 +80,7 @@ import static de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon.*;
 class MainWindow
 {
 	private final Scene scene;
+	private final WorkspacePane workspacePane;
 	private final FileEditorTabPane fileEditorTabPane;
 	private MenuBar menuBar;
 	private Node extensionsButton;
@@ -86,11 +88,13 @@ class MainWindow
 
 	MainWindow() {
 		fileEditorTabPane = new FileEditorTabPane(this);
+		workspacePane = new WorkspacePane(fileEditorTabPane);
 
 		BorderPane borderPane = new BorderPane();
 		borderPane.getStyleClass().add("main");
 		borderPane.setPrefSize(800, 800);
 		borderPane.setTop(createMenuBarAndToolBar());
+		borderPane.setLeft(workspacePane.getNode());
 		borderPane.setCenter(fileEditorTabPane.getNode());
 
 		scene = new Scene(borderPane);
@@ -99,6 +103,8 @@ class MainWindow
 			newWindow.setOnCloseRequest(e -> {
 				if (!fileEditorTabPane.closeAllEditors())
 					e.consume();
+				else
+					dispose();
 			});
 
 			// workaround for a bug in JavaFX: unselect menubar if window looses focus
@@ -121,6 +127,10 @@ class MainWindow
 		});
 
 		Platform.runLater(() -> stageFocusedProperty.bind(scene.getWindow().focusedProperty()));
+	}
+
+	private void dispose() {
+		workspacePane.dispose();
 	}
 
 	Scene getScene() {

@@ -5,6 +5,9 @@ apply plugin: 'java-library-distribution'
 
 repositories {
 	jcenter()
+    maven {
+        url 'https://oss.sonatype.org/content/repositories/snapshots/' 
+    }
 }
 
 dependencies {
@@ -18,8 +21,10 @@ dependencies {
     }
     compile group: 'org.fxmisc.wellbehaved', name: 'wellbehavedfx', version: '0.3'
 
-//	compile 'org.fxmisc.richtext:richtextfx:0.7-M2'
+	compile 'org.fxmisc.richtext:richtextfx:0.7-M2'
+	compile group: 'org.fxmisc.livedirs', name: 'livedirsfx', version: '1.0.0-SNAPSHOT'
 	compile 'com.miglayout:miglayout-javafx:5.0'
+	compile group: 'de.jensd', name: 'fontawesomefx', version: '8.9'
 	compile 'de.jensd:fontawesomefx-fontawesome:4.7.0'
 	compile 'org.controlsfx:controlsfx:8.40.12'
 	compile 'org.fxmisc.cssfx:cssfx:1.0.0'
