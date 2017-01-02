@@ -1,6 +1,11 @@
 Markdown Writer FX Change Log
 =============================
 
+## 0.8
+
+- RichTextFX updated to version 0.7-M3.
+
+
 ## 0.7
 
 - Highlight paragraph in Preview that contain the caret of the editor.

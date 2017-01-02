@@ -18,7 +18,7 @@ dependencies {
     }
     compile group: 'org.fxmisc.wellbehaved', name: 'wellbehavedfx', version: '0.3'
 
-//	compile 'org.fxmisc.richtext:richtextfx:0.7-M2'
+//	compile 'org.fxmisc.richtext:richtextfx:0.7-M3'
 	compile 'com.miglayout:miglayout-javafx:5.0'
 	compile 'de.jensd:fontawesomefx-fontawesome:4.7.0'
 	compile 'org.controlsfx:controlsfx:8.40.12'
