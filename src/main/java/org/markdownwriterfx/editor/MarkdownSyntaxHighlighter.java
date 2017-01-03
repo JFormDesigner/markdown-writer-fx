@@ -366,7 +366,7 @@ class MarkdownSyntaxHighlighter
 
 	private void visit(TaskListItem node) {
 		setStyleClass(node.getOpeningMarker(), StyleClass.liopen);
-		setStyleClass(node.getTaskOpeningMarker(), StyleClass.liopentask);
+		setStyleClass(node.getMarkerSuffix(), StyleClass.liopentask);
 	}
 
 	private void visit(TableCell node) {
