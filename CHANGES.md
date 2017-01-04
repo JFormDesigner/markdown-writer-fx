@@ -3,6 +3,7 @@ Markdown Writer FX Change Log
 
 ## 0.8
 
+- Support Definition lists extension (FlexMark only).
 - RichTextFX updated to version 0.7-M3.
 
 
