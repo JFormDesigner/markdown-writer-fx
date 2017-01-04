@@ -5,6 +5,7 @@ Markdown Writer FX Change Log
 
 - Support Definition lists extension (FlexMark only).
 - "Cut", "Copy", "Paste" and "Select All" commands added to "Edit" menu.
+- "Cut" and "Copy" now cut/copy whole line if selection is empty.
 - RichTextFX updated to version 0.7-M3.
 
 

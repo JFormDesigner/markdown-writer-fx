@@ -90,7 +90,7 @@ public class MarkdownEditorPane
 	private String lineSeparator = getLineSeparatorOrDefault();
 
 	public MarkdownEditorPane() {
-		textArea = new StyleClassedTextArea(false);
+		textArea = new MyStyleClassedTextArea(false);
 		textArea.setWrapText(true);
 		textArea.getStyleClass().add("markdown-editor");
 		textArea.getStylesheets().add("org/markdownwriterfx/editor/MarkdownEditor.css");
@@ -415,5 +415,40 @@ public class MarkdownEditorPane
 			findReplacePane.findNext();
 		else
 			findReplacePane.findPrevious();
+	}
+
+	//---- class MyStyleClassedTextArea ---------------------------------------
+
+	private static class MyStyleClassedTextArea
+		extends StyleClassedTextArea
+	{
+		public MyStyleClassedTextArea(boolean preserveStyle) {
+			super(preserveStyle);
+		}
+
+		@Override
+		public void cut() {
+			selectLineIfEmpty();
+			super.cut();
+		}
+
+		@Override
+		public void copy() {
+			IndexRange oldSelection = selectLineIfEmpty();
+			super.copy();
+			if (oldSelection != null)
+				selectRange(oldSelection.getStart(), oldSelection.getEnd());
+		}
+
+
+		private IndexRange selectLineIfEmpty() {
+			IndexRange oldSelection = null;
+			if (getSelectedText().isEmpty()) {
+				oldSelection = getSelection();
+				selectLine();
+				nextChar(SelectionPolicy.ADJUST);
+			}
+			return oldSelection;
+		}
 	}
 }
