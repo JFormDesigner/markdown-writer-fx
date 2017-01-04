@@ -344,6 +344,22 @@ public class MarkdownEditorPane
 		textArea.getUndoManager().redo();
 	}
 
+	public void cut() {
+		textArea.cut();
+	}
+
+	public void copy() {
+		textArea.copy();
+	}
+
+	public void paste() {
+		textArea.paste();
+	}
+
+	public void selectAll() {
+		textArea.selectAll();
+	}
+
 	//---- context menu -------------------------------------------------------
 
 	private void showContextMenu(ContextMenuEvent e) {

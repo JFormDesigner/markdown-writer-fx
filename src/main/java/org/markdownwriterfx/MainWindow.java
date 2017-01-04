@@ -149,6 +149,18 @@ class MainWindow
 		Action editRedoAction = new Action(Messages.get("MainWindow.editRedoAction"), "Shortcut+Y", REPEAT,
 				e -> getActiveEditor().redo(),
 				createActiveBooleanProperty(FileEditor::canRedoProperty).not());
+		Action editCutAction = new Action(Messages.get("MainWindow.editCutAction"), "Shortcut+X", CUT,
+				e -> getActiveEditor().cut(),
+				activeFileEditorIsNull);
+		Action editCopyAction = new Action(Messages.get("MainWindow.editCopyAction"), "Shortcut+C", COPY,
+				e -> getActiveEditor().copy(),
+				activeFileEditorIsNull);
+		Action editPasteAction = new Action(Messages.get("MainWindow.editPasteAction"), "Shortcut+V", PASTE,
+				e -> getActiveEditor().paste(),
+				activeFileEditorIsNull);
+		Action editSelectAllAction = new Action(Messages.get("MainWindow.editSelectAllAction"), "Shortcut+A", null,
+				e -> getActiveEditor().selectAll(),
+				activeFileEditorIsNull);
 		Action editFindAction = new Action(Messages.get("MainWindow.editFindAction"), "Shortcut+F", SEARCH,
 				e -> getActiveEditor().find(false),
 				activeFileEditorIsNull);
@@ -252,6 +264,11 @@ class MainWindow
 		Menu editMenu = ActionUtils.createMenu(Messages.get("MainWindow.editMenu"),
 				editUndoAction,
 				editRedoAction,
+				null,
+				editCutAction,
+				editCopyAction,
+				editPasteAction,
+				editSelectAllAction,
 				null,
 				editFindAction,
 				editReplaceAction,
