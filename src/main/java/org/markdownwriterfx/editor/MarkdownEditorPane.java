@@ -48,11 +48,15 @@ import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.IndexRange;
+import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import com.vladsch.flexmark.ast.Node;
 import com.vladsch.flexmark.parser.Parser;
 import org.fxmisc.flowless.VirtualizedScrollPane;
+import org.fxmisc.richtext.CharacterHit;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.undo.UndoManager;
 import org.fxmisc.wellbehaved.event.Nodes;
@@ -76,6 +80,7 @@ public class MarkdownEditorPane
 	private final ParagraphOverlayGraphicFactory overlayGraphicFactory;
 	private LineNumberGutterFactory lineNumberGutterFactory;
 	private WhitespaceOverlayFactory whitespaceOverlayFactory;
+	private ContextMenu contextMenu;
 	private final SmartEdit smartEdit;
 
 	private final FindReplacePane findReplacePane;
@@ -94,6 +99,9 @@ public class MarkdownEditorPane
 		textArea.textProperty().addListener((observable, oldText, newText) -> {
 			textChanged(newText);
 		});
+
+		textArea.addEventHandler(ContextMenuEvent.CONTEXT_MENU_REQUESTED, this::showContextMenu);
+		textArea.addEventHandler(MouseEvent.MOUSE_PRESSED, this::hideContextMenu);
 
 		smartEdit = new SmartEdit(this, textArea);
 
@@ -335,6 +343,43 @@ public class MarkdownEditorPane
 	public void redo() {
 		textArea.getUndoManager().redo();
 	}
+
+	//---- context menu -------------------------------------------------------
+
+	private void showContextMenu(ContextMenuEvent e) {
+		if (e.isConsumed())
+			return;
+
+		// create context menu
+		if (contextMenu == null) {
+			contextMenu = new ContextMenu();
+			initContextMenu();
+		}
+
+		// update context menu
+		CharacterHit hit = textArea.hit(e.getX(), e.getY());
+		updateContextMenu(hit.getCharacterIndex().orElse(-1), hit.getInsertionIndex());
+
+		if (contextMenu.getItems().isEmpty())
+			return;
+
+		// show context menu
+		contextMenu.show(textArea, e.getScreenX(), e.getScreenY());
+		e.consume();
+	}
+
+	private void hideContextMenu(MouseEvent e) {
+		if (contextMenu != null)
+			contextMenu.hide();
+	}
+
+	private void initContextMenu() {
+	}
+
+	private void updateContextMenu(int characterIndex, int insertionIndex) {
+	}
+
+	//---- find/replace -------------------------------------------------------
 
 	public void find(boolean replace) {
 		if (borderPane.getBottom() == null)
