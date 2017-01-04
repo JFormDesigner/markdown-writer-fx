@@ -1,3 +1,6 @@
 [submodule "RichTextFX"]
 	path = RichTextFX
 	url = https://github.com/JFormDesigner/RichTextFX
+[submodule "Flowless"]
+	path = Flowless
+	url = https://github.com/TomasMikula/Flowless
