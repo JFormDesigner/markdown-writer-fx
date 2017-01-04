@@ -390,9 +390,11 @@ public class MarkdownEditorPane
 	}
 
 	private void initContextMenu() {
+		SmartEditActions.initContextMenu(this, contextMenu);
 	}
 
 	private void updateContextMenu(int characterIndex, int insertionIndex) {
+		SmartEditActions.updateContextMenu(this, contextMenu, characterIndex);
 	}
 
 	//---- find/replace -------------------------------------------------------
