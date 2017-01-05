@@ -1,10 +1,22 @@
 Markdown Writer FX Change Log
 =============================
 
+## 0.8
+
+- Support Definition lists extension (FlexMark only).
+- "Cut", "Copy", "Paste" and "Select All" commands added to "Edit" menu.
+- "Cut" and "Copy" now cut/copy whole line if selection is empty.
+- Context menu added to editor.
+- RichTextFX updated to version 0.7-M3.
+
+
 ## 0.7
 
 - Highlight paragraph in Preview that contain the caret of the editor.
 - Show source positions for CommonMark in Markdown AST view.
+- Reordered items in "Insert" menu and toolbar.
+- Formatting toolbar items (bold, italic, etc) are highlighted
+  if the caret in the editor is at formatted text.
 
 
 ## 0.6

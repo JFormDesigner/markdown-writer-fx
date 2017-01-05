@@ -38,6 +38,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.control.IndexRange;
 import javafx.scene.input.KeyEvent;
 import org.apache.commons.lang3.StringUtils;
@@ -49,18 +52,27 @@ import org.markdownwriterfx.dialogs.LinkDialog;
 import org.markdownwriterfx.options.Options;
 import org.markdownwriterfx.util.Utils;
 import com.vladsch.flexmark.ast.AutoLink;
+import com.vladsch.flexmark.ast.Block;
+import com.vladsch.flexmark.ast.BlockQuote;
+import com.vladsch.flexmark.ast.BulletListItem;
 import com.vladsch.flexmark.ast.Code;
+import com.vladsch.flexmark.ast.ContentNode;
 import com.vladsch.flexmark.ast.DelimitedNode;
 import com.vladsch.flexmark.ast.Emphasis;
+import com.vladsch.flexmark.ast.FencedCodeBlock;
 import com.vladsch.flexmark.ast.Heading;
 import com.vladsch.flexmark.ast.Image;
+import com.vladsch.flexmark.ast.ImageRef;
 import com.vladsch.flexmark.ast.Link;
 import com.vladsch.flexmark.ast.LinkNode;
+import com.vladsch.flexmark.ast.LinkRef;
 import com.vladsch.flexmark.ast.ListBlock;
 import com.vladsch.flexmark.ast.ListItem;
 import com.vladsch.flexmark.ast.MailLink;
 import com.vladsch.flexmark.ast.Node;
 import com.vladsch.flexmark.ast.NodeVisitor;
+import com.vladsch.flexmark.ast.OrderedListItem;
+import com.vladsch.flexmark.ast.Paragraph;
 import com.vladsch.flexmark.ast.StrongEmphasis;
 import com.vladsch.flexmark.ext.gfm.strikethrough.Strikethrough;
 import com.vladsch.flexmark.util.sequence.BasedSequence;
@@ -100,7 +112,99 @@ public class SmartEdit
 
 //		textArea.selectionProperty().addListener((ob, o, n) ->
 //			System.out.println(findNodes(n.getStart(), n.getEnd(), (s, e, node) -> true, true)));
+
+		editor.markdownASTProperty().addListener((ob, o, n) -> updateStateProperties());
+		textArea.selectionProperty().addListener((ob, o, n) -> updateStateProperties());
 	}
+
+	//---- properties ---------------------------------------------------------
+
+	private boolean updateStatePropertiesRunLaterPending;
+	private void updateStateProperties() {
+		// avoid too many (and useless) runLater() invocations
+		if (updateStatePropertiesRunLaterPending)
+			return;
+		updateStatePropertiesRunLaterPending = true;
+
+		Platform.runLater(() -> {
+			updateStatePropertiesRunLaterPending = false;
+
+			List<Node> nodesAtSelection = findNodesAtSelection((s, e, n) -> true, true);
+
+			boolean bold = false;
+ 			boolean italic = false;
+ 			boolean code = false;
+ 			boolean link = false;
+ 			boolean image = false;
+ 			boolean unorderedList = false;
+ 			boolean orderedList = false;
+ 			boolean blockquote = false;
+ 			boolean fencedCode = false;
+ 			boolean header = false;
+			for (Node node : nodesAtSelection) {
+				if (!bold && node instanceof StrongEmphasis)
+					bold = true;
+				else if (!italic && node instanceof Emphasis)
+					italic = true;
+				else if (!code && node instanceof Code)
+					code = true;
+				else if (!link && (node instanceof Link || node instanceof LinkRef))
+					link = true;
+				else if (!image && (node instanceof Image || node instanceof ImageRef))
+					image = true;
+				else if (!unorderedList && node instanceof BulletListItem)
+					unorderedList = true;
+				else if (!orderedList && node instanceof OrderedListItem)
+					orderedList = true;
+				else if (!blockquote && node instanceof BlockQuote)
+					blockquote = true;
+				else if (!fencedCode && node instanceof FencedCodeBlock)
+					fencedCode = true;
+				else if (!header && node instanceof Heading)
+					header = true;
+			}
+			this.bold.set(bold);
+			this.italic.set(italic);
+			this.code.set(code);
+			this.link.set(link);
+			this.image.set(image);
+			this.unorderedList.set(unorderedList);
+			this.orderedList.set(orderedList);
+			this.blockquote.set(blockquote);
+			this.fencedCode.set(fencedCode);
+			this.header.set(header);
+		});
+	}
+
+	private final BooleanProperty bold = new SimpleBooleanProperty();
+	public BooleanProperty boldProperty() { return bold; }
+
+	private final BooleanProperty italic = new SimpleBooleanProperty();
+	public BooleanProperty italicProperty() { return italic; }
+
+	private final BooleanProperty code = new SimpleBooleanProperty();
+	public BooleanProperty codeProperty() { return code; }
+
+	private final BooleanProperty link = new SimpleBooleanProperty();
+	public BooleanProperty linkProperty() { return link; }
+
+	private final BooleanProperty image = new SimpleBooleanProperty();
+	public BooleanProperty imageProperty() { return image; }
+
+	private final BooleanProperty unorderedList = new SimpleBooleanProperty();
+	public BooleanProperty unorderedListProperty() { return unorderedList; }
+
+	private final BooleanProperty orderedList = new SimpleBooleanProperty();
+	public BooleanProperty orderedListProperty() { return orderedList; }
+
+	private final BooleanProperty blockquote = new SimpleBooleanProperty();
+	public BooleanProperty blockquoteProperty() { return blockquote; }
+
+	private final BooleanProperty fencedCode = new SimpleBooleanProperty();
+	public BooleanProperty fencedCodeProperty() { return fencedCode; }
+
+	private final BooleanProperty header = new SimpleBooleanProperty();
+	public BooleanProperty headerProperty() { return header; }
 
 	//---- enter  -------------------------------------------------------------
 

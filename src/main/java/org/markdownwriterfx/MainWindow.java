@@ -34,6 +34,7 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableBooleanValue;
 import javafx.event.Event;
 import javafx.scene.Node;
@@ -148,6 +149,18 @@ class MainWindow
 		Action editRedoAction = new Action(Messages.get("MainWindow.editRedoAction"), "Shortcut+Y", REPEAT,
 				e -> getActiveEditor().redo(),
 				createActiveBooleanProperty(FileEditor::canRedoProperty).not());
+		Action editCutAction = new Action(Messages.get("MainWindow.editCutAction"), "Shortcut+X", CUT,
+				e -> getActiveEditor().cut(),
+				activeFileEditorIsNull);
+		Action editCopyAction = new Action(Messages.get("MainWindow.editCopyAction"), "Shortcut+C", COPY,
+				e -> getActiveEditor().copy(),
+				activeFileEditorIsNull);
+		Action editPasteAction = new Action(Messages.get("MainWindow.editPasteAction"), "Shortcut+V", PASTE,
+				e -> getActiveEditor().paste(),
+				activeFileEditorIsNull);
+		Action editSelectAllAction = new Action(Messages.get("MainWindow.editSelectAllAction"), "Shortcut+A", null,
+				e -> getActiveEditor().selectAll(),
+				activeFileEditorIsNull);
 		Action editFindAction = new Action(Messages.get("MainWindow.editFindAction"), "Shortcut+F", SEARCH,
 				e -> getActiveEditor().find(false),
 				activeFileEditorIsNull);
@@ -179,14 +192,8 @@ class MainWindow
 		Action insertStrikethroughAction = new Action(Messages.get("MainWindow.insertStrikethroughAction"), "Shortcut+T", STRIKETHROUGH,
 				e -> getActiveSmartEdit().insertStrikethrough(Messages.get("MainWindow.insertStrikethroughText")),
 				activeFileEditorIsNull);
-		Action insertBlockquoteAction = new Action(Messages.get("MainWindow.insertBlockquoteAction"), "Ctrl+Q", QUOTE_LEFT, // not Shortcut+Q because of conflict on Mac
-				e -> getActiveSmartEdit().surroundSelection("\n\n> ", ""),
-				activeFileEditorIsNull);
 		Action insertCodeAction = new Action(Messages.get("MainWindow.insertCodeAction"), "Shortcut+K", CODE,
 				e -> getActiveSmartEdit().insertInlineCode(Messages.get("MainWindow.insertCodeText")),
-				activeFileEditorIsNull);
-		Action insertFencedCodeBlockAction = new Action(Messages.get("MainWindow.insertFencedCodeBlockAction"), "Shortcut+Shift+K", FILE_CODE_ALT,
-				e -> getActiveSmartEdit().surroundSelection("\n\n```\n", "\n```\n\n", Messages.get("MainWindow.insertFencedCodeBlockText")),
 				activeFileEditorIsNull);
 
 		Action insertLinkAction = new Action(Messages.get("MainWindow.insertLinkAction"), "Shortcut+L", LINK,
@@ -194,6 +201,19 @@ class MainWindow
 				activeFileEditorIsNull);
 		Action insertImageAction = new Action(Messages.get("MainWindow.insertImageAction"), "Shortcut+G", PICTURE_ALT,
 				e -> getActiveSmartEdit().insertImage(),
+				activeFileEditorIsNull);
+
+		Action insertUnorderedListAction = new Action(Messages.get("MainWindow.insertUnorderedListAction"), "Shortcut+U", LIST_UL,
+				e -> getActiveSmartEdit().insertUnorderedList(),
+				activeFileEditorIsNull);
+		Action insertOrderedListAction = new Action(Messages.get("MainWindow.insertOrderedListAction"), "Shortcut+Shift+O", LIST_OL,
+				e -> getActiveSmartEdit().surroundSelection("\n\n1. ", ""),
+				activeFileEditorIsNull);
+		Action insertBlockquoteAction = new Action(Messages.get("MainWindow.insertBlockquoteAction"), "Ctrl+Q", QUOTE_LEFT, // not Shortcut+Q because of conflict on Mac
+				e -> getActiveSmartEdit().surroundSelection("\n\n> ", ""),
+				activeFileEditorIsNull);
+		Action insertFencedCodeBlockAction = new Action(Messages.get("MainWindow.insertFencedCodeBlockAction"), "Shortcut+Shift+K", FILE_CODE_ALT,
+				e -> getActiveSmartEdit().surroundSelection("\n\n```\n", "\n```\n\n", Messages.get("MainWindow.insertFencedCodeBlockText")),
 				activeFileEditorIsNull);
 
 		Action insertHeader1Action = new Action(Messages.get("MainWindow.insertHeader1Action"), "Shortcut+1", HEADER,
@@ -215,12 +235,6 @@ class MainWindow
 				e -> getActiveSmartEdit().insertHeading(6, Messages.get("MainWindow.insertHeader6Text")),
 				activeFileEditorIsNull);
 
-		Action insertUnorderedListAction = new Action(Messages.get("MainWindow.insertUnorderedListAction"), "Shortcut+U", LIST_UL,
-				e -> getActiveSmartEdit().insertUnorderedList(),
-				activeFileEditorIsNull);
-		Action insertOrderedListAction = new Action(Messages.get("MainWindow.insertOrderedListAction"), "Shortcut+Shift+O", LIST_OL,
-				e -> getActiveSmartEdit().surroundSelection("\n\n1. ", ""),
-				activeFileEditorIsNull);
 		Action insertHorizontalRuleAction = new Action(Messages.get("MainWindow.insertHorizontalRuleAction"), null, null,
 				e -> getActiveSmartEdit().surroundSelection("\n\n---\n\n", ""),
 				activeFileEditorIsNull);
@@ -251,6 +265,11 @@ class MainWindow
 				editUndoAction,
 				editRedoAction,
 				null,
+				editCutAction,
+				editCopyAction,
+				editPasteAction,
+				editSelectAllAction,
+				null,
 				editFindAction,
 				editReplaceAction,
 				null,
@@ -266,12 +285,15 @@ class MainWindow
 				insertBoldAction,
 				insertItalicAction,
 				insertStrikethroughAction,
-				insertBlockquoteAction,
 				insertCodeAction,
-				insertFencedCodeBlockAction,
 				null,
 				insertLinkAction,
 				insertImageAction,
+				null,
+				insertUnorderedListAction,
+				insertOrderedListAction,
+				insertBlockquoteAction,
+				insertFencedCodeBlockAction,
 				null,
 				insertHeader1Action,
 				insertHeader2Action,
@@ -280,8 +302,6 @@ class MainWindow
 				insertHeader5Action,
 				insertHeader6Action,
 				null,
-				insertUnorderedListAction,
-				insertOrderedListAction,
 				insertHorizontalRuleAction);
 
 		Menu toolsMenu = ActionUtils.createMenu(Messages.get("MainWindow.toolsMenu"),
@@ -303,19 +323,19 @@ class MainWindow
 				editUndoAction,
 				editRedoAction,
 				null,
-				insertBoldAction,
-				insertItalicAction,
-				insertBlockquoteAction,
-				insertCodeAction,
-				insertFencedCodeBlockAction,
+				new Action(insertBoldAction, createActiveEditBooleanProperty(SmartEdit::boldProperty)),
+				new Action(insertItalicAction, createActiveEditBooleanProperty(SmartEdit::italicProperty)),
+				new Action(insertCodeAction, createActiveEditBooleanProperty(SmartEdit::codeProperty)),
 				null,
-				insertLinkAction,
-				insertImageAction,
+				new Action(insertLinkAction, createActiveEditBooleanProperty(SmartEdit::linkProperty)),
+				new Action(insertImageAction, createActiveEditBooleanProperty(SmartEdit::imageProperty)),
 				null,
-				insertHeader1Action,
+				new Action(insertUnorderedListAction, createActiveEditBooleanProperty(SmartEdit::unorderedListProperty)),
+				new Action(insertOrderedListAction, createActiveEditBooleanProperty(SmartEdit::orderedListProperty)),
+				new Action(insertBlockquoteAction, createActiveEditBooleanProperty(SmartEdit::blockquoteProperty)),
+				new Action(insertFencedCodeBlockAction, createActiveEditBooleanProperty(SmartEdit::fencedCodeProperty)),
 				null,
-				insertUnorderedListAction,
-				insertOrderedListAction);
+				new Action(insertHeader1Action, createActiveEditBooleanProperty(SmartEdit::headerProperty)));
 
 		// horizontal spacer
 		Region spacer = new Region();
@@ -386,6 +406,39 @@ class MainWindow
 			else
 				b.set(false);
 		});
+		return b;
+	}
+
+	/**
+	 * Creates a boolean property that is bound to another boolean value
+	 * of the active editor's SmartEdit.
+	 */
+	private BooleanProperty createActiveEditBooleanProperty(Function<SmartEdit, ObservableBooleanValue> func) {
+		BooleanProperty b = new SimpleBooleanProperty() {
+			@Override
+			public void set(boolean newValue) {
+				// invoked when the user invokes an action
+				// do not try to change SmartEdit properties because this
+				// would throw a "bound value cannot be set" exception
+			}
+		};
+
+		ChangeListener<? super FileEditor> listener = (observable, oldFileEditor, newFileEditor) -> {
+			b.unbind();
+			if (newFileEditor != null) {
+				if (newFileEditor.getEditor() != null)
+					b.bind(func.apply(newFileEditor.getEditor().getSmartEdit()));
+				else {
+					newFileEditor.editorProperty().addListener((ob, o, n) -> {
+						b.bind(func.apply(n.getSmartEdit()));
+					});
+				}
+			} else
+				b.set(false);
+		};
+		FileEditor fileEditor = fileEditorTabPane.getActiveFileEditor();
+		listener.changed(null, null, fileEditor);
+		fileEditorTabPane.activeFileEditorProperty().addListener(listener);
 		return b;
 	}
 

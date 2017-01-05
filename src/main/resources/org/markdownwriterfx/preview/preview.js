@@ -31,6 +31,11 @@ var preview = {
 		window.scrollTo(0, (document.body.scrollHeight - window.innerHeight) * value);
 	},
 
+	highlightTags: ['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6',
+		'UL', 'OL', 'LI', 'DL', 'DT', 'DD',
+		'TABLE', 'THEAD', 'TBODY', 'TR', 'TH', 'TD',
+		'BLOCKQUOTE', 'PRE'],
+
 	highlightedNodes: [],
 
 	highlightNodesAt: function(offset) {
@@ -47,7 +52,7 @@ var preview = {
 
 		// highlight nodes
 		for (node of result.reverse()) {
-			if (node.__proto__ != HTMLElement.prototype && node.__proto__ != HTMLAnchorElement.prototype) {
+			if (this.highlightTags.includes(node.tagName)) {
 				node.classList.add('mwfx-editor-selection');
 				this.highlightedNodes = [node];
 				break;

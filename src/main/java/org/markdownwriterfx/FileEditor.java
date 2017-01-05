@@ -37,6 +37,7 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -119,6 +120,10 @@ class FileEditor
 	MarkdownEditorPane getEditor() {
 		return markdownEditorPane;
 	}
+
+	// 'editor' property
+	private final ObjectProperty<MarkdownEditorPane> editor = new SimpleObjectProperty<>();
+	ReadOnlyObjectProperty<MarkdownEditorPane> editorProperty() { return editor; }
 
 	// 'path' property
 	private final ObjectProperty<Path> path = new SimpleObjectProperty<>();
@@ -229,6 +234,9 @@ class FileEditor
 
 		updatePreviewType();
 		markdownEditorPane.requestFocus();
+
+		// update 'editor' property
+		editor.set(markdownEditorPane);
 	}
 
 	void load() {
