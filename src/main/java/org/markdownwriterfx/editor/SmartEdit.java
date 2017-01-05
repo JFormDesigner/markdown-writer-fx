@@ -129,7 +129,7 @@ public class SmartEdit
 		Platform.runLater(() -> {
 			updateStatePropertiesRunLaterPending = false;
 
-			List<Node> nodesAtSelection = findNodesAtSelection((s, e, n) -> true, true);
+			List<Node> nodesAtSelection = findNodesAtSelection((s, e, n) -> true, true, false);
 
 			boolean bold = false;
  			boolean italic = false;
@@ -373,7 +373,7 @@ public class SmartEdit
 					return true;
 			}
 			return false;
-		}, false);
+		}, false, false);
 	}
 
 	private void indentNodes(List<Node> nodes, boolean right) {
@@ -661,7 +661,7 @@ public class SmartEdit
 	}
 
 	private void insertDelimited(Class<? extends Node> cls, String openCloseMarker, String hint) {
-		List<? extends Node> nodes = findNodesAtSelection((s, e, n) -> cls.isInstance(n), false);
+		List<? extends Node> nodes = findNodesAtSelection((s, e, n) -> cls.isInstance(n), false, false);
 		if (nodes.size() > 0) {
 			// there is delimited text in current selection --> change them to plain text
 			if (nodes.size() == 1 && hint.equals(((DelimitedNode)nodes.get(0)).getText().toString())) {
@@ -874,7 +874,7 @@ public class SmartEdit
 		IndexRange selection = textArea.getSelection();
 		int start = selection.getStart();
 		int end = selection.getEnd();
-		List<T> nodes = findNodes(start, end, predicate, false);
+		List<T> nodes = findNodes(start, end, predicate, false, false);
 		if (nodes.size() != 1)
 			return null;
 
@@ -886,23 +886,23 @@ public class SmartEdit
 	/**
 	 * Find all nodes that are within the current selection and match a predicate.
 	 */
-	private <T> List<T> findNodesAtSelection(FindNodePredicate predicate, boolean allowNested) {
+	private <T> List<T> findNodesAtSelection(FindNodePredicate predicate, boolean allowNested, boolean deepest) {
 		IndexRange selection = textArea.getSelection();
-		return findNodes(selection.getStart(), selection.getEnd(), predicate, allowNested);
+		return findNodes(selection.getStart(), selection.getEnd(), predicate, allowNested, deepest);
 	}
 
 	/**
 	 * Find all nodes that are within the current (partly) selected line(s) and match a predicate.
 	 */
-	private <T> List<T> findNodesAtSelectedLines(FindNodePredicate predicate, boolean allowNested) {
+	private <T> List<T> findNodesAtSelectedLines(FindNodePredicate predicate, boolean allowNested, boolean deepest) {
 		IndexRange selRange = getSelectedLinesRange(false);
-		return findNodes(selRange.getStart(), selRange.getEnd(), predicate, allowNested);
+		return findNodes(selRange.getStart(), selRange.getEnd(), predicate, allowNested, deepest);
 	}
 
 	/**
 	 * Find all nodes that are within the given range and match a predicate.
 	 */
-	private <T> List<T> findNodes(int start, int end, FindNodePredicate predicate, boolean allowNested) {
+	private <T> List<T> findNodes(int start, int end, FindNodePredicate predicate, boolean allowNested, boolean deepest) {
 		Node markdownAST = editor.getMarkdownAST();
 		if (markdownAST == null)
 			return Collections.emptyList();
@@ -913,6 +913,16 @@ public class SmartEdit
 			@Override
 			public void visit(Node node) {
 				if (isInNode(start, end, node) && predicate.test(start, end, node)) {
+					if (deepest) {
+						int oldNodesSize = nodes.size();
+						visitChildren(node);
+
+						// add only if no other child was added
+						if (nodes.size() == oldNodesSize)
+							nodes.add((T) node);
+						return;
+					}
+
 					nodes.add((T) node);
 
 					if (!allowNested)
@@ -941,7 +951,7 @@ public class SmartEdit
 	 */
 	@SuppressWarnings("unused")
 	private <T> T findNodeAt(int offset, FindNodePredicate predicate) {
-		List<T> nodes = findNodes(offset, offset, predicate, false);
+		List<T> nodes = findNodes(offset, offset, predicate, false, false);
 		return nodes.size() > 0 ? nodes.get(0) : null;
 	}
 
@@ -949,7 +959,7 @@ public class SmartEdit
 		int line = offsetToLine(offsetInLine);
 		int lineStart = lineToStartOffset(line);
 		int lineEnd = lineToEndOffset(line);
-		List<T> nodes = findNodes(lineStart, lineEnd, predicate, false);
+		List<T> nodes = findNodes(lineStart, lineEnd, predicate, false, false);
 		return nodes.size() > 0 ? nodes.get(0) : null;
 	}
 
