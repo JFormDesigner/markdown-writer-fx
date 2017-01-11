@@ -45,7 +45,6 @@ import javafx.scene.layout.Region;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.PathElement;
-import org.fxmisc.richtext.StyleClassedTextArea;
 
 /**
  * A paragraph graphic factory for StyleClassedTextArea that is able to lay out
@@ -60,11 +59,11 @@ import org.fxmisc.richtext.StyleClassedTextArea;
 class ParagraphOverlayGraphicFactory
 	implements IntFunction<Node>
 {
-	private final StyleClassedTextArea textArea;
+	private final MarkdownTextArea textArea;
 	private final List<OverlayFactory> overlayFactories = new ArrayList<>();
 	private final List<IntFunction<Node>> gutterFactories = new ArrayList<>();
 
-	ParagraphOverlayGraphicFactory(StyleClassedTextArea textArea) {
+	ParagraphOverlayGraphicFactory(MarkdownTextArea textArea) {
 		this.textArea = textArea;
 	}
 
@@ -196,12 +195,12 @@ class ParagraphOverlayGraphicFactory
 
 	static abstract class OverlayFactory
 	{
-		private StyleClassedTextArea textArea;
+		private MarkdownTextArea textArea;
 		private Node paragraphTextNode;
 		private Node gutter;
 		private double gutterWidth;
 
-		private void init(StyleClassedTextArea textArea, Node paragraphTextNode, Node gutter) {
+		private void init(MarkdownTextArea textArea, Node paragraphTextNode, Node gutter) {
 			this.textArea = textArea;
 			this.paragraphTextNode = paragraphTextNode;
 			this.gutter = gutter;
@@ -211,7 +210,7 @@ class ParagraphOverlayGraphicFactory
 		abstract List<Node> createOverlayNodes(int paragraphIndex);
 		abstract void layoutOverlayNodes(int paragraphIndex, List<Node> nodes);
 
-		protected StyleClassedTextArea getTextArea() {
+		protected MarkdownTextArea getTextArea() {
 			return textArea;
 		}
 

@@ -57,7 +57,6 @@ import com.vladsch.flexmark.ast.Node;
 import com.vladsch.flexmark.parser.Parser;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CharacterHit;
-import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.undo.UndoManager;
 import org.fxmisc.wellbehaved.event.Nodes;
 import org.markdownwriterfx.controls.BottomSlidePane;
@@ -76,7 +75,7 @@ import org.markdownwriterfx.options.Options;
 public class MarkdownEditorPane
 {
 	private final BottomSlidePane borderPane;
-	private final StyleClassedTextArea textArea;
+	private final MarkdownTextArea textArea;
 	private final ParagraphOverlayGraphicFactory overlayGraphicFactory;
 	private LineNumberGutterFactory lineNumberGutterFactory;
 	private WhitespaceOverlayFactory whitespaceOverlayFactory;
@@ -90,7 +89,7 @@ public class MarkdownEditorPane
 	private String lineSeparator = getLineSeparatorOrDefault();
 
 	public MarkdownEditorPane() {
-		textArea = new MyStyleClassedTextArea(false);
+		textArea = new MarkdownTextArea();
 		textArea.setWrapText(true);
 		textArea.getStyleClass().add("markdown-editor");
 		textArea.getStylesheets().add("org/markdownwriterfx/editor/MarkdownEditor.css");
@@ -122,7 +121,7 @@ public class MarkdownEditorPane
 		textArea.totalHeightEstimateProperty().addListener(scrollYListener);
 
 		// create scroll pane
-		VirtualizedScrollPane<StyleClassedTextArea> scrollPane = new VirtualizedScrollPane<StyleClassedTextArea>(textArea);
+		VirtualizedScrollPane<MarkdownTextArea> scrollPane = new VirtualizedScrollPane<MarkdownTextArea>(textArea);
 
 		// create border pane
 		borderPane = new BottomSlidePane(scrollPane);
@@ -421,36 +420,4 @@ public class MarkdownEditorPane
 
 	//---- class MyStyleClassedTextArea ---------------------------------------
 
-	private static class MyStyleClassedTextArea
-		extends StyleClassedTextArea
-	{
-		public MyStyleClassedTextArea(boolean preserveStyle) {
-			super(preserveStyle);
-		}
-
-		@Override
-		public void cut() {
-			selectLineIfEmpty();
-			super.cut();
-		}
-
-		@Override
-		public void copy() {
-			IndexRange oldSelection = selectLineIfEmpty();
-			super.copy();
-			if (oldSelection != null)
-				selectRange(oldSelection.getStart(), oldSelection.getEnd());
-		}
-
-
-		private IndexRange selectLineIfEmpty() {
-			IndexRange oldSelection = null;
-			if (getSelectedText().isEmpty()) {
-				oldSelection = getSelection();
-				selectLine();
-				nextChar(SelectionPolicy.ADJUST);
-			}
-			return oldSelection;
-		}
-	}
 }
