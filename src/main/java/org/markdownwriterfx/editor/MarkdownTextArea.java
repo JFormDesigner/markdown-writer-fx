@@ -27,8 +27,12 @@
 
 package org.markdownwriterfx.editor;
 
+import java.util.Collection;
+import java.util.Collections;
 import javafx.scene.control.IndexRange;
-import org.fxmisc.richtext.StyleClassedTextArea;
+import org.fxmisc.richtext.GenericStyledArea;
+import org.fxmisc.richtext.StyledTextArea;
+import org.fxmisc.richtext.model.StyledText;
 
 /**
  * Markdown text area.
@@ -36,10 +40,18 @@ import org.fxmisc.richtext.StyleClassedTextArea;
  * @author Karl Tauber
  */
 class MarkdownTextArea
-	extends StyleClassedTextArea
+	extends GenericStyledArea<Collection<String>, StyledText<Collection<String>>, Collection<String>>
 {
 	public MarkdownTextArea() {
-		super(false);
+		super(
+			/* initialParagraphStyle */ Collections.<String>emptyList(),
+			/* applyParagraphStyle */ (paragraph, styleClasses) -> paragraph.getStyleClass().addAll(styleClasses),
+			/* initialTextStyle */ Collections.<String>emptyList(),
+			/* textOps */ StyledText.textOps(),
+			/* preserveStyle */ false,
+			/* nodeFactory */ seg -> StyledTextArea.createStyledTextNode(seg, StyledText.textOps(),
+				(text, styleClasses) -> text.getStyleClass().addAll(styleClasses))
+			);
 	}
 
 	@Override
