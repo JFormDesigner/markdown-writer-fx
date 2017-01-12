@@ -29,10 +29,15 @@ package org.markdownwriterfx.editor;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.function.BiConsumer;
+import javafx.scene.Node;
 import javafx.scene.control.IndexRange;
 import org.fxmisc.richtext.GenericStyledArea;
 import org.fxmisc.richtext.StyledTextArea;
+import org.fxmisc.richtext.TextExt;
+import org.fxmisc.richtext.model.SegmentOps;
 import org.fxmisc.richtext.model.StyledText;
+import org.reactfx.util.Either;
 
 /**
  * Markdown text area.
@@ -40,18 +45,28 @@ import org.fxmisc.richtext.model.StyledText;
  * @author Karl Tauber
  */
 class MarkdownTextArea
-	extends GenericStyledArea<Collection<String>, StyledText<Collection<String>>, Collection<String>>
+	extends GenericStyledArea<Collection<String>, Either<StyledText<Collection<String>>, EmbeddedImage>, Collection<String>>
 {
 	public MarkdownTextArea() {
 		super(
 			/* initialParagraphStyle */ Collections.<String>emptyList(),
 			/* applyParagraphStyle */ (paragraph, styleClasses) -> paragraph.getStyleClass().addAll(styleClasses),
 			/* initialTextStyle */ Collections.<String>emptyList(),
-			/* textOps */ StyledText.textOps(),
+			/* textOps */ StyledText.<Collection<String>>textOps()._or(new EmbeddedImageOps()),
 			/* preserveStyle */ false,
-			/* nodeFactory */ seg -> StyledTextArea.createStyledTextNode(seg, StyledText.textOps(),
+			/* nodeFactory */ seg -> createNode(seg, StyledText.textOps(),
 				(text, styleClasses) -> text.getStyleClass().addAll(styleClasses))
 			);
+	}
+
+	private static Node createNode(Either<StyledText<Collection<String>>, EmbeddedImage> seg,
+			SegmentOps<StyledText<Collection<String>>, Collection<String>> textSegOps,
+			BiConsumer<? super TextExt, Collection<String>> applyStyle)
+	{
+		return seg.isLeft()
+			? StyledTextArea.createStyledTextNode(seg.getLeft(), textSegOps, applyStyle)
+			: seg.getRight().createNode();
+
 	}
 
 	@Override

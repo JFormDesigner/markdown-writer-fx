@@ -39,6 +39,7 @@ import org.fxmisc.richtext.model.Paragraph;
 import org.fxmisc.richtext.model.StyledText;
 import org.markdownwriterfx.editor.ParagraphOverlayGraphicFactory.OverlayFactory;
 import org.markdownwriterfx.util.Range;
+import org.reactfx.util.Either;
 
 /**
  * Shows whitespace characters.
@@ -54,12 +55,17 @@ class WhitespaceOverlayFactory
 
 	@Override
 	public List<Node> createOverlayNodes(int paragraphIndex) {
-		Paragraph<Collection<String>, StyledText<Collection<String>>, Collection<String>> par = getTextArea().getParagraph(paragraphIndex);
+		Paragraph<Collection<String>, Either<StyledText<Collection<String>>, EmbeddedImage>, Collection<String>> par = getTextArea().getParagraph(paragraphIndex);
 
 		ArrayList<Node> nodes = new ArrayList<>();
 		int segmentStart = 0;
-		for(StyledText<Collection<String>> segment : par.getSegments()) {
-			String text = segment.getText();
+		for(Either<StyledText<Collection<String>>, EmbeddedImage> segment : par.getSegments()) {
+			if (!segment.isLeft()) {
+				segmentStart += segment.getRight().text.length();
+				continue;
+			}
+
+			String text = segment.getLeft().getText();
 			int textLength = text.length();
 			for (int i = 0; i < textLength; i++) {
 				char ch = text.charAt(i);
@@ -68,7 +74,7 @@ class WhitespaceOverlayFactory
 
 				nodes.add(createTextNode(
 						(ch == ' ') ? SPACE : TAB,
-						segment.getStyle(),
+						segment.getLeft().getStyle(),
 						segmentStart + i, segmentStart + i + 1));
 			}
 
