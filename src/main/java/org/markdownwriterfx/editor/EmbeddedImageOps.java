@@ -38,7 +38,7 @@ import org.fxmisc.richtext.model.SegmentOps;
 class EmbeddedImageOps
 	implements SegmentOps<EmbeddedImage, Collection<String>>
 {
-	private final EmbeddedImage emptySeg = new EmbeddedImage("", null);
+	private final EmbeddedImage emptySeg = new EmbeddedImage(null, "", null);
 
 	@Override
 	public int length(EmbeddedImage seg) {
@@ -57,12 +57,12 @@ class EmbeddedImageOps
 
 	@Override
 	public EmbeddedImage subSequence(EmbeddedImage seg, int start, int end) {
-		return (seg == emptySeg) ? emptySeg : new EmbeddedImage(seg.text.substring(start, end), seg.style);
+		return (seg == emptySeg) ? emptySeg : new EmbeddedImage(seg.node, seg.text.substring(start, end), seg.style);
 	}
 
 	@Override
 	public EmbeddedImage subSequence(EmbeddedImage seg, int start) {
-		return (seg == emptySeg) ? emptySeg : new EmbeddedImage(seg.text.substring(start), seg.style);
+		return (seg == emptySeg) ? emptySeg : new EmbeddedImage(seg.node, seg.text.substring(start), seg.style);
 	}
 
 	@Override
@@ -72,7 +72,7 @@ class EmbeddedImageOps
 
 	@Override
 	public EmbeddedImage setStyle(EmbeddedImage seg, Collection<String> style) {
-		return (seg == emptySeg) ? emptySeg : new EmbeddedImage(seg.text, style);
+		return (seg == emptySeg) ? emptySeg : new EmbeddedImage(seg.node, seg.text, style);
 	}
 
 	@Override
