@@ -28,6 +28,7 @@
 package org.markdownwriterfx.editor;
 
 import java.lang.ref.SoftReference;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
@@ -71,27 +72,35 @@ class EmbeddedImage
 
 	Node createNode() {
 		String url = node.getUrl().toString();
-		String imageUrl = (basePath != null)
+
+		String imageUrl;
+		try {
+			imageUrl = (basePath != null)
 				? basePath.resolve(url).toUri().toString()
 				: "file:" + url;
+		} catch (InvalidPathException ex) {
+			return createErrorNode();
+		}
 
 		// load image
 		Image image = loadImage(imageUrl);
+		if (image.isError())
+			return createErrorNode(); // loading failed
 
-		if (image.isError()) {
-			// loading failed
-			Polyline errorView = new Polyline(
-				0, 0,  ERROR_SIZE, 0,  ERROR_SIZE, ERROR_SIZE,  0, ERROR_SIZE,  0, 0,	// rectangle
-				ERROR_SIZE, ERROR_SIZE,  0, ERROR_SIZE,  ERROR_SIZE, 0);				// cross
-			errorView.setStroke(Color.RED); //TODO use CSS
-			return errorView;
-		}
-
+		// create image view
 		ImageView view = new ImageView(image);
 		view.setPreserveRatio(true);
 		view.setFitWidth(Math.min(image.getWidth(),MAX_SIZE));
 		view.setFitHeight(Math.min(image.getHeight(),MAX_SIZE));
 		return view;
+	}
+
+	private Node createErrorNode() {
+		Polyline errorNode = new Polyline(
+			0, 0,  ERROR_SIZE, 0,  ERROR_SIZE, ERROR_SIZE,  0, ERROR_SIZE,  0, 0,	// rectangle
+			ERROR_SIZE, ERROR_SIZE,  0, ERROR_SIZE,  ERROR_SIZE, 0);				// cross
+		errorNode.setStroke(Color.RED); //TODO use CSS
+		return errorNode;
 	}
 
 	private static Image loadImage(String imageUrl) {
@@ -127,11 +136,16 @@ class EmbeddedImage
 			public void visit(com.vladsch.flexmark.ast.Node node) {
 				//TODO support ImageRef
 				if (node instanceof com.vladsch.flexmark.ast.Image) {
+					com.vladsch.flexmark.ast.Image imageNode = (com.vladsch.flexmark.ast.Image) node;
+					String url = imageNode.getUrl().toString();
+					if (url.startsWith("http:") || url.startsWith("https:"))
+						return; // do not embed external images
+
 					int start = node.getStartOffset();
 					int end = start + 1;
 
 					EmbeddedImage embeddedImage = new EmbeddedImage(basePath,
-							(com.vladsch.flexmark.ast.Image) node, textArea.getText(start, end), null);
+							imageNode, textArea.getText(start, end), null);
 					addedImages.add(embeddedImage);
 
 					textArea.replace(start, end, ReadOnlyStyledDocument.fromSegment(
