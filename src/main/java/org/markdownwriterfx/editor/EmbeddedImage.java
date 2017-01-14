@@ -27,19 +27,22 @@
 
 package org.markdownwriterfx.editor;
 
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
 import javafx.scene.control.IndexRange;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Polyline;
 import org.fxmisc.richtext.model.Paragraph;
 import org.fxmisc.richtext.model.ReadOnlyStyledDocument;
 import org.fxmisc.richtext.model.StyledText;
 import org.reactfx.util.Either;
-import com.vladsch.flexmark.ast.Image;
 import com.vladsch.flexmark.ast.NodeVisitor;
 
 /**
@@ -47,22 +50,48 @@ import com.vladsch.flexmark.ast.NodeVisitor;
  */
 class EmbeddedImage
 {
-	final com.vladsch.flexmark.ast.Node node;
+	private static final int MAX_SIZE = 200;
+	private static final int ERROR_SIZE = 16;
+
+	final Path basePath;
+	final com.vladsch.flexmark.ast.Image node;
 	final String text;
 	final Collection<String> style;
 
-	EmbeddedImage(com.vladsch.flexmark.ast.Node node, String text, Collection<String> style) {
+	EmbeddedImage(Path basePath, com.vladsch.flexmark.ast.Image node, String text, Collection<String> style) {
+		this.basePath = basePath;
 		this.node = node;
 		this.text = text;
 		this.style = style;
 	}
 
 	Node createNode() {
-		//TODO
-		return new Button(text);
+		String url = node.getUrl().toString();
+		String imageUrl = (basePath != null)
+				? basePath.resolve(url).toUri().toString()
+				: "file:" + url;
+
+		//TODO cache
+		// load image
+		Image image = new Image(imageUrl);
+
+		if (image.isError()) {
+			// loading failed
+			Polyline errorView = new Polyline(
+				0, 0,  ERROR_SIZE, 0,  ERROR_SIZE, ERROR_SIZE,  0, ERROR_SIZE,  0, 0,	// rectangle
+				ERROR_SIZE, ERROR_SIZE,  0, ERROR_SIZE,  ERROR_SIZE, 0);				// cross
+			errorView.setStroke(Color.RED); //TODO use CSS
+			return errorView;
+		}
+
+		ImageView view = new ImageView(image);
+		view.setPreserveRatio(true);
+		view.setFitWidth(Math.min(image.getWidth(),MAX_SIZE));
+		view.setFitHeight(Math.min(image.getHeight(),MAX_SIZE));
+		return view;
 	}
 
-	static void replaceImageSegments(MarkdownTextArea textArea, com.vladsch.flexmark.ast.Node astRoot) {
+	static void replaceImageSegments(MarkdownTextArea textArea, com.vladsch.flexmark.ast.Node astRoot, Path basePath) {
 		// remember current selection (because textArea.replace() changes selection)
 		IndexRange selection = textArea.getSelection();
 
@@ -72,11 +101,12 @@ class EmbeddedImage
 			@Override
 			public void visit(com.vladsch.flexmark.ast.Node node) {
 				//TODO support ImageRef
-				if (node instanceof Image) {
+				if (node instanceof com.vladsch.flexmark.ast.Image) {
 					int start = node.getStartOffset();
 					int end = start + 1;
 
-					EmbeddedImage embeddedImage = new EmbeddedImage(node, textArea.getText(start, end), null);
+					EmbeddedImage embeddedImage = new EmbeddedImage(basePath,
+							(com.vladsch.flexmark.ast.Image) node, textArea.getText(start, end), null);
 					addedImages.add(embeddedImage);
 
 					textArea.replace(start, end, ReadOnlyStyledDocument.fromSegment(
