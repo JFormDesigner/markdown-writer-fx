@@ -27,11 +27,13 @@
 
 package org.markdownwriterfx.editor;
 
+import java.lang.ref.SoftReference;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import javafx.scene.Node;
 import javafx.scene.control.IndexRange;
@@ -53,6 +55,8 @@ class EmbeddedImage
 	private static final int MAX_SIZE = 200;
 	private static final int ERROR_SIZE = 16;
 
+	private static final HashMap<String, SoftReference<Image>> imageCache = new HashMap<>();
+
 	final Path basePath;
 	final com.vladsch.flexmark.ast.Image node;
 	final String text;
@@ -71,9 +75,8 @@ class EmbeddedImage
 				? basePath.resolve(url).toUri().toString()
 				: "file:" + url;
 
-		//TODO cache
 		// load image
-		Image image = new Image(imageUrl);
+		Image image = loadImage(imageUrl);
 
 		if (image.isError()) {
 			// loading failed
@@ -89,6 +92,28 @@ class EmbeddedImage
 		view.setFitWidth(Math.min(image.getWidth(),MAX_SIZE));
 		view.setFitHeight(Math.min(image.getHeight(),MAX_SIZE));
 		return view;
+	}
+
+	private static Image loadImage(String imageUrl) {
+		cleanUpImageCache();
+
+		Image image = null;
+		SoftReference<Image> imageRef = imageCache.get(imageUrl);
+		if (imageRef != null)
+			image = imageRef.get();
+		if (image == null) {
+			image = new Image(imageUrl);
+			imageCache.put(imageUrl, new SoftReference<Image>(image));
+		}
+		return image;
+	}
+
+	private static void cleanUpImageCache() {
+		Iterator<SoftReference<Image>> it = imageCache.values().iterator();
+		while (it.hasNext()) {
+			if (it.next().get() == null)
+				it.remove();
+		}
 	}
 
 	static void replaceImageSegments(MarkdownTextArea textArea, com.vladsch.flexmark.ast.Node astRoot, Path basePath) {
