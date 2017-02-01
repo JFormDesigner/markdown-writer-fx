@@ -8,6 +8,7 @@ Markdown Writer FX Change Log
 - "Cut" and "Copy" now cut/copy whole line if selection is empty.
 - Context menu added to editor.
 - RichTextFX updated to version 0.7-M3.
+- Fixed horizontal scrollbar in AST preview.
 
 
 ## 0.7
