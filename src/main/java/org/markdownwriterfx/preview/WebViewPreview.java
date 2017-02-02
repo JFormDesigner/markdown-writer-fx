@@ -67,6 +67,14 @@ class WebViewPreview
 		webView = new WebView();
 		webView.setFocusTraversable(false);
 
+		// disable WebView default drag and drop handler to allow dropping markdown files
+		webView.setOnDragEntered(null);
+		webView.setOnDragExited(null);
+		webView.setOnDragOver(null);
+		webView.setOnDragDropped(null);
+		webView.setOnDragDetected(null);
+		webView.setOnDragDone(null);
+
 		webView.getEngine().getLoadWorker().stateProperty().addListener((ob,o,n) -> {
 			if (n == State.SUCCEEDED && !runWhenLoadedList.isEmpty()) {
 				ArrayList<Runnable> runnables = new ArrayList<>(runWhenLoadedList);
