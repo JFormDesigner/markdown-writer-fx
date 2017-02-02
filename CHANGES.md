@@ -3,11 +3,13 @@ Markdown Writer FX Change Log
 
 ## 0.8
 
+- Open markdown files by dropping them to main window.
 - Support Definition lists extension (FlexMark only).
 - "Cut", "Copy", "Paste" and "Select All" commands added to "Edit" menu.
 - "Cut" and "Copy" now cut/copy whole line if selection is empty.
 - Context menu added to editor.
 - RichTextFX updated to version 0.7-M3.
+- Fixed horizontal scrollbar in AST preview.
 
 
 ## 0.7

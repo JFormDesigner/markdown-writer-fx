@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Karl Tauber <karl at jformdesigner dot com>
+ * Copyright (c) 2017 Karl Tauber <karl at jformdesigner dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,40 +27,43 @@
 
 package org.markdownwriterfx.editor;
 
-import java.util.function.IntFunction;
-import javafx.geometry.Pos;
-import javafx.scene.Node;
-import javafx.scene.control.Label;
-import org.reactfx.collection.LiveList;
-import org.reactfx.value.Val;
+import javafx.scene.control.IndexRange;
+import org.fxmisc.richtext.StyleClassedTextArea;
 
 /**
+ * Markdown text area.
+ *
  * @author Karl Tauber
  */
-class LineNumberGutterFactory
-	implements IntFunction<Node>
+class MarkdownTextArea
+	extends StyleClassedTextArea
 {
-    private final MarkdownTextArea textArea;
-    private final Val<Integer> lineCount;
-
-	LineNumberGutterFactory(MarkdownTextArea textArea) {
-		this.textArea = textArea;
-		lineCount = LiveList.sizeOf(textArea.getParagraphs());
+	public MarkdownTextArea() {
+		super(false);
 	}
 
 	@Override
-	public Node apply(int paragraphIndex) {
-		int lineNo = paragraphIndex + 1;
-		Val<String> text = lineCount.map(n -> {
-			int digits = Math.max(3, (int) Math.floor(Math.log10(textArea.getParagraphs().size())) + 1);
-			return String.format("%" + digits + "d", lineNo);
-		});
+	public void cut() {
+		selectLineIfEmpty();
+		super.cut();
+	}
 
-		Label label = new Label();
-		label.textProperty().bind(text.conditionOnShowing(label));
-		label.setAlignment(Pos.TOP_RIGHT);
-		label.setMaxHeight(Double.MAX_VALUE);
-		label.getStyleClass().add("lineno");
-		return label;
+	@Override
+	public void copy() {
+		IndexRange oldSelection = selectLineIfEmpty();
+		super.copy();
+		if (oldSelection != null)
+			selectRange(oldSelection.getStart(), oldSelection.getEnd());
+	}
+
+
+	private IndexRange selectLineIfEmpty() {
+		IndexRange oldSelection = null;
+		if (getSelectedText().isEmpty()) {
+			oldSelection = getSelection();
+			selectLine();
+			nextChar(SelectionPolicy.ADJUST);
+		}
+		return oldSelection;
 	}
 }

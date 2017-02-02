@@ -55,7 +55,6 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.layout.Region;
 import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.control.textfield.CustomTextField;
-import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.richtext.model.TwoDimensional.Bias;
 import org.fxmisc.wellbehaved.event.Nodes;
 import org.markdownwriterfx.MarkdownWriterFXApp;
@@ -82,14 +81,14 @@ class FindReplacePane
 			MarkdownWriterFXApp.getState(), "findRegex", false);
 
 	private final List<HitsChangeListener> listeners = new ArrayList<>();
-	private final StyleClassedTextArea textArea;
+	private final MarkdownTextArea textArea;
 	private final List<Range> hits = new ArrayList<>();
 	private int activeHitIndex = -1;
 	private String nOfCountFormat;
 
 	private Region overviewRuler;
 
-	FindReplacePane(StyleClassedTextArea textArea) {
+	FindReplacePane(MarkdownTextArea textArea) {
 		this.textArea = textArea;
 	}
 

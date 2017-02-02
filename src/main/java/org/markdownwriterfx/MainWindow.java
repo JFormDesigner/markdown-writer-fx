@@ -52,6 +52,7 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.ToolBar;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -118,6 +119,22 @@ class MainWindow
 		scene.addEventHandler(KeyEvent.KEY_PRESSED, e -> {
 			if (e.isAltDown())
 				e.consume();
+		});
+
+		// open markdown files dropped to main window
+		scene.setOnDragOver(e -> {
+			if (e.getDragboard().hasFiles())
+				e.acceptTransferModes(TransferMode.COPY);
+			e.consume();
+		});
+		scene.setOnDragDropped(e -> {
+			boolean success = false;
+			if (e.getDragboard().hasFiles()) {
+				fileEditorTabPane.openEditors(e.getDragboard().getFiles(), 0);
+				success = true;
+			}
+			e.setDropCompleted(success);
+			e.consume();
 		});
 
 		Platform.runLater(() -> stageFocusedProperty.bind(scene.getWindow().focusedProperty()));

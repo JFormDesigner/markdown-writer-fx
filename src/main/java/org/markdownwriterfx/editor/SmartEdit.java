@@ -44,7 +44,6 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.control.IndexRange;
 import javafx.scene.input.KeyEvent;
 import org.apache.commons.lang3.StringUtils;
-import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.richtext.model.TwoDimensional.Bias;
 import org.fxmisc.wellbehaved.event.Nodes;
 import org.markdownwriterfx.dialogs.ImageDialog;
@@ -52,11 +51,9 @@ import org.markdownwriterfx.dialogs.LinkDialog;
 import org.markdownwriterfx.options.Options;
 import org.markdownwriterfx.util.Utils;
 import com.vladsch.flexmark.ast.AutoLink;
-import com.vladsch.flexmark.ast.Block;
 import com.vladsch.flexmark.ast.BlockQuote;
 import com.vladsch.flexmark.ast.BulletListItem;
 import com.vladsch.flexmark.ast.Code;
-import com.vladsch.flexmark.ast.ContentNode;
 import com.vladsch.flexmark.ast.DelimitedNode;
 import com.vladsch.flexmark.ast.Emphasis;
 import com.vladsch.flexmark.ast.FencedCodeBlock;
@@ -72,7 +69,6 @@ import com.vladsch.flexmark.ast.MailLink;
 import com.vladsch.flexmark.ast.Node;
 import com.vladsch.flexmark.ast.NodeVisitor;
 import com.vladsch.flexmark.ast.OrderedListItem;
-import com.vladsch.flexmark.ast.Paragraph;
 import com.vladsch.flexmark.ast.StrongEmphasis;
 import com.vladsch.flexmark.ext.gfm.strikethrough.Strikethrough;
 import com.vladsch.flexmark.util.sequence.BasedSequence;
@@ -92,9 +88,9 @@ public class SmartEdit
 			"(" + BULLET_LIST_MARKER + "|" + ORDERED_LIST_MARKER + "|" + BLOCK_QUOTE_MARKER + "|\\s+)(.*)");
 
 	private final MarkdownEditorPane editor;
-	private final StyleClassedTextArea textArea;
+	private final MarkdownTextArea textArea;
 
-	SmartEdit(MarkdownEditorPane editor, StyleClassedTextArea textArea) {
+	SmartEdit(MarkdownEditorPane editor, MarkdownTextArea textArea) {
 		this.editor = editor;
 		this.textArea = textArea;
 
@@ -129,7 +125,7 @@ public class SmartEdit
 		Platform.runLater(() -> {
 			updateStatePropertiesRunLaterPending = false;
 
-			List<Node> nodesAtSelection = findNodesAtSelection((s, e, n) -> true, true);
+			List<Node> nodesAtSelection = findNodesAtSelection((s, e, n) -> true, true, false);
 
 			boolean bold = false;
  			boolean italic = false;
@@ -230,7 +226,7 @@ public class SmartEdit
 			}
 		}
 
-		// Note: not using replaceSelection(StyleClassedTextArea, String) to allow undo merging in this case
+		// Note: not using replaceSelection(MarkdownTextArea, String) to allow undo merging in this case
 		textArea.replaceSelection(newText);
 		textArea.requestFollowCaret();
 	}
@@ -244,7 +240,7 @@ public class SmartEdit
 		else if (isIndentSelection())
 			indentSelectedLines(true);
 		else {
-			// Note: not using replaceSelection(StyleClassedTextArea, String) to allow undo merging in this case
+			// Note: not using replaceSelection(MarkdownTextArea, String) to allow undo merging in this case
 			textArea.replaceSelection("\t");
 			textArea.requestFollowCaret();
 		}
@@ -373,7 +369,7 @@ public class SmartEdit
 					return true;
 			}
 			return false;
-		}, false);
+		}, false, false);
 	}
 
 	private void indentNodes(List<Node> nodes, boolean right) {
@@ -661,7 +657,7 @@ public class SmartEdit
 	}
 
 	private void insertDelimited(Class<? extends Node> cls, String openCloseMarker, String hint) {
-		List<? extends Node> nodes = findNodesAtSelection((s, e, n) -> cls.isInstance(n), false);
+		List<? extends Node> nodes = findNodesAtSelection((s, e, n) -> cls.isInstance(n), false, false);
 		if (nodes.size() > 0) {
 			// there is delimited text in current selection --> change them to plain text
 			if (nodes.size() == 1 && hint.equals(((DelimitedNode)nodes.get(0)).getText().toString())) {
@@ -818,7 +814,7 @@ public class SmartEdit
 	/**
 	 * Central method to replace text in editor that prevents undo merging.
 	 */
-	static void replaceText(StyleClassedTextArea textArea, int start, int end, String text) {
+	static void replaceText(MarkdownTextArea textArea, int start, int end, String text) {
 		// prevent undo merging with previous text entered by user
 		textArea.getUndoManager().preventMerge();
 
@@ -833,16 +829,16 @@ public class SmartEdit
 		textArea.getUndoManager().preventMerge();
 	}
 
-	static void replaceSelection(StyleClassedTextArea textArea, String replacement) {
+	static void replaceSelection(MarkdownTextArea textArea, String replacement) {
 		IndexRange range = textArea.getSelection();
 		replaceText(textArea, range.getStart(), range.getEnd(), replacement);
 	}
 
-	static void insertText(StyleClassedTextArea textArea, int index, String text) {
+	static void insertText(MarkdownTextArea textArea, int index, String text) {
 		replaceText(textArea, index, index, text);
 	}
 
-	static void deleteText(StyleClassedTextArea textArea, int start, int end) {
+	static void deleteText(MarkdownTextArea textArea, int start, int end) {
 		replaceText(textArea, start, end, "");
 	}
 
@@ -851,7 +847,7 @@ public class SmartEdit
 	/**
 	 * Central method to select text in editor that scrolls to the caret.
 	 */
-	static void selectRange(StyleClassedTextArea textArea, int anchor, int caretPosition) {
+	static void selectRange(MarkdownTextArea textArea, int anchor, int caretPosition) {
 		textArea.selectRange(anchor, caretPosition);
 		textArea.requestFollowCaret();
 	}
@@ -874,7 +870,7 @@ public class SmartEdit
 		IndexRange selection = textArea.getSelection();
 		int start = selection.getStart();
 		int end = selection.getEnd();
-		List<T> nodes = findNodes(start, end, predicate, false);
+		List<T> nodes = findNodes(start, end, predicate, false, false);
 		if (nodes.size() != 1)
 			return null;
 
@@ -886,23 +882,23 @@ public class SmartEdit
 	/**
 	 * Find all nodes that are within the current selection and match a predicate.
 	 */
-	private <T> List<T> findNodesAtSelection(FindNodePredicate predicate, boolean allowNested) {
+	private <T> List<T> findNodesAtSelection(FindNodePredicate predicate, boolean allowNested, boolean deepest) {
 		IndexRange selection = textArea.getSelection();
-		return findNodes(selection.getStart(), selection.getEnd(), predicate, allowNested);
+		return findNodes(selection.getStart(), selection.getEnd(), predicate, allowNested, deepest);
 	}
 
 	/**
 	 * Find all nodes that are within the current (partly) selected line(s) and match a predicate.
 	 */
-	private <T> List<T> findNodesAtSelectedLines(FindNodePredicate predicate, boolean allowNested) {
+	private <T> List<T> findNodesAtSelectedLines(FindNodePredicate predicate, boolean allowNested, boolean deepest) {
 		IndexRange selRange = getSelectedLinesRange(false);
-		return findNodes(selRange.getStart(), selRange.getEnd(), predicate, allowNested);
+		return findNodes(selRange.getStart(), selRange.getEnd(), predicate, allowNested, deepest);
 	}
 
 	/**
 	 * Find all nodes that are within the given range and match a predicate.
 	 */
-	private <T> List<T> findNodes(int start, int end, FindNodePredicate predicate, boolean allowNested) {
+	private <T> List<T> findNodes(int start, int end, FindNodePredicate predicate, boolean allowNested, boolean deepest) {
 		Node markdownAST = editor.getMarkdownAST();
 		if (markdownAST == null)
 			return Collections.emptyList();
@@ -913,6 +909,16 @@ public class SmartEdit
 			@Override
 			public void visit(Node node) {
 				if (isInNode(start, end, node) && predicate.test(start, end, node)) {
+					if (deepest) {
+						int oldNodesSize = nodes.size();
+						visitChildren(node);
+
+						// add only if no other child was added
+						if (nodes.size() == oldNodesSize)
+							nodes.add((T) node);
+						return;
+					}
+
 					nodes.add((T) node);
 
 					if (!allowNested)
@@ -941,7 +947,7 @@ public class SmartEdit
 	 */
 	@SuppressWarnings("unused")
 	private <T> T findNodeAt(int offset, FindNodePredicate predicate) {
-		List<T> nodes = findNodes(offset, offset, predicate, false);
+		List<T> nodes = findNodes(offset, offset, predicate, false, false);
 		return nodes.size() > 0 ? nodes.get(0) : null;
 	}
 
@@ -949,7 +955,7 @@ public class SmartEdit
 		int line = offsetToLine(offsetInLine);
 		int lineStart = lineToStartOffset(line);
 		int lineEnd = lineToEndOffset(line);
-		List<T> nodes = findNodes(lineStart, lineEnd, predicate, false);
+		List<T> nodes = findNodes(lineStart, lineEnd, predicate, false, false);
 		return nodes.size() > 0 ? nodes.get(0) : null;
 	}
 

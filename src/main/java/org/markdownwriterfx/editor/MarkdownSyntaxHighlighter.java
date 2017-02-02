@@ -47,7 +47,6 @@ import com.vladsch.flexmark.ext.gfm.tables.TableRow;
 import com.vladsch.flexmark.ext.gfm.tasklist.TaskListItem;
 import com.vladsch.flexmark.ext.wikilink.WikiLink;
 import com.vladsch.flexmark.util.sequence.BasedSequence;
-import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.richtext.model.Paragraph;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
 import org.fxmisc.richtext.model.StyledText;
@@ -185,18 +184,18 @@ class MarkdownSyntaxHighlighter
 		node2style.put(Abbreviation.class, StyleClass.abbr);
 	}
 
-	private final StyleClassedTextArea textArea;
+	private final MarkdownTextArea textArea;
 	private ArrayList<StyleRange> styleRanges;
 	private ArrayList<StyleRange> lineStyleRanges;
 
-	static void highlight(StyleClassedTextArea textArea, Node astRoot, List<ExtraStyledRanges> extraStyledRanges) {
+	static void highlight(MarkdownTextArea textArea, Node astRoot, List<ExtraStyledRanges> extraStyledRanges) {
 		assert Platform.isFxApplicationThread();
 
 		assert textArea.getText().length() == textArea.getLength();
 		new MarkdownSyntaxHighlighter(textArea).highlight(astRoot, extraStyledRanges);
 	}
 
-	private MarkdownSyntaxHighlighter(StyleClassedTextArea textArea) {
+	private MarkdownSyntaxHighlighter(MarkdownTextArea textArea) {
 		this.textArea = textArea;
 	}
 
