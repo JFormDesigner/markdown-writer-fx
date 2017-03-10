@@ -25,7 +25,7 @@ dependencies {
 	compile 'org.fxmisc.cssfx:cssfx:1.0.0'
 	compile 'org.apache.commons:commons-lang3:3.5'
 
-	def flexmarkVersion = '0.10.2'
+	def flexmarkVersion = '0.18.0'
 	compile 'com.vladsch.flexmark:flexmark:' + flexmarkVersion
 	compile 'com.vladsch.flexmark:flexmark-ext-abbreviation:' + flexmarkVersion
 	compile 'com.vladsch.flexmark:flexmark-ext-anchorlink:' + flexmarkVersion
