@@ -36,6 +36,7 @@ import javafx.scene.control.TabPane;
 import javafx.stage.Window;
 import org.markdownwriterfx.MarkdownWriterFXApp;
 import org.markdownwriterfx.Messages;
+import org.markdownwriterfx.util.Utils;
 
 /**
  * Options dialog
@@ -62,6 +63,8 @@ public class OptionsDialog
 			save();
 			e.consume();
 		});
+
+		Utils.fixSpaceAfterDeadKey(dialogPane.getScene());
 
 		// load options
 		load();

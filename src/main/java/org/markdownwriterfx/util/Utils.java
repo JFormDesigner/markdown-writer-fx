@@ -31,10 +31,13 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javafx.css.PseudoClass;
+import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyEvent;
 
 /**
  * @author Karl Tauber
@@ -142,5 +145,26 @@ public class Utils
 
 	public static void error(TextField textField, boolean error) {
 		textField.pseudoClassStateChanged(PseudoClass.getPseudoClass("error"), error);
+	}
+
+	public static void fixSpaceAfterDeadKey(Scene scene) {
+		scene.addEventFilter( KeyEvent.KEY_TYPED, new EventHandler<KeyEvent>() {
+			private String lastCharacter;
+
+			@Override
+			public void handle(KeyEvent e) {
+				String character = e.getCharacter();
+				if(" ".equals(character) &&
+					("´".equals(lastCharacter) ||
+					 "`".equals(lastCharacter) ||
+					 "^".equals(lastCharacter)))
+				{
+					// avoid that the space character is inserted
+					e.consume();
+				}
+
+				lastCharacter = character;
+			}
+		});
 	}
 }

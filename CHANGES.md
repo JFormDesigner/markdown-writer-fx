@@ -1,6 +1,11 @@
 Markdown Writer FX Change Log
 =============================
 
+## 0.9
+
+- Fixed "Space key after dead keys inserts a space character" (issue #20).
+
+
 ## 0.8
 
 - Open markdown files by dropping them to main window.

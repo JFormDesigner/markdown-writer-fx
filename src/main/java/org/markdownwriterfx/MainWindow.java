@@ -70,6 +70,7 @@ import org.markdownwriterfx.options.Options.RendererType;
 import org.markdownwriterfx.options.OptionsDialog;
 import org.markdownwriterfx.util.Action;
 import org.markdownwriterfx.util.ActionUtils;
+import org.markdownwriterfx.util.Utils;
 import static de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon.*;
 
 /**
@@ -112,6 +113,8 @@ class MainWindow
 				}
 			});
 		});
+
+		Utils.fixSpaceAfterDeadKey(scene);
 
 		// workaround for a bad JavaFX behavior: menu bar always grabs focus when ALT key is pressed,
 		// but should grab it when ALT key is releases (as all other UI toolkits do) to give other
