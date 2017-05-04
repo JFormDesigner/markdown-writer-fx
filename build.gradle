@@ -62,7 +62,6 @@ sourceSets {
 }
 
 jar {
-    baseName = 'markdown-writer-fx'
     manifest {
         attributes('Main-Class': 'org.markdownwriterfx.MarkdownWriterFXApp',
                    'Class-Path': configurations.compile.collect { 'lib/' + it.getName() }.join(' '),
@@ -73,7 +72,6 @@ jar {
 
 distributions {
     main {
-        baseName = 'markdown-writer-fx'
         contents {
             from { ['LICENSE', 'README.md', 'CHANGES.md'] }
             into( 'images' ) {
