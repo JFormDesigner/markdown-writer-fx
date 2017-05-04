@@ -1,15 +1,5 @@
 language: java
 
-sudo: false
-
-jdk:
-- oraclejdk8
-
-# enable Java 8u45+, see https://github.com/travis-ci/travis-ci/issues/4042
-addons:
-  apt:
-    packages:
-      - oracle-java8-installer
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
@@ -18,11 +8,28 @@ cache:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
 
+before_install:
+  - gradle --version
+  - java -version
+
 matrix:
   include:
     - dist: trusty
       group: edge
+      jdk: oraclejdk8
+      sudo: false
+      addons:
+        apt:
+          packages:
+            - oracle-java8-installer
+
+    - dist: trusty
+      group: edge
       jdk: oraclejdk9
       sudo: required
+      addons:
+        apt:
+          packages:
+            - oracle-java9-installer
 
 
