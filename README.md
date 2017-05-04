@@ -35,6 +35,7 @@ Requirements
 ------------
 
 Java 8u40 or later is required.
+Java 8u131 or later is recommended.
 
 Installation
 ------------
