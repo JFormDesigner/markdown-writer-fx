@@ -1,5 +1,7 @@
 language: java
 
+sudo: false
+
 jdk:
 - oraclejdk8
 
@@ -18,10 +20,6 @@ cache:
 
 matrix:
   include:
-    - dist: trusty
-      group: edge
-      jdk: oraclejdk8
-      sudo: false
     - dist: trusty
       group: edge
       jdk: oraclejdk9
