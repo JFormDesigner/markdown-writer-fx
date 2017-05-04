@@ -23,13 +23,4 @@ matrix:
           packages:
             - oracle-java8-installer
 
-    - dist: trusty
-      group: edge
-      jdk: oraclejdk9
-      sudo: required
-      addons:
-        apt:
-          packages:
-            - oracle-java9-installer
-
 
