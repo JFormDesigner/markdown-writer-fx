@@ -155,9 +155,9 @@ public class Utils
 			public void handle(KeyEvent e) {
 				String character = e.getCharacter();
 				if(" ".equals(character) &&
-					("´".equals(lastCharacter) ||
-					 "`".equals(lastCharacter) ||
-					 "^".equals(lastCharacter)))
+					("\u00B4".equals(lastCharacter) ||  // Acute accent
+					 "`".equals(lastCharacter) ||       // Grave accent
+					 "^".equals(lastCharacter)))        // Circumflex accent
 				{
 					// avoid that the space character is inserted
 					e.consume();
