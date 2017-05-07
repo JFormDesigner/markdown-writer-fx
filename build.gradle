@@ -20,12 +20,12 @@ dependencies {
 
 //	compile 'org.fxmisc.richtext:richtextfx:0.7-M3'
 	compile 'com.miglayout:miglayout-javafx:5.0'
-	compile 'de.jensd:fontawesomefx-fontawesome:4.7.0-3'
+	compile 'de.jensd:fontawesomefx-fontawesome:4.7.0-5'
 	compile 'org.controlsfx:controlsfx:8.40.12'
 	compile 'org.fxmisc.cssfx:cssfx:1.0.0'
 	compile 'org.apache.commons:commons-lang3:3.5'
 
-	def flexmarkVersion = '0.18.0'
+	def flexmarkVersion = '0.19.4'
 	compile 'com.vladsch.flexmark:flexmark:' + flexmarkVersion
 	compile 'com.vladsch.flexmark:flexmark-ext-abbreviation:' + flexmarkVersion
 	compile 'com.vladsch.flexmark:flexmark-ext-anchorlink:' + flexmarkVersion
@@ -53,6 +53,7 @@ dependencies {
 }
 
 sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 // for RichTextFX submodule
 sourceSets {
@@ -61,17 +62,16 @@ sourceSets {
 }
 
 jar {
-	baseName = 'markdown-writer-fx'
 	manifest {
-		attributes 'Main-Class': 'org.markdownwriterfx.MarkdownWriterFXApp',
+		attributes( 'Main-Class': 'org.markdownwriterfx.MarkdownWriterFXApp',
 					'Class-Path': configurations.compile.collect { 'lib/' + it.getName() }.join(' '),
 					'Implementation-Version': version
+		)
 	}
 }
 
 distributions {
 	main {
-		baseName = 'markdown-writer-fx'
 		contents {
 			from { ['LICENSE', 'README.md', 'CHANGES.md'] }
 			into( 'images' ) {
