@@ -121,7 +121,7 @@ public class MarkdownEditorPane
 		textArea.totalHeightEstimateProperty().addListener(scrollYListener);
 
 		// create scroll pane
-		VirtualizedScrollPane<MarkdownTextArea> scrollPane = new VirtualizedScrollPane<MarkdownTextArea>(textArea);
+		VirtualizedScrollPane<MarkdownTextArea> scrollPane = new VirtualizedScrollPane<>(textArea);
 
 		// create border pane
 		borderPane = new BottomSlidePane(scrollPane);

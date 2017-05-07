@@ -96,7 +96,7 @@ public class Utils
 	}
 
 	public static String[] getPrefsStrings(Preferences prefs, String key) {
-		ArrayList<String> arr = new ArrayList<String>();
+		ArrayList<String> arr = new ArrayList<>();
 		for (int i = 0; i < 10000; i++) {
 			String s = prefs.get(key + (i + 1), null);
 			if (s == null)
