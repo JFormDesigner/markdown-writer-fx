@@ -1,7 +1,7 @@
 version = '0.9'
 
 apply plugin: 'java'
-apply plugin: 'java-library-distribution'
+apply plugin: 'application'
 
 repositories {
 	jcenter()
@@ -55,6 +55,8 @@ dependencies {
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
+mainClassName = 'org.markdownwriterfx.MarkdownWriterFXApp'
+
 // for RichTextFX submodule
 sourceSets {
 	main.java.srcDirs      = ['src/main/java',      'RichTextFX/richtextfx/src/main/java', 'Flowless/src/main/java']
@@ -64,7 +66,7 @@ sourceSets {
 jar {
 	manifest {
 		attributes( 'Main-Class': 'org.markdownwriterfx.MarkdownWriterFXApp',
-					'Class-Path': configurations.compile.collect { 'lib/' + it.getName() }.join(' '),
+					'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
 					'Implementation-Version': version
 		)
 	}
