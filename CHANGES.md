@@ -1,6 +1,11 @@
 Markdown Writer FX Change Log
 =============================
 
+## 0.10
+
+- Updated [flexmark-java] to [CommonMark] spec 0.28.
+
+
 ## 0.9
 
 - Fixed "Space key after dead keys inserts a space character" (issue #20).
