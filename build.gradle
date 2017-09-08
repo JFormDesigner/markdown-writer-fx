@@ -5,6 +5,7 @@ apply plugin: 'java-library-distribution'
 
 repositories {
 	jcenter()
+	maven { url 'https://jitpack.io' }
 }
 
 dependencies {
@@ -13,6 +14,11 @@ dependencies {
     compile (group: 'org.fxmisc.undo', name: 'undofx', version: '1.2.2') {
         transitive = false
     }
+
+    // use JitPack to reference GitHub repositories that are not released yet: https://jitpack.io/
+    compile 'com.github.JFormDesigner:RichTextFX:master'
+    compile 'com.github.TomasMikula:Flowless:master-SNAPSHOT'
+
 //	compile (group: 'org.fxmisc.flowless', name: 'flowless', version: '0.5.1') {
 //		transitive = false
 //	}
@@ -57,8 +63,8 @@ targetCompatibility = 1.8
 
 // for RichTextFX submodule
 sourceSets {
-	main.java.srcDirs      = ['src/main/java',      'RichTextFX/richtextfx/src/main/java', 'Flowless/src/main/java']
-	main.resources.srcDirs = ['src/main/resources', 'RichTextFX/richtextfx/src/main/resources']
+	main.java.srcDirs      = ['src/main/java']
+	main.resources.srcDirs = ['src/main/resources']
 }
 
 jar {
