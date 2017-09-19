@@ -222,7 +222,7 @@ class FileEditor
 		markdownPreviewPane.scrollYProperty().bind(markdownEditorPane.scrollYProperty());
 
 		// bind the editor undo manager to the properties
-		UndoManager undoManager = markdownEditorPane.getUndoManager();
+		UndoManager<?> undoManager = markdownEditorPane.getUndoManager();
 		modified.bind(Bindings.not(undoManager.atMarkedPositionProperty()));
 		canUndo.bind(undoManager.undoAvailableProperty());
 		canRedo.bind(undoManager.redoAvailableProperty());

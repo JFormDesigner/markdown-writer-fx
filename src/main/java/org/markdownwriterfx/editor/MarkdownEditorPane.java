@@ -180,7 +180,7 @@ public class MarkdownEditorPane
 		return borderPane;
 	}
 
-	public UndoManager getUndoManager() {
+	public UndoManager<?> getUndoManager() {
 		return textArea.getUndoManager();
 	}
 

@@ -3,6 +3,11 @@ Markdown Writer FX Change Log
 
 ## 0.10
 
+- Editor improvements/fixes:
+  - fixed `Home` and `End` keys in wrapped lines
+  - improved undo/redo
+  - fixed selection painting of wrapped lines
+  - keep text selected after drag-and-drop
 - Updated [flexmark-java] to [CommonMark] spec 0.28.
 
 
