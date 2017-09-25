@@ -36,7 +36,7 @@ import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.text.Text;
 import org.fxmisc.richtext.model.Paragraph;
-import org.fxmisc.richtext.model.StyledText;
+import org.fxmisc.richtext.model.StyledSegment;
 import org.markdownwriterfx.editor.ParagraphOverlayGraphicFactory.OverlayFactory;
 import org.markdownwriterfx.util.Range;
 
@@ -54,12 +54,12 @@ class WhitespaceOverlayFactory
 
 	@Override
 	public List<Node> createOverlayNodes(int paragraphIndex) {
-		Paragraph<Collection<String>, StyledText<Collection<String>>, Collection<String>> par = getTextArea().getParagraph(paragraphIndex);
+		Paragraph<Collection<String>, String, Collection<String>> par = getTextArea().getParagraph(paragraphIndex);
 
 		ArrayList<Node> nodes = new ArrayList<>();
 		int segmentStart = 0;
-		for(StyledText<Collection<String>> segment : par.getSegments()) {
-			String text = segment.getText();
+		for(StyledSegment<String, Collection<String>> segment : par.getStyledSegments()) {
+			String text = segment.getSegment();
 			int textLength = text.length();
 			for (int i = 0; i < textLength; i++) {
 				char ch = text.charAt(i);
