@@ -81,7 +81,7 @@ class PreviewStyledTextArea
 		// restore old selection range and scrollY
 		selectRange(oldSelection.getStart(), oldSelection.getEnd());
 		Platform.runLater(() -> {
-			setEstimatedScrollY(oldScrollY);
+			estimatedScrollYProperty().setValue(oldScrollY);
 		});
 	}
 

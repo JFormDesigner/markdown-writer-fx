@@ -226,7 +226,7 @@ public class MarkdownEditorPane
 		// restore old selection range and scrollY
 		textArea.selectRange(oldSelection.getStart(), oldSelection.getEnd());
 		Platform.runLater(() -> {
-			textArea.setEstimatedScrollY(oldScrollY);
+			textArea.estimatedScrollYProperty().setValue(oldScrollY);
 		});
 	}
 	public ObservableValue<String> markdownProperty() { return textArea.textProperty(); }
