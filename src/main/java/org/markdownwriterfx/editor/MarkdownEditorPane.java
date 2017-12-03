@@ -225,7 +225,8 @@ public class MarkdownEditorPane
 		textArea.replaceText(markdown);
 
 		// restore old selection range and scrollY
-		textArea.selectRange(oldSelection.getStart(), oldSelection.getEnd());
+        int newLength = textArea.getLength();
+        textArea.selectRange(Math.min(oldSelection.getStart(), newLength), Math.min(oldSelection.getEnd(), newLength));
 		Platform.runLater(() -> {
 			textArea.estimatedScrollYProperty().setValue(oldScrollY);
 		});

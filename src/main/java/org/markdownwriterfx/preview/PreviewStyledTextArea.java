@@ -79,7 +79,8 @@ class PreviewStyledTextArea
 			setStyleSpans(0, styleSpans);
 
 		// restore old selection range and scrollY
-		selectRange(oldSelection.getStart(), oldSelection.getEnd());
+		int newLength = getLength();
+		selectRange(Math.min(oldSelection.getStart(), newLength), Math.min(oldSelection.getEnd(), newLength));
 		Platform.runLater(() -> {
 			estimatedScrollYProperty().setValue(oldScrollY);
 		});
