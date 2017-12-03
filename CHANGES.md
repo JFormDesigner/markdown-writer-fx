@@ -8,6 +8,7 @@ Markdown Writer FX Change Log
   - improved undo/redo
   - fixed selection painting of wrapped lines
   - keep text selected after drag-and-drop
+  - fixed occasional inconsistent heights of empty lines
 - Updated [commonmark-java] and [flexmark-java] to [CommonMark] spec 0.28.
 
 

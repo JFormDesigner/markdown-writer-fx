@@ -91,6 +91,7 @@ public class MarkdownEditorPane
 	public MarkdownEditorPane() {
 		textArea = new MarkdownTextArea();
 		textArea.setWrapText(true);
+		textArea.setUseInitialStyleForInsertion(true);
 		textArea.getStyleClass().add("markdown-editor");
 		textArea.getStylesheets().add("org/markdownwriterfx/editor/MarkdownEditor.css");
 		textArea.getStylesheets().add("org/markdownwriterfx/prism.css");
