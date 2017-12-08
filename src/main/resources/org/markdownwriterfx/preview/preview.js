@@ -61,11 +61,11 @@ var preview = {
 	},
 
 	findNodesAt: function(node, offset, result) {
-		if (node.dataset.pos) {
+		if (node.dataset.pos != null) {
 			// get value of data-pos attribute
 			var pos = node.dataset.pos.split(':');
-			var start = +pos[0];
-			var end = +pos[1];
+			var start = pos[0];
+			var end = pos[1];
 			if (offset >= start && offset <= end)
 				result.push(node);
 
