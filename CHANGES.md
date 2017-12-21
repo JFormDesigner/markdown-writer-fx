@@ -9,6 +9,7 @@ Markdown Writer FX Change Log
   - fixed selection painting of wrapped lines
   - keep text selected after drag-and-drop
   - fixed occasional inconsistent heights of empty lines
+- (experimental) Reformat all paragraphs with `Ctrl+Shift+F` wraps lines at 80 characters.
 - Updated [commonmark-java] and [flexmark-java] to [CommonMark] spec 0.28.
 - Fixed `IndexOutOfBoundsException` in editor when reloading externally changed text.
 - Fixed `IndexOutOfBoundsException` in HTML Source preview when deleting text in editor.

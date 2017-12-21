@@ -89,10 +89,12 @@ public class SmartEdit
 
 	private final MarkdownEditorPane editor;
 	private final MarkdownTextArea textArea;
+	private final SmartFormat smartFormat;
 
 	SmartEdit(MarkdownEditorPane editor, MarkdownTextArea textArea) {
 		this.editor = editor;
 		this.textArea = textArea;
+		this.smartFormat = new SmartFormat(editor, textArea);
 
 		Nodes.addInputMap(textArea, sequence(
 			consume(keyPressed(ENTER),							this::enterPressed),
@@ -103,7 +105,9 @@ public class SmartEdit
 			consume(keyPressed(UP, ALT_DOWN),					this::moveLinesUp),
 			consume(keyPressed(DOWN, ALT_DOWN),					this::moveLinesDown),
 			consume(keyPressed(UP, SHORTCUT_DOWN, ALT_DOWN),	this::duplicateLinesUp),
-			consume(keyPressed(DOWN, SHORTCUT_DOWN, ALT_DOWN),	this::duplicateLinesDown)
+			consume(keyPressed(DOWN, SHORTCUT_DOWN, ALT_DOWN),	this::duplicateLinesDown),
+
+			consume(keyPressed(F, SHORTCUT_DOWN, SHIFT_DOWN),	smartFormat::format)
 		));
 
 //		textArea.selectionProperty().addListener((ob, o, n) ->
