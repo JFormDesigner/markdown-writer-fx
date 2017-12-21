@@ -171,17 +171,17 @@ class SmartFormat
 				// wrap
 				buf.append('\n');
 				lineLength = 0;
-
-				// indent
-				if (indent > 0) {
-					for (int i = 0; i < indent; i++)
-						buf.append(' ');
-					lineLength += indent;
-				}
 			} else if (lineLength > indent) {
 				// add space before word
 				buf.append(' ');
 				lineLength++;
+			}
+
+			// indent
+			if (indent > 0 && lineLength == 0) {
+				for (int i = 0; i < indent; i++)
+					buf.append(' ');
+				lineLength += indent;
 			}
 
 			// add word
