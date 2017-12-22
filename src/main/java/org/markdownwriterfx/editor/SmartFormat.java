@@ -30,7 +30,6 @@ package org.markdownwriterfx.editor;
 import java.util.ArrayList;
 import java.util.Collections;
 import javafx.scene.input.KeyEvent;
-import com.vladsch.flexmark.ast.Block;
 import com.vladsch.flexmark.ast.DelimitedNode;
 import com.vladsch.flexmark.ast.HardLineBreak;
 import com.vladsch.flexmark.ast.ListItem;
@@ -72,8 +71,7 @@ class SmartFormat
 			public void visit(Node node) {
 				if (node instanceof Paragraph) {
 					Paragraph paragraph = (Paragraph) node;
-					int indent = computeIndent(paragraph);
-					String newText = formatParagraph(paragraph, wrapLength, indent);
+					String newText = formatParagraph(paragraph, wrapLength);
 					if (!paragraph.getChars().equals(newText, false))
 						formattedParagraphs.add(new Pair<>(paragraph, newText));
 				} else
@@ -101,23 +99,26 @@ class SmartFormat
 		SmartEdit.selectRange(textArea, 0, 0);
 	}
 
-	private int computeIndent(Paragraph paragraph) {
-		Block parent = paragraph.getParent();
-		if (parent instanceof ListItem) {
-			int paraStartOffset = paragraph.getStartOffset();
-			int paraLineStartOffset = paragraph.getDocument().getChars().startOfLine(paraStartOffset);
-			return paraStartOffset - paraLineStartOffset;
-		} else
-			return 0;
-	}
+	private String formatParagraph(Paragraph paragraph, int wrapLength) {
+		int firstindent = paragraphIndent(paragraph);
+		int indent = paragraph.getParent() instanceof ListItem ? firstindent : 0;
 
-	private String formatParagraph(Paragraph paragraph, int wrapLength, int indent) {
 		// collect the paragraph text
 		StringBuilder buf = new StringBuilder(paragraph.getTextLength());
 		collectFormattableText(buf, paragraph);
 
 		// format the paragraph text
-		return formatText(buf.toString(), wrapLength, indent);
+		return formatText(buf.toString(), wrapLength, indent, firstindent);
+	}
+
+	/**
+	 * Returns the indent of the paragraph, which is the number of characters between
+	 * the start of the line and the first character of the paragraph.
+	 */
+	private int paragraphIndent(Paragraph paragraph) {
+		int paraStartOffset = paragraph.getStartOffset();
+		int paraLineStartOffset = paragraph.getDocument().getChars().startOfLine(paraStartOffset);
+		return paraStartOffset - paraLineStartOffset;
 	}
 
 	/**
@@ -154,11 +155,11 @@ class SmartFormat
 	 * Formats the given text by merging multiple spaces into one space
 	 * and wrapping lines.
 	 */
-	private String formatText(String text, int wrapLength, int indent) {
+	private String formatText(String text, int wrapLength, int indent, int firstIndent) {
 		String[] words = text.split(" +");
 
 		StringBuilder buf = new StringBuilder(text.length());
-		int lineLength = indent;
+		int lineLength = firstIndent;
 		for (String word : words) {
 			if (word.equals("\3") || word.equals("\4")) {
 				// hard line break ("two spaces" or "backslash")
@@ -171,7 +172,7 @@ class SmartFormat
 				// wrap
 				buf.append('\n');
 				lineLength = 0;
-			} else if (lineLength > indent) {
+			} else if (lineLength > indent && buf.length() > 0) {
 				// add space before word
 				buf.append(' ');
 				lineLength++;
