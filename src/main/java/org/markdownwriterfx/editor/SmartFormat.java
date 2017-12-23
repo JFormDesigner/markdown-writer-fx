@@ -160,19 +160,22 @@ class SmartFormat
 
 		StringBuilder buf = new StringBuilder(text.length());
 		int lineLength = firstIndent;
+		boolean firstWord = true;
 		for (String word : words) {
 			if (word.equals("\3") || word.equals("\4")) {
 				// hard line break ("two spaces" or "backslash")
 				buf.append(word.equals("\3") ? "  \n" : "\\\n");
 				lineLength = 0;
+				firstWord = true;
 				continue;
 			}
 
-			if (lineLength > indent && lineLength + 1 + word.length() > wrapLength) {
+			if (!firstWord && lineLength > indent && lineLength + 1 + word.length() > wrapLength) {
 				// wrap
 				buf.append('\n');
 				lineLength = 0;
-			} else if (lineLength > indent && buf.length() > 0) {
+				firstWord = true;
+			} else if (!firstWord && lineLength > indent) {
 				// add space before word
 				buf.append(' ');
 				lineLength++;
@@ -188,6 +191,7 @@ class SmartFormat
 			// add word
 			buf.append(word);
 			lineLength += word.length();
+			firstWord = false;
 		}
 
 		return unprotectWhitespace(buf.toString());
