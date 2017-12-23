@@ -38,6 +38,9 @@ public interface SmartFormatAddon
 	static String LINE_BREAK = "\3";
 	static String HARD_LINE_BREAK_SPACES = LINE_BREAK + "";
 	static String HARD_LINE_BREAK_BACKSLASH = LINE_BREAK + "\\";
+	static String SOFT_LINE_BREAK = LINE_BREAK + "s";
+
+	static String SPECIAL_INDENT = "\4";
 
 	String protect(String text);
 	String unprotect(String text);

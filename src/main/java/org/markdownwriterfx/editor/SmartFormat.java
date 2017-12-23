@@ -178,12 +178,21 @@ class SmartFormat
 		StringBuilder buf = new StringBuilder(text.length());
 		int lineLength = firstIndent;
 		boolean firstWord = true;
+		boolean specialFirstLine = false;
+		int specialIndent = 0;
 		for (String word : words) {
+			if (word.startsWith(SPECIAL_INDENT)) {
+				specialIndent = Integer.parseInt(word.substring(1));
+				continue;
+			}
+
 			if (word.startsWith(LINE_BREAK)) {
-				// hard line break ("two spaces" or "backslash")
-				buf.append(word.equals(HARD_LINE_BREAK_SPACES) ? "  \n" : "\\\n");
+				// hard line break ("two spaces" or "backslash") or soft line break
+				buf.append(word.equals(HARD_LINE_BREAK_SPACES) ? "  \n"
+						: (word.equals(HARD_LINE_BREAK_BACKSLASH) ? "\\\n" : "\n"));
 				lineLength = 0;
 				firstWord = true;
+				specialFirstLine = word.equals(SOFT_LINE_BREAK);
 				continue;
 			}
 
@@ -199,16 +208,26 @@ class SmartFormat
 			}
 
 			// indent
-			if (indent > 0 && lineLength == 0) {
-				for (int i = 0; i < indent; i++)
+			if (lineLength == 0) {
+				int indentSize = indent;
+
+				if (specialIndent > 0) {
+					if (!specialFirstLine)
+						indentSize += specialIndent;
+					else if (indent == 0)
+						indentSize += firstIndent;
+				}
+
+				for (int i = 0; i < indentSize; i++)
 					buf.append(' ');
-				lineLength += indent;
+				lineLength += indentSize;
 			}
 
 			// add word
 			buf.append(word);
 			lineLength += word.length();
 			firstWord = false;
+			specialFirstLine = false;
 		}
 
 		return unprotectWhitespace(buf.toString());
