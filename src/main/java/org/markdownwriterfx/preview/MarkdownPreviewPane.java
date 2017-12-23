@@ -61,7 +61,7 @@ public class MarkdownPreviewPane
 	private Preview activePreview;
 
 	interface Renderer {
-		void update(String markdownText, Node astRoot);
+		void update(String markdownText, Node astRoot, Path path);
 		String getHtml(boolean source);
 		String getAST();
 		List<Range> findSequences(int startOffset, int endOffset);
@@ -150,7 +150,7 @@ public class MarkdownPreviewPane
 		Platform.runLater(() -> {
 			updateRunLaterPending = false;
 
-			activeRenderer.update(markdownText.get(), markdownAST.get());
+			activeRenderer.update(markdownText.get(), markdownAST.get(), path.get());
 			activePreview.update(previewContext, activeRenderer);
 		});
 	}

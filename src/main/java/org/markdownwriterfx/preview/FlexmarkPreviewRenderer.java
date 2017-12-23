@@ -27,6 +27,7 @@
 
 package org.markdownwriterfx.preview;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -58,7 +59,7 @@ class FlexmarkPreviewRenderer
 	private String ast;
 
 	@Override
-	public void update(String markdownText, Node astRoot) {
+	public void update(String markdownText, Node astRoot, Path path) {
 		assert markdownText != null;
 		assert astRoot != null;
 
