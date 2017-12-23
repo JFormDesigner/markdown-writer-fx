@@ -33,6 +33,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ServiceLoader;
 import javafx.application.Platform;
 import com.vladsch.flexmark.ast.*;
 import com.vladsch.flexmark.ext.abbreviation.Abbreviation;
@@ -50,6 +51,7 @@ import com.vladsch.flexmark.util.sequence.BasedSequence;
 import org.fxmisc.richtext.model.Paragraph;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
 import org.fxmisc.richtext.model.TwoDimensional.Bias;
+import org.markdownwriterfx.addons.MarkdownSyntaxHighlighterAddon;
 import org.markdownwriterfx.syntaxhighlighter.SyntaxHighlighter;
 import org.markdownwriterfx.util.Range;
 
@@ -183,6 +185,8 @@ class MarkdownSyntaxHighlighter
 		node2style.put(Abbreviation.class, StyleClass.abbr);
 	}
 
+	private static final ServiceLoader<MarkdownSyntaxHighlighterAddon> addons = ServiceLoader.load(MarkdownSyntaxHighlighterAddon.class);
+
 	private final MarkdownTextArea textArea;
 	private ArrayList<StyleRange> styleRanges;
 	private ArrayList<StyleRange> lineStyleRanges;
@@ -199,11 +203,14 @@ class MarkdownSyntaxHighlighter
 	}
 
 	private void highlight(Node astRoot, List<ExtraStyledRanges> extraStyledRanges) {
+		addonsAddStylesheets();
+
 		styleRanges = new ArrayList<>();
 		lineStyleRanges = new ArrayList<>();
 
 		// visit all nodes
 		NodeVisitor visitor = new NodeVisitor(
+			new VisitHandler<>(com.vladsch.flexmark.ast.Paragraph.class, this::visit),
 			new VisitHandler<>(Heading.class, this::visit),
 			new VisitHandler<>(BulletListItem.class, this::visit),
 			new VisitHandler<>(OrderedListItem.class, this::visit),
@@ -342,6 +349,10 @@ class MarkdownSyntaxHighlighter
 		}
 		styleClassesCache.put(bits, styleClasses);
 		return styleClasses;
+	}
+
+	private void visit(com.vladsch.flexmark.ast.Paragraph node) {
+		addonsHighlightNode(node);
 	}
 
 	private void visit(Heading node) {
@@ -515,6 +526,29 @@ class MarkdownSyntaxHighlighter
 			int end2 = Math.min(end, styleRanges.get(0).begin);
 			styleRanges.add(0, new StyleRange(begin, end2, styleBits));
 		}
+	}
+
+	//---- addons -------------------------------------------------------------
+
+	private void addonsAddStylesheets() {
+		for (MarkdownSyntaxHighlighterAddon addon : addons) {
+			for (String stylesheet : addon.getStylesheets()) {
+				if (!textArea.getStylesheets().contains(stylesheet))
+					textArea.getStylesheets().add(stylesheet);
+			}
+		}
+	}
+
+	private void addonsHighlightNode(com.vladsch.flexmark.ast.Paragraph node) {
+		int startOffset = node.getStartOffset();
+		addonsHighlightText(node.getChars().toString(), (begin, end, style) -> {
+			addStyledRange(styleRanges, startOffset + begin, startOffset + end, StyleClass.custom(style, "token"));
+		} );
+	}
+
+	private void addonsHighlightText(String text, MarkdownSyntaxHighlighterAddon.Highlighter highlighter) {
+		for (MarkdownSyntaxHighlighterAddon addon : addons)
+			addon.highlight(text, highlighter);
 	}
 
 	//---- class StyleRange ---------------------------------------------------
