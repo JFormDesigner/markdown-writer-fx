@@ -29,6 +29,7 @@ package org.markdownwriterfx.editor;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.ServiceLoader;
 import javafx.scene.input.KeyEvent;
 import org.markdownwriterfx.addons.SmartFormatAddon;
@@ -70,20 +71,7 @@ class SmartFormat
 		int wrapLength = WRAP_LENGTH;
 
 		// find and format paragraphs
-		ArrayList<Pair<Paragraph, String>> formattedParagraphs = new ArrayList<>();
-		NodeVisitor visitor = new NodeVisitor(Collections.emptyList()) {
-			@Override
-			public void visit(Node node) {
-				if (node instanceof Paragraph) {
-					Paragraph paragraph = (Paragraph) node;
-					String newText = formatParagraph(paragraph, wrapLength);
-					if (!paragraph.getChars().equals(newText, false))
-						formattedParagraphs.add(new Pair<>(paragraph, newText));
-				} else
-					visitChildren(node);
-			}
-		};
-		visitor.visit(markdownAST);
+		List<Pair<Paragraph, String>> formattedParagraphs = formatParagraphs(markdownAST, wrapLength);
 
 		// replace text of formatted paragraphs
 		CompoundChange.run(textArea, changer -> {
@@ -102,6 +90,24 @@ class SmartFormat
 		} );
 
 		SmartEdit.selectRange(textArea, 0, 0);
+	}
+
+	/*private*/ List<Pair<Paragraph, String>> formatParagraphs(Node markdownAST, int wrapLength) {
+		ArrayList<Pair<Paragraph, String>> formattedParagraphs = new ArrayList<>();
+		NodeVisitor visitor = new NodeVisitor(Collections.emptyList()) {
+			@Override
+			public void visit(Node node) {
+				if (node instanceof Paragraph) {
+					Paragraph paragraph = (Paragraph) node;
+					String newText = formatParagraph(paragraph, wrapLength);
+					if (!paragraph.getChars().equals(newText, false))
+						formattedParagraphs.add(new Pair<>(paragraph, newText));
+				} else
+					visitChildren(node);
+			}
+		};
+		visitor.visit(markdownAST);
+		return formattedParagraphs;
 	}
 
 	private String formatParagraph(Paragraph paragraph, int wrapLength) {
