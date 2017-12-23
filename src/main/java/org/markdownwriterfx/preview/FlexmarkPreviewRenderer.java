@@ -31,6 +31,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.ServiceLoader;
+import org.markdownwriterfx.addons.PreviewRendererAddon;
 import org.markdownwriterfx.options.MarkdownExtensions;
 import org.markdownwriterfx.util.Range;
 import com.vladsch.flexmark.ast.Heading;
@@ -41,6 +43,7 @@ import com.vladsch.flexmark.html.HtmlRenderer;
 import com.vladsch.flexmark.html.IndependentAttributeProviderFactory;
 import com.vladsch.flexmark.html.renderer.AttributablePart;
 import com.vladsch.flexmark.html.renderer.NodeRendererContext;
+import com.vladsch.flexmark.parser.Parser;
 import com.vladsch.flexmark.util.html.Attributes;
 import com.vladsch.flexmark.util.sequence.BasedSequence;
 
@@ -52,7 +55,12 @@ import com.vladsch.flexmark.util.sequence.BasedSequence;
 class FlexmarkPreviewRenderer
 	implements MarkdownPreviewPane.Renderer
 {
+	private static final ServiceLoader<PreviewRendererAddon> addons = ServiceLoader.load(PreviewRendererAddon.class);
+
+	private String markdownText;
 	private Node astRoot;
+	private Node astRoot2;
+	private Path path;
 
 	private String htmlPreview;
 	private String htmlSource;
@@ -66,8 +74,11 @@ class FlexmarkPreviewRenderer
 		if (this.astRoot == astRoot)
 			return;
 
+		this.markdownText = markdownText;
 		this.astRoot = astRoot;
+		this.path = path;
 
+		astRoot2 = null;
 		htmlPreview = null;
 		htmlSource = null;
 		ast = null;
@@ -96,6 +107,11 @@ class FlexmarkPreviewRenderer
 	@Override
 	public List<Range> findSequences(int startOffset, int endOffset) {
 		ArrayList<Range> sequences = new ArrayList<>();
+
+		Node astRoot = toAstRoot();
+		if (astRoot == null)
+			return sequences;
+
 		NodeVisitor visitor = new NodeVisitor(Collections.emptyList()) {
 			@Override
 			public void visit(Node node) {
@@ -121,15 +137,47 @@ class FlexmarkPreviewRenderer
 		return start < sequence.getEndOffset() && end > sequence.getStartOffset();
 	}
 
+	private Node parseMarkdown(String text) {
+	    for (PreviewRendererAddon addon : addons)
+            text = addon.preParse(text, path);
+
+		Parser parser = Parser.builder()
+				.extensions(MarkdownExtensions.getFlexmarkExtensions())
+				.build();
+		return parser.parse(text);
+	}
+
+	private Node toAstRoot() {
+		if (!addons.iterator().hasNext())
+			return astRoot; // no addons --> use AST from editor
+
+		if (astRoot2 == null)
+			astRoot2 = parseMarkdown(markdownText);
+		return astRoot2;
+	}
+
 	private String toHtml(boolean source) {
+		Node astRoot = toAstRoot();
+		if (astRoot == null)
+			return "";
+
 		HtmlRenderer.Builder builder = HtmlRenderer.builder()
 				.extensions(MarkdownExtensions.getFlexmarkExtensions());
 		if (!source)
 			builder.attributeProviderFactory(new MyAttributeProvider.Factory());
-		return builder.build().render(astRoot);
+		String html = builder.build().render(astRoot);
+
+        for (PreviewRendererAddon addon : addons)
+            html = addon.postRender(html, path);
+
+        return html;
 	}
 
 	private String printTree() {
+		Node astRoot = toAstRoot();
+		if (astRoot == null)
+			return "";
+
 		StringBuilder buf = new StringBuilder(100);
 		printNode(buf, "", astRoot);
 		return buf.toString().replace(Node.SPLICE, "...");
