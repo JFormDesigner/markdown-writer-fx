@@ -29,7 +29,9 @@ package org.markdownwriterfx.editor;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.ServiceLoader;
 import javafx.scene.input.KeyEvent;
+import org.markdownwriterfx.addons.SmartFormatAddon;
 import com.vladsch.flexmark.ast.DelimitedNode;
 import com.vladsch.flexmark.ast.HardLineBreak;
 import com.vladsch.flexmark.ast.ListItem;
@@ -39,6 +41,7 @@ import com.vladsch.flexmark.ast.Paragraph;
 import com.vladsch.flexmark.ast.SoftLineBreak;
 import com.vladsch.flexmark.ast.Text;
 import com.vladsch.flexmark.util.Pair;
+import static org.markdownwriterfx.addons.SmartFormatAddon.*;
 
 /**
  * Smart Markdown text formatting methods.
@@ -48,6 +51,8 @@ import com.vladsch.flexmark.util.Pair;
 class SmartFormat
 {
 	private static final int WRAP_LENGTH = 80;
+
+	private static final ServiceLoader<SmartFormatAddon> addons = ServiceLoader.load(SmartFormatAddon.class);
 
 	private final MarkdownEditorPane editor;
 	private final MarkdownTextArea textArea;
@@ -106,9 +111,20 @@ class SmartFormat
 		// collect the paragraph text
 		StringBuilder buf = new StringBuilder(paragraph.getTextLength());
 		collectFormattableText(buf, paragraph);
+		String text = buf.toString();
+
+		// let addons protect text
+		for (SmartFormatAddon addon : addons)
+			text = addon.protect(text);
 
 		// format the paragraph text
-		return formatText(buf.toString(), wrapLength, indent, firstindent);
+		text = formatText(text, wrapLength, indent, firstindent);
+
+		// let addons unprotect text
+		for (SmartFormatAddon hook : addons)
+			text = hook.unprotect(text);
+
+		return text;
 	}
 
 	/**
@@ -133,18 +149,19 @@ class SmartFormat
 	 */
 	private void collectFormattableText(StringBuilder buf, Node node) {
 		for (Node n = node.getFirstChild(); n != null; n = n.getNext()) {
-			if (n instanceof Text)
+			if (n instanceof Text) {
 				buf.append(n.getChars().toString().replace('\t', ' ').replace('\n', ' '));
-			else if (n instanceof DelimitedNode) {
+			} else if (n instanceof DelimitedNode) {
 				// italic, bold and code
 				buf.append(((DelimitedNode) n).getOpeningMarker());
 				collectFormattableText(buf, n);
 				buf.append(((DelimitedNode) n).getClosingMarker());
-			} else if (n instanceof SoftLineBreak)
+			} else if (n instanceof SoftLineBreak) {
 				buf.append(' ');
-			else if (n instanceof HardLineBreak)
-				buf.append(n.getChars().startsWith("\\") ? " \4 " : " \3 ");
-			else {
+			} else if (n instanceof HardLineBreak) {
+				buf.append(' ').append(n.getChars().startsWith("\\")
+					? HARD_LINE_BREAK_BACKSLASH : HARD_LINE_BREAK_SPACES).append(' ');
+			} else {
 				// other text that should be not wrapped or formatted
 				buf.append(protectWhitespace(n.getChars().toString()));
 			}
@@ -162,9 +179,9 @@ class SmartFormat
 		int lineLength = firstIndent;
 		boolean firstWord = true;
 		for (String word : words) {
-			if (word.equals("\3") || word.equals("\4")) {
+			if (word.startsWith(LINE_BREAK)) {
 				// hard line break ("two spaces" or "backslash")
-				buf.append(word.equals("\3") ? "  \n" : "\\\n");
+				buf.append(word.equals(HARD_LINE_BREAK_SPACES) ? "  \n" : "\\\n");
 				lineLength = 0;
 				firstWord = true;
 				continue;
@@ -198,10 +215,10 @@ class SmartFormat
 	}
 
 	private String protectWhitespace(String s) {
-		return s.replace(' ', '\1').replace('\t', '\2');
+		return s.replace(' ', PROTECTED_SPACE).replace('\t', PROTECTED_TAB);
 	}
 
 	private String unprotectWhitespace(String s) {
-		return s.replace('\1', ' ').replace('\2', '\t');
+		return s.replace(PROTECTED_SPACE, ' ').replace(PROTECTED_TAB, '\t');
 	}
 }
