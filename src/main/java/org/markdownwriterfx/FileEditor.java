@@ -100,6 +100,7 @@ class FileEditor
 				fileEditorTabPane.previewVisible.addListener(previewTypeListener);
 				fileEditorTabPane.htmlSourceVisible.addListener(previewTypeListener);
 				fileEditorTabPane.markdownAstVisible.addListener(previewTypeListener);
+				fileEditorTabPane.externalVisible.addListener(previewTypeListener);
 
 				mainWindow.stageFocusedProperty.addListener(stageFocusedListener);
 			} else {
@@ -107,6 +108,7 @@ class FileEditor
 				fileEditorTabPane.previewVisible.removeListener(previewTypeListener);
 				fileEditorTabPane.htmlSourceVisible.removeListener(previewTypeListener);
 				fileEditorTabPane.markdownAstVisible.removeListener(previewTypeListener);
+				fileEditorTabPane.externalVisible.removeListener(previewTypeListener);
 
 				mainWindow.stageFocusedProperty.removeListener(stageFocusedListener);
 			}
@@ -184,10 +186,12 @@ class FileEditor
 		MarkdownPreviewPane.Type previewType = Type.None;
 		if (fileEditorTabPane.previewVisible.get())
 			previewType = MarkdownPreviewPane.Type.Web;
-		if (fileEditorTabPane.htmlSourceVisible.get())
+		else if (fileEditorTabPane.htmlSourceVisible.get())
 			previewType = MarkdownPreviewPane.Type.Source;
-		if (fileEditorTabPane.markdownAstVisible.get())
+		else if (fileEditorTabPane.markdownAstVisible.get())
 			previewType = MarkdownPreviewPane.Type.Ast;
+		else if (fileEditorTabPane.externalVisible.get() && MarkdownPreviewPane.hasExternalPreview())
+		    previewType = MarkdownPreviewPane.Type.External;
 		return previewType;
 	}
 
