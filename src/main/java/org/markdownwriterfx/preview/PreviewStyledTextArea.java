@@ -53,7 +53,7 @@ class PreviewStyledTextArea
 		setEditable(false);
 		setFocusTraversable(false);
 		getStyleClass().add("padding");
-		setUndoManager(UndoManagerFactory.zeroHistoryFactory());
+		setUndoManager(UndoManagerFactory.zeroHistoryUndoManager(richChanges()));
 
 		updateFont();
 
@@ -79,9 +79,10 @@ class PreviewStyledTextArea
 			setStyleSpans(0, styleSpans);
 
 		// restore old selection range and scrollY
-		selectRange(oldSelection.getStart(), oldSelection.getEnd());
+		int newLength = getLength();
+		selectRange(Math.min(oldSelection.getStart(), newLength), Math.min(oldSelection.getEnd(), newLength));
 		Platform.runLater(() -> {
-			setEstimatedScrollY(oldScrollY);
+			estimatedScrollYProperty().setValue(oldScrollY);
 		});
 	}
 

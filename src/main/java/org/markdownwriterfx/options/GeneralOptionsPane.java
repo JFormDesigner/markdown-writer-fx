@@ -77,9 +77,9 @@ class GeneralOptionsPane
 		String defaultLineSeparator = System.getProperty( "line.separator", "\n" );
 		String defaultLineSeparatorStr = defaultLineSeparator.replace("\r", "CR").replace("\n", "LF");
 		lineSeparatorField.getItems().addAll(
-			new Item<String>( Messages.get("GeneralOptionsPane.platformDefault", defaultLineSeparatorStr), null ),
-			new Item<String>( Messages.get("GeneralOptionsPane.sepWindows"), "\r\n" ),
-			new Item<String>( Messages.get("GeneralOptionsPane.sepUnix"), "\n" ));
+			new Item<>(Messages.get("GeneralOptionsPane.platformDefault", defaultLineSeparatorStr), null),
+			new Item<>(Messages.get("GeneralOptionsPane.sepWindows"), "\r\n"),
+			new Item<>(Messages.get("GeneralOptionsPane.sepUnix"), "\n"));
 
 		// encoding
 		encodingField.getItems().addAll(getAvailableEncodings());
@@ -120,9 +120,9 @@ class GeneralOptionsPane
 		SortedMap<String, Charset> availableCharsets = Charset.availableCharsets();
 
 		ArrayList<Item<String>> values = new ArrayList<>(1 + availableCharsets.size());
-		values.add(new Item<String>(Messages.get("GeneralOptionsPane.platformDefault", Charset.defaultCharset().name()), null));
+		values.add(new Item<>(Messages.get("GeneralOptionsPane.platformDefault", Charset.defaultCharset().name()), null));
 		for (String name : availableCharsets.keySet())
-			values.add(new Item<String>(name, name));
+			values.add(new Item<>(name, name));
 		return values;
 	}
 
@@ -134,8 +134,8 @@ class GeneralOptionsPane
 		showWhitespaceCheckBox.setSelected(Options.isShowWhitespace());
 
 		// file settings
-		lineSeparatorField.setValue(new Item<String>(Options.getLineSeparator(), Options.getLineSeparator()));
-		encodingField.setValue(new Item<String>(Options.getEncoding(), Options.getEncoding()));
+		lineSeparatorField.setValue(new Item<>(Options.getLineSeparator(), Options.getLineSeparator()));
+		encodingField.setValue(new Item<>(Options.getEncoding(), Options.getEncoding()));
 		markdownFileExtensionsField.setText(Options.getMarkdownFileExtensions());
 	}
 

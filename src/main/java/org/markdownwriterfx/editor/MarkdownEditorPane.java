@@ -93,6 +93,7 @@ public class MarkdownEditorPane
 	public MarkdownEditorPane() {
 		textArea = new MarkdownTextArea();
 		textArea.setWrapText(true);
+		textArea.setUseInitialStyleForInsertion(true);
 		textArea.getStyleClass().add("markdown-editor");
 		textArea.getStylesheets().add("org/markdownwriterfx/editor/MarkdownEditor.css");
 		textArea.getStylesheets().add("org/markdownwriterfx/prism.css");
@@ -123,7 +124,7 @@ public class MarkdownEditorPane
 		textArea.totalHeightEstimateProperty().addListener(scrollYListener);
 
 		// create scroll pane
-		VirtualizedScrollPane<MarkdownTextArea> scrollPane = new VirtualizedScrollPane<MarkdownTextArea>(textArea);
+		VirtualizedScrollPane<MarkdownTextArea> scrollPane = new VirtualizedScrollPane<>(textArea);
 
 		// create border pane
 		borderPane = new BottomSlidePane(scrollPane);
@@ -184,7 +185,7 @@ public class MarkdownEditorPane
 		return borderPane;
 	}
 
-	public UndoManager getUndoManager() {
+	public UndoManager<?> getUndoManager() {
 		return textArea.getUndoManager();
 	}
 
@@ -228,9 +229,10 @@ public class MarkdownEditorPane
 		textArea.replaceText(markdown);
 
 		// restore old selection range and scrollY
-		textArea.selectRange(oldSelection.getStart(), oldSelection.getEnd());
+        int newLength = textArea.getLength();
+        textArea.selectRange(Math.min(oldSelection.getStart(), newLength), Math.min(oldSelection.getEnd(), newLength));
 		Platform.runLater(() -> {
-			textArea.setEstimatedScrollY(oldScrollY);
+			textArea.estimatedScrollYProperty().setValue(oldScrollY);
 		});
 	}
 	public ObservableValue<String> markdownProperty() { return textArea.textProperty(); }

@@ -41,6 +41,7 @@ import org.markdownwriterfx.Messages;
 import org.markdownwriterfx.controls.BrowseDirectoryButton;
 import org.markdownwriterfx.controls.BrowseFileButton;
 import org.markdownwriterfx.controls.EscapeTextField;
+import org.markdownwriterfx.util.Utils;
 import org.tbee.javafx.scene.layout.fxml.MigPane;
 
 /**
@@ -72,6 +73,8 @@ public class LinkDialog
 
 		dialogPane.lookupButton(ButtonType.OK).disableProperty().bind(
 				urlField.escapedTextProperty().isEmpty());
+
+		Utils.fixSpaceAfterDeadKey(dialogPane.getScene());
 
 		link.bind(Bindings.when(titleField.escapedTextProperty().isNotEmpty())
 				.then(Bindings.format("[%s](%s \"%s\")", textField.escapedTextProperty(), urlField.escapedTextProperty(), titleField.escapedTextProperty()))

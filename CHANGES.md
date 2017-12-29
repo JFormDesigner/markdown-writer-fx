@@ -1,6 +1,25 @@
 Markdown Writer FX Change Log
 =============================
 
+## 0.10
+
+- Editor improvements/fixes:
+  - fixed `Home` and `End` keys in wrapped lines
+  - improved undo/redo
+  - fixed selection painting of wrapped lines
+  - keep text selected after drag-and-drop
+  - fixed occasional inconsistent heights of empty lines
+- (experimental) Reformat all paragraphs with `Ctrl+Shift+F` wraps lines at 80 characters.
+- Updated [commonmark-java] and [flexmark-java] to [CommonMark] spec 0.28.
+- Fixed `IndexOutOfBoundsException` in editor when reloading externally changed text.
+- Fixed `IndexOutOfBoundsException` in HTML Source preview when deleting text in editor.
+
+
+## 0.9
+
+- Fixed "Space key after dead keys inserts a space character" (issue #20).
+
+
 ## 0.8
 
 - Open markdown files by dropping them to main window.

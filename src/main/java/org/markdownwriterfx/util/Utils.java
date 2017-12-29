@@ -31,10 +31,13 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javafx.css.PseudoClass;
+import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyEvent;
 
 /**
  * @author Karl Tauber
@@ -93,7 +96,7 @@ public class Utils
 	}
 
 	public static String[] getPrefsStrings(Preferences prefs, String key) {
-		ArrayList<String> arr = new ArrayList<String>();
+		ArrayList<String> arr = new ArrayList<>();
 		for (int i = 0; i < 10000; i++) {
 			String s = prefs.get(key + (i + 1), null);
 			if (s == null)
@@ -142,5 +145,26 @@ public class Utils
 
 	public static void error(TextField textField, boolean error) {
 		textField.pseudoClassStateChanged(PseudoClass.getPseudoClass("error"), error);
+	}
+
+	public static void fixSpaceAfterDeadKey(Scene scene) {
+		scene.addEventFilter( KeyEvent.KEY_TYPED, new EventHandler<KeyEvent>() {
+			private String lastCharacter;
+
+			@Override
+			public void handle(KeyEvent e) {
+				String character = e.getCharacter();
+				if(" ".equals(character) &&
+					("\u00B4".equals(lastCharacter) ||  // Acute accent
+					 "`".equals(lastCharacter) ||       // Grave accent
+					 "^".equals(lastCharacter)))        // Circumflex accent
+				{
+					// avoid that the space character is inserted
+					e.consume();
+				}
+
+				lastCharacter = character;
+			}
+		});
 	}
 }

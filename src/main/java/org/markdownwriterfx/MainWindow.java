@@ -41,6 +41,7 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonBase;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -68,8 +69,10 @@ import org.markdownwriterfx.options.MarkdownExtensionsPane;
 import org.markdownwriterfx.options.Options;
 import org.markdownwriterfx.options.Options.RendererType;
 import org.markdownwriterfx.options.OptionsDialog;
+import org.markdownwriterfx.preview.MarkdownPreviewPane;
 import org.markdownwriterfx.util.Action;
 import org.markdownwriterfx.util.ActionUtils;
+import org.markdownwriterfx.util.Utils;
 import static de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon.*;
 
 /**
@@ -112,6 +115,8 @@ class MainWindow
 				}
 			});
 		});
+
+		Utils.fixSpaceAfterDeadKey(scene);
 
 		// workaround for a bad JavaFX behavior: menu bar always grabs focus when ALT key is pressed,
 		// but should grab it when ALT key is releases (as all other UI toolkits do) to give other
@@ -198,6 +203,10 @@ class MainWindow
 				null, null, fileEditorTabPane.htmlSourceVisible);
 		Action viewMarkdownAstAction = new Action(Messages.get("MainWindow.viewMarkdownAstAction"), null, SITEMAP,
 				null, null, fileEditorTabPane.markdownAstVisible);
+		Action viewExternalAction = MarkdownPreviewPane.hasExternalPreview()
+			? new Action(Messages.get("MainWindow.viewExternalAction"), null, EXTERNAL_LINK,
+		        null, null, fileEditorTabPane.externalVisible)
+			: null;
 
 		// Insert actions
 		Action insertBoldAction = new Action(Messages.get("MainWindow.insertBoldAction"), "Shortcut+B", BOLD,
@@ -297,6 +306,8 @@ class MainWindow
 				viewPreviewAction,
 				viewHtmlSourceAction,
 				viewMarkdownAstAction);
+		if (viewExternalAction != null)
+			viewMenu.getItems().add(ActionUtils.createMenuItem(viewExternalAction));
 
 		Menu insertMenu = ActionUtils.createMenu(Messages.get("MainWindow.insertMenu"),
 				insertBoldAction,
@@ -395,6 +406,12 @@ class MainWindow
 		for (Node n : previewButtons)
 			((ToggleButton)n).setToggleGroup(viewGroup);
 		toolBar.getItems().addAll(previewButtons);
+
+		if (viewExternalAction != null) {
+			ButtonBase externalPreviewButton = ActionUtils.createToolBarButton(viewExternalAction);
+			((ToggleButton)externalPreviewButton).setToggleGroup(viewGroup);
+			toolBar.getItems().add(externalPreviewButton);
+		}
 
 		return new VBox(menuBar, toolBar);
 	}

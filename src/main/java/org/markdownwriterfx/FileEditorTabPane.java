@@ -73,6 +73,7 @@ class FileEditorTabPane
 	final PrefsBooleanProperty previewVisible = new PrefsBooleanProperty(true);
 	final PrefsBooleanProperty htmlSourceVisible = new PrefsBooleanProperty();
 	final PrefsBooleanProperty markdownAstVisible = new PrefsBooleanProperty();
+	final PrefsBooleanProperty externalVisible = new PrefsBooleanProperty();
 
 	FileEditorTabPane(MainWindow mainWindow) {
 		this.mainWindow = mainWindow;
@@ -353,6 +354,7 @@ class FileEditorTabPane
 		previewVisible.init(state, "previewVisible", true);
 		htmlSourceVisible.init(state, "htmlSourceVisible", false);
 		markdownAstVisible.init(state, "markdownAstVisible", false);
+		externalVisible.init(state, "externalVisible", false);
 
 		String[] fileNames = Utils.getPrefsStrings(state, "file");
 		String activeFileName = state.get("activeFile", null);

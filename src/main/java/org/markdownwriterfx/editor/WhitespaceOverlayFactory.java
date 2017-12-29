@@ -36,7 +36,6 @@ import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.text.Text;
 import org.fxmisc.richtext.model.Paragraph;
-import org.fxmisc.richtext.model.StyledText;
 import org.markdownwriterfx.editor.ParagraphOverlayGraphicFactory.OverlayFactory;
 import org.markdownwriterfx.util.Range;
 
@@ -54,30 +53,25 @@ class WhitespaceOverlayFactory
 
 	@Override
 	public List<Node> createOverlayNodes(int paragraphIndex) {
-		Paragraph<Collection<String>, StyledText<Collection<String>>, Collection<String>> par = getTextArea().getParagraph(paragraphIndex);
+		Paragraph<Collection<String>, String, Collection<String>> par = getTextArea().getParagraph(paragraphIndex);
 
 		ArrayList<Node> nodes = new ArrayList<>();
-		int segmentStart = 0;
-		for(StyledText<Collection<String>> segment : par.getSegments()) {
-			String text = segment.getText();
-			int textLength = text.length();
-			for (int i = 0; i < textLength; i++) {
-				char ch = text.charAt(i);
-				if (ch != ' ' && ch != '\t')
-					continue;
+		String text = par.getText();
+		int textLength = text.length();
+		for (int i = 0; i < textLength; i++) {
+			char ch = text.charAt(i);
+			if (ch != ' ' && ch != '\t')
+				continue;
 
-				nodes.add(createTextNode(
-						(ch == ' ') ? SPACE : TAB,
-						segment.getStyle(),
-						segmentStart + i, segmentStart + i + 1));
-			}
-
-			segmentStart += textLength;
+			nodes.add(createTextNode(
+					(ch == ' ') ? SPACE : TAB,
+					par.getStyleOfChar(i),
+					i, i + 1));
 		}
 
 		nodes.add(createTextNode(EOL,
-				par.getStyleAtPosition(segmentStart),
-				segmentStart - 1, segmentStart));
+				par.getStyleAtPosition(textLength),
+				textLength - 1, textLength));
 
 		return nodes;
 	}

@@ -48,12 +48,13 @@ import com.vladsch.flexmark.ast.Node;
  */
 public class MarkdownPreviewPane
 {
-	public enum Type { None, Web, Source, Ast };
+	public enum Type { None, Web, Source, Ast, External };
 
 	private final BorderPane pane = new BorderPane();
 	private final WebViewPreview webViewPreview = new WebViewPreview();
 	private final HtmlSourcePreview htmlSourcePreview = new HtmlSourcePreview();
 	private final ASTPreview astPreview = new ASTPreview();
+	private final ExternalPreview externalPreview = new ExternalPreview();
 	private final PreviewContext previewContext;
 
 	private RendererType activeRendererType;
@@ -61,7 +62,7 @@ public class MarkdownPreviewPane
 	private Preview activePreview;
 
 	interface Renderer {
-		void update(String markdownText, Node astRoot);
+		void update(String markdownText, Node astRoot, Path path);
 		String getHtml(boolean source);
 		String getAST();
 		List<Range> findSequences(int startOffset, int endOffset);
@@ -100,6 +101,10 @@ public class MarkdownPreviewPane
 		editorSelection.addListener((observable, oldValue, newValue) -> editorSelectionChanged());
 	}
 
+	public static boolean hasExternalPreview() {
+		return ExternalPreview.hasExternalPreview();
+	}
+
 	public javafx.scene.Node getNode() {
 		return pane;
 	}
@@ -125,6 +130,7 @@ public class MarkdownPreviewPane
 			case Web:		preview = webViewPreview; break;
 			case Source:	preview = htmlSourcePreview; break;
 			case Ast:		preview = astPreview; break;
+			case External:	preview = externalPreview; break;
 			default:		preview = null; break;
 		}
 		if (activePreview == preview)
@@ -150,7 +156,7 @@ public class MarkdownPreviewPane
 		Platform.runLater(() -> {
 			updateRunLaterPending = false;
 
-			activeRenderer.update(markdownText.get(), markdownAST.get());
+			activeRenderer.update(markdownText.get(), markdownAST.get(), path.get());
 			activePreview.update(previewContext, activeRenderer);
 		});
 	}

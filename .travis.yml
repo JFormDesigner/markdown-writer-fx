@@ -1,15 +1,26 @@
 language: java
 
-jdk:
-- oraclejdk8
+before_cache:
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
 
-# enable Java 8u45+, see https://github.com/travis-ci/travis-ci/issues/4042
-addons:
-  apt:
-    packages:
-      - oracle-java8-installer
-os:
-  - linux
+before_install:
+  - gradle --version
+  - java -version
 
-# run in container
-sudo: false
+matrix:
+  include:
+    - dist: trusty
+      group: edge
+      jdk: oraclejdk8
+      sudo: false
+      addons:
+        apt:
+          packages:
+            - oracle-java8-installer
+
+

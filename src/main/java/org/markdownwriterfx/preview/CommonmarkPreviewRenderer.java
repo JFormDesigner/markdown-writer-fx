@@ -27,9 +27,11 @@
 
 package org.markdownwriterfx.preview;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 import org.commonmark.node.AbstractVisitor;
 import org.commonmark.node.Code;
 import org.commonmark.node.FencedCodeBlock;
@@ -47,6 +49,7 @@ import org.commonmark.renderer.html.AttributeProvider;
 import org.commonmark.renderer.html.AttributeProviderContext;
 import org.commonmark.renderer.html.AttributeProviderFactory;
 import org.commonmark.renderer.html.HtmlRenderer;
+import org.markdownwriterfx.addons.PreviewRendererAddon;
 import org.markdownwriterfx.options.MarkdownExtensions;
 import org.markdownwriterfx.util.CommonmarkSourcePositions;
 import org.markdownwriterfx.util.Range;
@@ -59,8 +62,11 @@ import org.markdownwriterfx.util.Range;
 class CommonmarkPreviewRenderer
 	implements MarkdownPreviewPane.Renderer
 {
+	private static final ServiceLoader<PreviewRendererAddon> addons = ServiceLoader.load(PreviewRendererAddon.class);
+
 	private String markdownText;
 	private com.vladsch.flexmark.ast.Node flexAstRoot;
+	private Path path;
 	private Node astRoot;
 	private CommonmarkSourcePositions sourcePositions;
 	private String htmlPreview;
@@ -68,7 +74,7 @@ class CommonmarkPreviewRenderer
 	private String ast;
 
 	@Override
-	public void update(String markdownText, com.vladsch.flexmark.ast.Node astRoot) {
+	public void update(String markdownText, com.vladsch.flexmark.ast.Node astRoot, Path path) {
 		assert markdownText != null;
 		assert astRoot != null;
 
@@ -77,6 +83,7 @@ class CommonmarkPreviewRenderer
 
 		this.markdownText = markdownText;
 		this.flexAstRoot = astRoot;
+		this.path = path;
 
 		this.astRoot = null;
 		sourcePositions = null;
@@ -134,6 +141,9 @@ class CommonmarkPreviewRenderer
 	}
 
 	private Node parseMarkdown(String text) {
+	    for (PreviewRendererAddon addon : addons)
+            text = addon.preParse(text, path);
+
 		Parser parser = Parser.builder()
 				.extensions(MarkdownExtensions.getCommonmarkExtensions())
 				.build();
@@ -161,7 +171,12 @@ class CommonmarkPreviewRenderer
 				.extensions(MarkdownExtensions.getCommonmarkExtensions());
 		if (!source)
 			builder.attributeProviderFactory(new MyAttributeProvider());
-		return builder.build().render(astRoot);
+		String html = builder.build().render(astRoot);
+
+        for (PreviewRendererAddon addon : addons)
+            html = addon.postRender(html, path);
+
+        return html;
 	}
 
 	private String printTree() {
