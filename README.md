@@ -45,13 +45,21 @@ Download
 [markdown-writer-fx-0.10.zip](https://github.com/JFormDesigner/markdown-writer-fx/releases/download/0.10/markdown-writer-fx-0.10.zip)
 and extract it to any folder.
 
-Double-click `markdown-writer-fx.jar` to start *Markdown Writer FX*.
+Run: 
+ - for Windows, ```bin/markdown-writer-fx.bat``` to start *Markdown Writer FX*
+ - and for Unix systems ```./bin/markdown-writer-fx.sh``` to start *Markdown Writer FX*
 
-If this does not work, try following command in a terminal window:
+from the project folder.
 
+Building
+-------
+Prerequisites are Java 8 and Gradle >= 3.5 in order to build *Markdown Writer FX* form sources.
+ - get the source, e.g. by cloning the official repo with: 
+ ```bash
+ git clone https://github.com/JFormDesigner/markdown-writer-fx.git
 ```
-java -jar markdown-writer-fx.jar
-```
+ - run ```gradle assembleDist``` to create the distribution in the ```$project/build/distributions/``` folder.  
+
 
 Changes
 -------
