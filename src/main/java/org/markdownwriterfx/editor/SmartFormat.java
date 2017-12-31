@@ -205,7 +205,7 @@ class SmartFormat
 			if (!firstWord &&
 				lineLength > indent &&
 				lineLength + 1 + word.length() > wrapLength &&
-				!word.startsWith(">")) // avoid wrapping before '<' because this would create a blockquote
+				!word.startsWith(">")) // avoid wrapping before '>' because this would create a blockquote
 			{
 				// wrap
 				buf.append('\n');
