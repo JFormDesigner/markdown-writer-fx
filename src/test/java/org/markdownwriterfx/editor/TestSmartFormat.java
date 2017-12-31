@@ -28,8 +28,11 @@
 package org.markdownwriterfx.editor;
 
 import static org.junit.Assert.*;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
-
 import org.junit.Test;
 import com.vladsch.flexmark.ast.Document;
 import com.vladsch.flexmark.ast.Paragraph;
@@ -93,6 +96,14 @@ public class TestSmartFormat
 	}
 
 	private void testFormat(int wrapLength, String input, String expected) {
+		// format
+		String actual = format(input, wrapLength);
+
+		// check
+		assertEquals(expected, actual);
+	}
+
+	private static String format(String input, int wrapLength) {
 		// parse markdown
 		Document document = Parser.builder().build().parse(input);
 
@@ -101,7 +112,7 @@ public class TestSmartFormat
 			.formatParagraphs(document, wrapLength);
 
 		// build result
-		StringBuilder actual = new StringBuilder(input);
+		StringBuilder output = new StringBuilder(input);
 		for (int i = formattedParagraphs.size() - 1; i >= 0; i--) {
 			Pair<Paragraph, String> pair = formattedParagraphs.get(i);
 			Paragraph paragraph = pair.getFirst();
@@ -112,10 +123,24 @@ public class TestSmartFormat
 			if (paragraph.getChars().endsWith("\n"))
 				endOffset--;
 
-			actual.replace(startOffset, endOffset, newText);
+			output.replace(startOffset, endOffset, newText);
 		}
+		return output.toString();
+	}
 
-		// check
-		assertEquals(expected, actual.toString());
+	public static void main(String[] args) throws IOException {
+		Path dir = new File(args[0]).toPath();
+		Files.walk(dir)
+			.filter(path -> path.toString().endsWith(".txt"))
+			.forEach(path -> {
+				try {
+					System.out.println(path);
+					String input = new String(Files.readAllBytes(path), "UTF-8");
+					String output = format(input, 80);
+					Files.write(path, output.getBytes("UTF-8"));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			});
 	}
 }
