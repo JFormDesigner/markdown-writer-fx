@@ -205,7 +205,7 @@ class SmartFormat
 			if (!firstWord &&
 				lineLength > indent &&
 				lineLength + 1 + word.length() > wrapLength &&
-				!word.startsWith(">")) // avoid wrapping before '>' because this would create a blockquote
+				allowWrapBeforeWord(word))
 			{
 				// wrap
 				buf.append('\n');
@@ -241,6 +241,22 @@ class SmartFormat
 		}
 
 		return unprotectWhitespace(buf.toString());
+	}
+
+	private boolean allowWrapBeforeWord(String word) {
+		// avoid wrapping before '>' because this would create a blockquote
+		if (word.startsWith(">"))
+			return false;
+
+		// avoid wrapping before list markers
+		if (word.equals("-") || word.equals("+") || word.equals("*"))
+			return false;
+
+		// avoid wrapping before numbered list markers
+		if (Character.isDigit(word.charAt(0)) && word.matches("[0-9]+\\."))
+			return false;
+
+		return true;
 	}
 
 	private String protectWhitespace(String s) {
