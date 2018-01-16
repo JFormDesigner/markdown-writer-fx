@@ -5,6 +5,7 @@ Markdown Writer FX Change Log
 
 - Reformat fixes:
   - Avoid wrapping before blockquote and list markers.
+  - Wrapping of block quotes.
 
 
 ## 0.10
