@@ -461,7 +461,7 @@ public class SmartEdit
 
 		// Note: using single textArea.replaceText() to avoid multiple changes in undo history
 		replaceText(textArea, beforeStart, selEnd, selText + beforeText);
-		selectRange(textArea, beforeStart, beforeStart + selText.length() - 1);
+		selectRange(textArea, beforeStart, beforeStart + selText.length());
 	}
 
 	private void moveLinesDown(KeyEvent e) {
@@ -471,7 +471,7 @@ public class SmartEdit
 		if (selEnd == textArea.getLength())
 			return;
 
-		int after = offsetToLine(selEnd + 1);
+		int after = offsetToLine(selEnd);
 		IndexRange afterRange = linesToRange(after, after, true);
 		int afterStart = afterRange.getStart();
 		int afterEnd = afterRange.getEnd();
@@ -489,8 +489,6 @@ public class SmartEdit
 
 		int newSelStart = selStart + afterText.length();
 		int newSelEnd = newSelStart + selText.length();
-		if (selText.endsWith("\n"))
-			newSelEnd--;
 		selectRange(textArea, newSelStart, newSelEnd);
 	}
 

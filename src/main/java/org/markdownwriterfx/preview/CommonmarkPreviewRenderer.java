@@ -141,9 +141,6 @@ class CommonmarkPreviewRenderer
 	}
 
 	private Node parseMarkdown(String text) {
-	    for (PreviewRendererAddon addon : addons)
-            text = addon.preParse(text, path);
-
 		Parser parser = Parser.builder()
 				.extensions(MarkdownExtensions.getCommonmarkExtensions())
 				.build();
@@ -163,7 +160,19 @@ class CommonmarkPreviewRenderer
 	}
 
 	private String toHtml(boolean source) {
-		Node astRoot = toAstRoot();
+		Node astRoot;
+		if (addons.iterator().hasNext()) {
+			String text = markdownText;
+
+		    for (PreviewRendererAddon addon : addons)
+	            text = addon.preParse(text, path);
+
+		    astRoot = parseMarkdown(text);
+		} else {
+			// no addons --> use cached AST
+			astRoot = toAstRoot();
+		}
+
 		if (astRoot == null)
 			return "";
 

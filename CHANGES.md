@@ -1,6 +1,14 @@
 Markdown Writer FX Change Log
 =============================
 
+## Unreleased
+
+- Move selected lines down (with `Alt+Down`) no longer eats empty lines.
+- Reformat fixes:
+  - Avoid wrapping before blockquote and list markers.
+  - Wrapping of block quotes.
+
+
 ## 0.10
 
 - Editor improvements/fixes:

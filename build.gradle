@@ -8,15 +8,15 @@ repositories {
 }
 
 dependencies {
-	compile 'org.fxmisc.richtext:richtextfx:0.8.1'
+	compile 'org.fxmisc.richtext:richtextfx:0.8.2'
 	compile 'com.miglayout:miglayout-javafx:5.0'
 	compile 'de.jensd:fontawesomefx-fontawesome:4.7.0-5'
 	compile 'org.controlsfx:controlsfx:8.40.14'
 	compile 'org.fxmisc.cssfx:cssfx:1.0.0'
-	compile 'org.apache.commons:commons-lang3:3.5'
+	compile 'org.apache.commons:commons-lang3:3.7'
 	compile 'org.languagetool:language-en:4.0'
 
-	def flexmarkVersion = '0.28.24'
+	def flexmarkVersion = '0.30.0'
 	compile 'com.vladsch.flexmark:flexmark:' + flexmarkVersion
 	compile 'com.vladsch.flexmark:flexmark-ext-abbreviation:' + flexmarkVersion
 	compile 'com.vladsch.flexmark:flexmark-ext-anchorlink:' + flexmarkVersion
@@ -31,7 +31,7 @@ dependencies {
 	compile 'com.vladsch.flexmark:flexmark-ext-wikilink:' + flexmarkVersion
 	compile 'com.vladsch.flexmark:flexmark-ext-yaml-front-matter:' + flexmarkVersion
 
-	def commonmarkVersion = '0.10.0'
+	def commonmarkVersion = '0.11.0'
 	compile 'com.atlassian.commonmark:commonmark:' + commonmarkVersion
 	compile 'com.atlassian.commonmark:commonmark-ext-autolink:' + commonmarkVersion
 	compile 'com.atlassian.commonmark:commonmark-ext-gfm-strikethrough:' + commonmarkVersion

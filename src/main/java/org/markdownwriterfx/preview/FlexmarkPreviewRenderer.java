@@ -42,7 +42,7 @@ import com.vladsch.flexmark.html.AttributeProvider;
 import com.vladsch.flexmark.html.HtmlRenderer;
 import com.vladsch.flexmark.html.IndependentAttributeProviderFactory;
 import com.vladsch.flexmark.html.renderer.AttributablePart;
-import com.vladsch.flexmark.html.renderer.NodeRendererContext;
+import com.vladsch.flexmark.html.renderer.LinkResolverContext;
 import com.vladsch.flexmark.parser.Parser;
 import com.vladsch.flexmark.util.html.Attributes;
 import com.vladsch.flexmark.util.sequence.BasedSequence;
@@ -138,9 +138,6 @@ class FlexmarkPreviewRenderer
 	}
 
 	private Node parseMarkdown(String text) {
-	    for (PreviewRendererAddon addon : addons)
-            text = addon.preParse(text, path);
-
 		Parser parser = Parser.builder()
 				.extensions(MarkdownExtensions.getFlexmarkExtensions())
 				.build();
@@ -157,7 +154,19 @@ class FlexmarkPreviewRenderer
 	}
 
 	private String toHtml(boolean source) {
-		Node astRoot = toAstRoot();
+		Node astRoot;
+		if (addons.iterator().hasNext()) {
+			String text = markdownText;
+
+		    for (PreviewRendererAddon addon : addons)
+	            text = addon.preParse(text, path);
+
+		    astRoot = parseMarkdown(text);
+		} else {
+			// no addons --> use cached AST
+			astRoot = toAstRoot();
+		}
+
 		if (astRoot == null)
 			return "";
 
@@ -212,7 +221,7 @@ class FlexmarkPreviewRenderer
 			extends IndependentAttributeProviderFactory
 		{
 			@Override
-			public AttributeProvider create(NodeRendererContext context) {
+			public AttributeProvider create(LinkResolverContext context) {
 				return new MyAttributeProvider();
 			}
 		}

@@ -28,11 +28,14 @@
 package org.markdownwriterfx.editor;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.ServiceLoader;
 import javafx.scene.input.KeyEvent;
 import org.markdownwriterfx.addons.SmartFormatAddon;
+import com.vladsch.flexmark.ast.Block;
+import com.vladsch.flexmark.ast.BlockQuote;
 import com.vladsch.flexmark.ast.DelimitedNode;
 import com.vladsch.flexmark.ast.HardLineBreak;
 import com.vladsch.flexmark.ast.ListItem;
@@ -111,8 +114,15 @@ class SmartFormat
 	}
 
 	private String formatParagraph(Paragraph paragraph, int wrapLength) {
-		int firstindent = paragraphIndent(paragraph);
-		int indent = paragraph.getParent() instanceof ListItem ? firstindent : 0;
+		String firstindent = paragraphIndent(paragraph);
+		String indent = "";
+		Block block = paragraph.getParent();
+		if (block instanceof ListItem) {
+			char[] chars = new char[firstindent.length()];
+			Arrays.fill(chars, ' ');
+			indent = new String(chars);
+		} else if (block instanceof BlockQuote)
+			indent = firstindent;
 
 		// collect the paragraph text
 		StringBuilder buf = new StringBuilder(paragraph.getTextLength());
@@ -124,7 +134,7 @@ class SmartFormat
 			text = addon.protect(text);
 
 		// format the paragraph text
-		text = formatText(text, wrapLength, indent, firstindent);
+		text = formatText(text, wrapLength, indent, firstindent.length());
 
 		// let addons unprotect text
 		for (SmartFormatAddon hook : addons)
@@ -134,13 +144,15 @@ class SmartFormat
 	}
 
 	/**
-	 * Returns the indent of the paragraph, which is the number of characters between
+	 * Returns the indent of the paragraph, which is the characters between
 	 * the start of the line and the first character of the paragraph.
 	 */
-	private int paragraphIndent(Paragraph paragraph) {
+	private String paragraphIndent(Paragraph paragraph) {
 		int paraStartOffset = paragraph.getStartOffset();
 		int paraLineStartOffset = paragraph.getDocument().getChars().startOfLine(paraStartOffset);
-		return paraStartOffset - paraLineStartOffset;
+		return (paraStartOffset > paraLineStartOffset)
+			? paragraph.getDocument().getChars().subSequence(paraLineStartOffset, paraStartOffset).toString()
+			: "";
 	}
 
 	/**
@@ -178,7 +190,7 @@ class SmartFormat
 	 * Formats the given text by merging multiple spaces into one space
 	 * and wrapping lines.
 	 */
-	private String formatText(String text, int wrapLength, int indent, int firstIndent) {
+	private String formatText(String text, int wrapLength, String indent, int firstIndent) {
 		String[] words = text.split(" +");
 
 		StringBuilder buf = new StringBuilder(text.length());
@@ -202,12 +214,16 @@ class SmartFormat
 				continue;
 			}
 
-			if (!firstWord && lineLength > indent && lineLength + 1 + word.length() > wrapLength) {
+			if (!firstWord &&
+				lineLength > indent.length() &&
+				lineLength + 1 + word.length() > wrapLength &&
+				allowWrapBeforeWord(word))
+			{
 				// wrap
 				buf.append('\n');
 				lineLength = 0;
 				firstWord = true;
-			} else if (!firstWord && lineLength > indent) {
+			} else if (!firstWord && lineLength > indent.length()) {
 				// add space before word
 				buf.append(' ');
 				lineLength++;
@@ -215,18 +231,19 @@ class SmartFormat
 
 			// indent
 			if (lineLength == 0) {
-				int indentSize = indent;
+				int indentSize = 0;
 
 				if (specialIndent > 0) {
 					if (!specialFirstLine)
 						indentSize += specialIndent;
-					else if (indent == 0)
+					else if (indent.length() == 0)
 						indentSize += firstIndent;
 				}
 
+				buf.append(indent);
 				for (int i = 0; i < indentSize; i++)
 					buf.append(' ');
-				lineLength += indentSize;
+				lineLength += indent.length() + indentSize;
 			}
 
 			// add word
@@ -237,6 +254,22 @@ class SmartFormat
 		}
 
 		return unprotectWhitespace(buf.toString());
+	}
+
+	private boolean allowWrapBeforeWord(String word) {
+		// avoid wrapping before '>' because this would create a blockquote
+		if (word.startsWith(">"))
+			return false;
+
+		// avoid wrapping before list markers
+		if (word.equals("-") || word.equals("+") || word.equals("*"))
+			return false;
+
+		// avoid wrapping before numbered list markers
+		if (Character.isDigit(word.charAt(0)) && word.matches("[0-9]+\\."))
+			return false;
+
+		return true;
 	}
 
 	private String protectWhitespace(String s) {
