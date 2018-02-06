@@ -53,6 +53,7 @@ import org.languagetool.language.AmericanEnglish;
 import org.languagetool.markup.AnnotatedText;
 import org.languagetool.markup.AnnotatedTextBuilder;
 import org.languagetool.rules.RuleMatch;
+import org.markdownwriterfx.Messages;
 import org.markdownwriterfx.editor.MarkdownEditorPane;
 import org.markdownwriterfx.editor.ParagraphOverlayGraphicFactory;
 import org.markdownwriterfx.options.Options;
@@ -291,13 +292,21 @@ public class SpellChecker
 			problemItem.setUserData(CONTEXT_SPELL_PROBLEM_ITEM);
 			newItems.add(problemItem);
 
-			for (String suggestedReplacement : problem.getSuggestedReplacements()) {
-				MenuItem item = new MenuItem(suggestedReplacement);
-				item.getStyleClass().add("spell-menu-suggestion");
+			List<String> suggestedReplacements = problem.getSuggestedReplacements();
+			if (!suggestedReplacements.isEmpty()) {
+				for (String suggestedReplacement : suggestedReplacements) {
+					MenuItem item = new MenuItem(suggestedReplacement);
+					item.getStyleClass().add("spell-menu-suggestion");
+					item.setUserData(CONTEXT_SPELL_PROBLEM_ITEM);
+					item.setOnAction(e -> {
+						textArea.replaceText(problem.getFromPos(), problem.getToPos(), suggestedReplacement);
+					});
+					newItems.add(item);
+				}
+			} else {
+				MenuItem item = new MenuItem(Messages.get("SpellChecker.noSuggestionsAvailable"));
 				item.setUserData(CONTEXT_SPELL_PROBLEM_ITEM);
-				item.setOnAction(e -> {
-					textArea.replaceText(problem.getFromPos(), problem.getToPos(), suggestedReplacement);
-				});
+				item.setDisable(true);
 				newItems.add(item);
 			}
 		}
