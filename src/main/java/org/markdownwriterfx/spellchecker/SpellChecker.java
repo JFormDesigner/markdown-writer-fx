@@ -137,7 +137,8 @@ public class SpellChecker
 			spellCheckerOverlayFactory = new SpellCheckerOverlayFactory(() -> spellProblems);
 			overlayGraphicFactory.addOverlayFactory(spellCheckerOverlayFactory);
 
-			//TODO check current text
+			reCheckAsync();
+
 		} else if (!spellChecker && spellCheckerOverlayFactory != null) {
 			textChangesSubscribtion.unsubscribe();
 			textChangesSubscribtion = null;
@@ -146,6 +147,7 @@ public class SpellChecker
 			spellCheckerOverlayFactory = null;
 
 			languageTool = null;
+			spellProblems = null;
 
 			if (executor != null) {
 				executor.shutdown();
@@ -301,6 +303,9 @@ public class SpellChecker
 
 		// remove old menu items
 		menuItems.removeAll(menuItems.filtered(menuItem -> CONTEXT_SPELL_PROBLEM_ITEM.equals(menuItem.getUserData())));
+
+		if( languageTool == null )
+			return;
 
 		// find problems
 		List<SpellProblem> problems = findProblemsAt(characterIndex);
