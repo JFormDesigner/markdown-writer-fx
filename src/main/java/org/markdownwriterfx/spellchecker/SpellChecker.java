@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -53,6 +54,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.richtext.model.PlainTextChange;
 import org.languagetool.JLanguageTool;
+import org.languagetool.Language;
+import org.languagetool.ResultCache;
 import org.languagetool.language.AmericanEnglish;
 import org.languagetool.markup.AnnotatedText;
 import org.languagetool.markup.AnnotatedTextBuilder;
@@ -211,7 +214,9 @@ public class SpellChecker
 
 	private List<SpellBlockProblems> check(Node astRoot) throws IOException {
 		if (languageTool == null) {
-			languageTool = new JLanguageTool(new AmericanEnglish());
+			Language language = new AmericanEnglish();
+			ResultCache cache = new ResultCache(10000, 1, TimeUnit.DAYS);
+			languageTool = new JLanguageTool(language, null, cache);
 			addIgnoreTokens(Arrays.asList(wordsToBeIgnored.toArray(new String[wordsToBeIgnored.size()])));
 		}
 		languageTool.disableRule("WHITESPACE_RULE");
