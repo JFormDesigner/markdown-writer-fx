@@ -55,7 +55,6 @@ import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.richtext.model.PlainTextChange;
 import org.languagetool.JLanguageTool;
 import org.languagetool.Language;
-import org.languagetool.ResultCache;
 import org.languagetool.language.AmericanEnglish;
 import org.languagetool.markup.AnnotatedText;
 import org.languagetool.markup.AnnotatedTextBuilder;
@@ -100,6 +99,9 @@ public class SpellChecker
 
 	// global JLanguageTool used in executor
 	private static JLanguageTool languageTool;
+
+	// global ResultCache used by global JLanguageTool
+	private static ResultCacheEx cache;
 
 	// global ignored words (keeps ignored words when switching spell checking off and on)
 	private static Set<String> wordsToBeIgnored = new HashSet<>();
@@ -157,6 +159,7 @@ public class SpellChecker
 			spellCheckerOverlayFactory = null;
 
 			languageTool = null;
+			cache = null;
 			spellProblems = null;
 
 			if (executor != null) {
@@ -215,7 +218,7 @@ public class SpellChecker
 	private List<SpellBlockProblems> check(Node astRoot) throws IOException {
 		if (languageTool == null) {
 			Language language = new AmericanEnglish();
-			ResultCache cache = new ResultCache(10000, 1, TimeUnit.DAYS);
+			cache = new ResultCacheEx(10000, 1, TimeUnit.DAYS);
 			languageTool = new JLanguageTool(language, null, cache);
 			languageTool.disableRule("WHITESPACE_RULE");
 			addIgnoreTokens(Arrays.asList(wordsToBeIgnored.toArray(new String[wordsToBeIgnored.size()])));
@@ -414,6 +417,7 @@ public class SpellChecker
 
 	private void ignoreWord(String word) {
 		wordsToBeIgnored.add(word);
+		cache.invalidateAll();
 		addIgnoreTokens(Collections.singletonList(word));
 		reCheckAsync();
 	}
