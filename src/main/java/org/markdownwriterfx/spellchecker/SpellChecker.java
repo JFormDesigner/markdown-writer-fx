@@ -52,7 +52,9 @@ import org.languagetool.JLanguageTool;
 import org.languagetool.language.AmericanEnglish;
 import org.languagetool.markup.AnnotatedText;
 import org.languagetool.markup.AnnotatedTextBuilder;
+import org.languagetool.rules.Rule;
 import org.languagetool.rules.RuleMatch;
+import org.languagetool.rules.spelling.SpellingCheckRule;
 import org.markdownwriterfx.Messages;
 import org.markdownwriterfx.editor.MarkdownEditorPane;
 import org.markdownwriterfx.editor.ParagraphOverlayGraphicFactory;
@@ -124,7 +126,7 @@ public class SpellChecker
 				});
 			}
 
-	        EventStream<PlainTextChange> textChanges = textArea.plainTextChanges();
+			EventStream<PlainTextChange> textChanges = textArea.plainTextChanges();
 			textChangesSubscribtion = textChanges
 				.hook(this::updateSpellRangeOffsets)
 				.successionEnds(Duration.ofMillis(500))
@@ -132,7 +134,7 @@ public class SpellChecker
 				.awaitLatest(textChanges)
 				.subscribe(this::checkFinished);
 
-	        spellCheckerOverlayFactory = new SpellCheckerOverlayFactory(() -> spellProblems);
+			spellCheckerOverlayFactory = new SpellCheckerOverlayFactory(() -> spellProblems);
 			overlayGraphicFactory.addOverlayFactory(spellCheckerOverlayFactory);
 
 			//TODO check current text
@@ -153,16 +155,37 @@ public class SpellChecker
 	}
 
 	private Task<List<SpellBlockProblems>> checkAsync() {
-        Node astRoot = editor.getMarkdownAST();
-        Task<List<SpellBlockProblems>> task = new Task<List<SpellBlockProblems>>() {
-            @Override
-            protected List<SpellBlockProblems> call() throws Exception {
-                return check(astRoot);
-            }
-        };
-        executor.execute(task);
-        return task;
-    }
+		Node astRoot = editor.getMarkdownAST();
+
+		Task<List<SpellBlockProblems>> task = new Task<List<SpellBlockProblems>>() {
+			@Override
+			protected List<SpellBlockProblems> call() throws Exception {
+				return check(astRoot);
+			}
+		};
+		executor.execute(task);
+		return task;
+	}
+
+	private void reCheckAsync() {
+		Node astRoot = editor.getMarkdownAST();
+
+		Task<List<SpellBlockProblems>> task = new Task<List<SpellBlockProblems>>() {
+			@Override
+			protected List<SpellBlockProblems> call() throws Exception {
+				return check(astRoot);
+			}
+			@Override
+			protected void succeeded() {
+				checkFinished(Try.success(getValue()));
+			}
+			@Override
+			protected void failed() {
+				checkFinished(Try.failure(getException()));
+			}
+		};
+		executor.execute(task);
+	}
 
 	private void checkFinished(Try<List<SpellBlockProblems>> result) {
 		if (overlayGraphicFactory == null)
@@ -309,6 +332,21 @@ public class SpellChecker
 				item.setDisable(true);
 				newItems.add(item);
 			}
+
+			String word = textArea.getText(problem.getFromPos(), problem.getToPos());
+			if (problem.isTypo() && !word.contains(" ")) {
+				SeparatorMenuItem separator = new SeparatorMenuItem();
+				separator.setUserData(CONTEXT_SPELL_PROBLEM_ITEM);
+				newItems.add(separator);
+
+				MenuItem ignoreItem = new MenuItem(Messages.get("SpellChecker.ignoreWord"));
+				ignoreItem.setUserData(CONTEXT_SPELL_PROBLEM_ITEM);
+				ignoreItem.setOnAction(e -> {
+					ignoreWord(word);
+					reCheckAsync();
+				});
+				newItems.add(ignoreItem);
+			}
 		}
 
 		// add separator (if necessary)
@@ -357,6 +395,14 @@ public class SpellChecker
 		};
 		textFlow.getStyleClass().add("spell-menu-message");
 		return textFlow;
+	}
+
+	private void ignoreWord(String word) {
+		List<String> tokens = Collections.singletonList(word);
+		for (Rule rule : languageTool.getAllActiveRules()) {
+			if (rule instanceof SpellingCheckRule)
+				((SpellingCheckRule)rule).addIgnoreTokens(tokens);
+		}
 	}
 
 	//---- utility ------------------------------------------------------------

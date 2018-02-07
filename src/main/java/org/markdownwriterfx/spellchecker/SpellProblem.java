@@ -30,6 +30,7 @@ package org.markdownwriterfx.spellchecker;
 import java.util.List;
 import org.languagetool.rules.ITSIssueType;
 import org.languagetool.rules.RuleMatch;
+import org.languagetool.rules.spelling.SpellingCheckRule;
 
 /**
  * Encapsulates a spell checker match (RuleMatch) and
@@ -51,6 +52,10 @@ class SpellProblem
 
 	boolean isError() {
 		return ruleMatch.getRule().getLocQualityIssueType() == ITSIssueType.Misspelling;
+	}
+
+	boolean isTypo() {
+		return ruleMatch.getRule() instanceof SpellingCheckRule;
 	}
 
 	String getMessage() {
