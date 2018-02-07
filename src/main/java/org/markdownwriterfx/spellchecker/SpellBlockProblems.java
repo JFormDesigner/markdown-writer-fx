@@ -48,4 +48,12 @@ class SpellBlockProblems
 		for (RuleMatch ruleMatch : ruleMatches)
 			problems.add(new SpellProblem(fromPos, ruleMatch));
 	}
+
+	@Override
+	void updateOffsets(int position, int inserted, int removed) {
+		super.updateOffsets(position, inserted, removed);
+
+		for (SpellProblem problem : problems)
+			problem.updateOffsets(position, inserted, removed);
+	}
 }

@@ -217,9 +217,9 @@ public class SpellChecker
 			Language language = new AmericanEnglish();
 			ResultCache cache = new ResultCache(10000, 1, TimeUnit.DAYS);
 			languageTool = new JLanguageTool(language, null, cache);
+			languageTool.disableRule("WHITESPACE_RULE");
 			addIgnoreTokens(Arrays.asList(wordsToBeIgnored.toArray(new String[wordsToBeIgnored.size()])));
 		}
-		languageTool.disableRule("WHITESPACE_RULE");
 
 		// find nodes that should be checked
 		ArrayList<Node> nodesToCheck = new ArrayList<>();
@@ -297,11 +297,8 @@ public class SpellChecker
 		int inserted = e.getInserted().length();
 		int removed = e.getRemoved().length();
 
-		for (SpellBlockProblems blockProblems : spellProblems) {
+		for (SpellBlockProblems blockProblems : spellProblems)
 			blockProblems.updateOffsets(position, inserted, removed);
-			for (SpellProblem problem : blockProblems.problems)
-				problem.updateOffsets(position, inserted, removed);
-		}
 	}
 
 	//---- context menu -------------------------------------------------------
