@@ -30,10 +30,14 @@ package org.markdownwriterfx.spellchecker;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javafx.beans.InvalidationListener;
@@ -93,6 +97,9 @@ public class SpellChecker
 
 	// global JLanguageTool used in executor
 	private static JLanguageTool languageTool;
+
+	// global ignored words (keeps ignored words when switching spell checking off and on)
+	private static Set<String> wordsToBeIgnored = new HashSet<>();
 
 	public SpellChecker(MarkdownEditorPane editor, StyleClassedTextArea textArea,
 		ParagraphOverlayGraphicFactory overlayGraphicFactory)
@@ -203,8 +210,10 @@ public class SpellChecker
 	}
 
 	private List<SpellBlockProblems> check(Node astRoot) throws IOException {
-		if (languageTool == null)
+		if (languageTool == null) {
 			languageTool = new JLanguageTool(new AmericanEnglish());
+			addIgnoreTokens(Arrays.asList(wordsToBeIgnored.toArray(new String[wordsToBeIgnored.size()])));
+		}
 		languageTool.disableRule("WHITESPACE_RULE");
 
 		// find nodes that should be checked
@@ -348,7 +357,6 @@ public class SpellChecker
 				ignoreItem.setUserData(CONTEXT_SPELL_PROBLEM_ITEM);
 				ignoreItem.setOnAction(e -> {
 					ignoreWord(word);
-					reCheckAsync();
 				});
 				newItems.add(ignoreItem);
 			}
@@ -403,14 +411,25 @@ public class SpellChecker
 	}
 
 	private void ignoreWord(String word) {
-		List<String> tokens = Collections.singletonList(word);
-		for (Rule rule : languageTool.getAllActiveRules()) {
-			if (rule instanceof SpellingCheckRule)
-				((SpellingCheckRule)rule).addIgnoreTokens(tokens);
-		}
+		wordsToBeIgnored.add(word);
+		addIgnoreTokens(Collections.singletonList(word));
+		reCheckAsync();
 	}
 
 	//---- utility ------------------------------------------------------------
+
+	private void addIgnoreTokens(List<String> words) {
+		forEachSpellingCheckRule(rule -> {
+			rule.addIgnoreTokens(words);
+		});
+	}
+
+	private void forEachSpellingCheckRule(Consumer<SpellingCheckRule> action) {
+		for (Rule rule : languageTool.getAllActiveRules()) {
+			if (rule instanceof SpellingCheckRule)
+				action.accept((SpellingCheckRule) rule);
+		}
+	}
 
 	private List<SpellProblem> findProblemsAt(int index) {
 		if (index < 0 || spellProblems == null || spellProblems.isEmpty())
