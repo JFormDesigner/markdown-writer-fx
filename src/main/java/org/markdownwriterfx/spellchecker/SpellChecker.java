@@ -417,7 +417,7 @@ public class SpellChecker
 
 	private void ignoreWord(String word) {
 		wordsToBeIgnored.add(word);
-		cache.invalidateAll();
+		cache.invalidate(word);
 		addIgnoreTokens(Collections.singletonList(word));
 		reCheckAsync();
 	}

@@ -27,6 +27,8 @@
 
 package org.markdownwriterfx.spellchecker;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.languagetool.AnalyzedSentence;
@@ -48,6 +50,24 @@ class ResultCacheEx
 	private final Cache<InputSentence, List<RuleMatch>> matchesCache;
 	private final Cache<SimpleInputSentence, AnalyzedSentence> sentenceCache;
 
+	private static Field inputSentenceTextField;
+	private static Field simpleInputSentenceTextField;
+
+	static {
+		try {
+			inputSentenceTextField = InputSentence.class.getDeclaredField("text");
+			inputSentenceTextField.setAccessible(true);
+		} catch (NoSuchFieldException | SecurityException e) {
+			e.printStackTrace();
+		}
+		try {
+			simpleInputSentenceTextField = SimpleInputSentence.class.getDeclaredField("text");
+			simpleInputSentenceTextField.setAccessible(true);
+		} catch (NoSuchFieldException | SecurityException e) {
+			e.printStackTrace();
+		}
+	}
+
 	ResultCacheEx(long maxSize, int expireAfter, TimeUnit timeUnit) {
 		super(1);
 
@@ -66,6 +86,37 @@ class ResultCacheEx
 	void invalidateAll() {
 		matchesCache.invalidateAll();
 		sentenceCache.invalidateAll();
+	}
+
+	void invalidate(String word) {
+		invalidate(matchesCache, inputSentenceTextField, word);
+		invalidate(sentenceCache, simpleInputSentenceTextField, word);
+	}
+
+	private static <T> void invalidate(Cache<T, ?> cache, Field textField, String word) {
+		List<T> matchesKeys = findWordInKeys(cache, textField, word);
+		if (matchesKeys != null)
+			cache.invalidateAll(matchesKeys);
+		else
+			cache.invalidateAll();
+	}
+
+	private static <T> List<T> findWordInKeys(Cache<T, ?> cache, Field textField, String word) {
+		if (textField == null)
+			return null;
+
+		List<T> result = new ArrayList<>();
+		for (T key : cache.asMap().keySet()) {
+			try {
+				String text = (String) textField.get(key);
+				if (text.contains(word))
+					result.add(key);
+			} catch (IllegalArgumentException | IllegalAccessException e) {
+				e.printStackTrace();
+				return null;
+			}
+		}
+		return result;
 	}
 
 	@Override
