@@ -143,18 +143,19 @@ public class SpellChecker
 				});
 			}
 
+			// listen to text changes and invoke spell checker after a delay
 			EventStream<PlainTextChange> textChanges = textArea.plainTextChanges();
 			textChangesSubscribtion = textChanges
 				.hook(this::updateSpellRangeOffsets)
 				.successionEnds(Duration.ofMillis(500))
-				.supplyTask(this::checkAsync)
+				.supplyTask(() -> checkAsync(false))
 				.awaitLatest(textChanges)
 				.subscribe(this::checkFinished);
 
 			spellCheckerOverlayFactory = new SpellCheckerOverlayFactory(() -> spellProblems);
 			overlayGraphicFactory.addOverlayFactory(spellCheckerOverlayFactory);
 
-			reCheckAsync();
+			checkAsync(true);
 
 		} else if (!spellChecker && spellCheckerOverlayFactory != null) {
 			textChangesSubscribtion.unsubscribe();
@@ -175,21 +176,7 @@ public class SpellChecker
 		}
 	}
 
-	private Task<List<SpellBlockProblems>> checkAsync() {
-		Node astRoot = editor.getMarkdownAST();
-		boolean updatePeriodically = (spellProblems == null || spellProblems.isEmpty());
-
-		Task<List<SpellBlockProblems>> task = new Task<List<SpellBlockProblems>>() {
-			@Override
-			protected List<SpellBlockProblems> call() throws Exception {
-				return check(astRoot, updatePeriodically);
-			}
-		};
-		executor.execute(task);
-		return task;
-	}
-
-	private void reCheckAsync() {
+	private Task<List<SpellBlockProblems>> checkAsync(boolean invokeFinished) {
 		Node astRoot = editor.getMarkdownAST();
 		boolean updatePeriodically = (spellProblems == null || spellProblems.isEmpty());
 
@@ -200,14 +187,17 @@ public class SpellChecker
 			}
 			@Override
 			protected void succeeded() {
-				checkFinished(Try.success(getValue()));
+				if (invokeFinished)
+					checkFinished(Try.success(getValue()));
 			}
 			@Override
 			protected void failed() {
-				checkFinished(Try.failure(getException()));
+				if (invokeFinished)
+					checkFinished(Try.failure(getException()));
 			}
 		};
 		executor.execute(task);
+		return task;
 	}
 
 	private void checkFinished(Try<List<SpellBlockProblems>> result) {
@@ -469,7 +459,7 @@ public class SpellChecker
 	private void addIgnoreWord(String word) {
 		cache.invalidate(word);
 		addIgnoreTokens(Collections.singletonList(word));
-		reCheckAsync();
+		checkAsync(true);
 	}
 
 	//---- utility ------------------------------------------------------------
