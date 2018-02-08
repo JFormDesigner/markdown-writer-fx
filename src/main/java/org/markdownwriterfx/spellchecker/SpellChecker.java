@@ -67,6 +67,8 @@ import org.markdownwriterfx.editor.ParagraphOverlayGraphicFactory;
 import org.markdownwriterfx.options.Options;
 import org.reactfx.EventStream;
 import org.reactfx.Subscription;
+import org.reactfx.util.FxTimer;
+import org.reactfx.util.Timer;
 import org.reactfx.util.Try;
 import com.vladsch.flexmark.ast.Block;
 import com.vladsch.flexmark.ast.Code;
@@ -175,11 +177,12 @@ public class SpellChecker
 
 	private Task<List<SpellBlockProblems>> checkAsync() {
 		Node astRoot = editor.getMarkdownAST();
+		boolean updatePeriodically = (spellProblems == null || spellProblems.isEmpty());
 
 		Task<List<SpellBlockProblems>> task = new Task<List<SpellBlockProblems>>() {
 			@Override
 			protected List<SpellBlockProblems> call() throws Exception {
-				return check(astRoot);
+				return check(astRoot, updatePeriodically);
 			}
 		};
 		executor.execute(task);
@@ -188,11 +191,12 @@ public class SpellChecker
 
 	private void reCheckAsync() {
 		Node astRoot = editor.getMarkdownAST();
+		boolean updatePeriodically = (spellProblems == null || spellProblems.isEmpty());
 
 		Task<List<SpellBlockProblems>> task = new Task<List<SpellBlockProblems>>() {
 			@Override
 			protected List<SpellBlockProblems> call() throws Exception {
-				return check(astRoot);
+				return check(astRoot, updatePeriodically);
 			}
 			@Override
 			protected void succeeded() {
@@ -219,7 +223,7 @@ public class SpellChecker
 		}
 	}
 
-	private List<SpellBlockProblems> check(Node astRoot) throws IOException {
+	private List<SpellBlockProblems> check(Node astRoot, boolean updatePeriodically) throws IOException {
 		if (languageTool == null) {
 			Language language = new AmericanEnglish();
 			cache = new ResultCacheEx(10000, 1, TimeUnit.DAYS);
@@ -245,13 +249,36 @@ public class SpellChecker
 		};
 		visitor.visit(astRoot);
 
-		// check spelling of nodes
 		ArrayList<SpellBlockProblems> spellProblems = new ArrayList<>();
-		for (Node node : nodesToCheck) {
-			AnnotatedText annotatedText = annotatedNodeText(node);
-			List<RuleMatch> ruleMatches = languageTool.check(annotatedText);
 
-			spellProblems.add(new SpellBlockProblems(node.getStartOffset(), node.getEndOffset(), ruleMatches));
+		// start timer to update overlays periodically during a lengthy check (on initial run)
+		// using FxTimer instead of Timeline because FxTimer makes sure
+		// the action is not executed after invoking FxTimer.stop(),
+		// which may happen for Timeline
+		// see http://tomasmikula.github.io/blog/2014/06/04/timers-in-javafx-and-reactfx.html
+		Timer timer = updatePeriodically
+			? FxTimer.runPeriodically(Duration.ofMillis(350), () -> {
+				ArrayList<SpellBlockProblems> spellProblems2;
+				synchronized (spellProblems) {
+					spellProblems2 = new ArrayList<>(spellProblems);
+				}
+				checkFinished(Try.success(spellProblems2));
+			}) : null;
+
+		// check spelling of nodes
+		try {
+			for (Node node : nodesToCheck) {
+				AnnotatedText annotatedText = annotatedNodeText(node);
+				List<RuleMatch> ruleMatches = languageTool.check(annotatedText);
+
+				SpellBlockProblems problem = new SpellBlockProblems(node.getStartOffset(), node.getEndOffset(), ruleMatches);
+				synchronized (spellProblems) {
+					spellProblems.add(problem);
+				}
+			}
+		} finally {
+			if (timer != null)
+				timer.stop();
 		}
 
 		return spellProblems;
