@@ -76,6 +76,7 @@ public class Options
 		bulletListMarker.init(options, "bulletListMarker", "-");
 
 		spellChecker.init(options, "spellChecker", true);
+		userDictionary.init(options, "userDictionary", null);
 	}
 
 	/**
@@ -171,4 +172,10 @@ public class Options
 	public static boolean isSpellChecker() { return spellChecker.get(); }
 	public static void setSpellChecker(boolean spellChecker) { Options.spellChecker.set(spellChecker); }
 	public static BooleanProperty spellCheckerProperty() { return spellChecker; }
+
+	// 'userDictionary' property
+	private static final PrefsStringProperty userDictionary = new PrefsStringProperty();
+	public static String getUserDictionary() { return userDictionary.get(); }
+	public static void setUserDictionary(String userDictionary) { Options.userDictionary.set(userDictionary); }
+	public static StringProperty userDictionaryProperty() { return userDictionary; }
 }

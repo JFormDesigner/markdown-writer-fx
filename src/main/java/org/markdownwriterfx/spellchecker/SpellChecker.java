@@ -103,6 +103,9 @@ public class SpellChecker
 	// global ResultCache used by global JLanguageTool
 	private static ResultCacheEx cache;
 
+	// global user dictionary
+	private static UserDictionary userDictionary;
+
 	// global ignored words (keeps ignored words when switching spell checking off and on)
 	private static Set<String> wordsToBeIgnored = new HashSet<>();
 
@@ -160,6 +163,7 @@ public class SpellChecker
 
 			languageTool = null;
 			cache = null;
+			userDictionary = null;
 			spellProblems = null;
 
 			if (executor != null) {
@@ -221,6 +225,9 @@ public class SpellChecker
 			cache = new ResultCacheEx(10000, 1, TimeUnit.DAYS);
 			languageTool = new JLanguageTool(language, null, cache);
 			languageTool.disableRule("WHITESPACE_RULE");
+
+			userDictionary = new UserDictionary();
+			addIgnoreTokens(userDictionary.getWords());
 			addIgnoreTokens(Arrays.asList(wordsToBeIgnored.toArray(new String[wordsToBeIgnored.size()])));
 		}
 
@@ -358,6 +365,13 @@ public class SpellChecker
 				separator.setUserData(CONTEXT_SPELL_PROBLEM_ITEM);
 				newItems.add(separator);
 
+				MenuItem addDictItem = new MenuItem(Messages.get("SpellChecker.addToDictionary"));
+				addDictItem.setUserData(CONTEXT_SPELL_PROBLEM_ITEM);
+				addDictItem.setOnAction(e -> {
+					addToUserDictionary(word);
+				});
+				newItems.add(addDictItem);
+
 				MenuItem ignoreItem = new MenuItem(Messages.get("SpellChecker.ignoreWord"));
 				ignoreItem.setUserData(CONTEXT_SPELL_PROBLEM_ITEM);
 				ignoreItem.setOnAction(e -> {
@@ -415,8 +429,17 @@ public class SpellChecker
 		return textFlow;
 	}
 
+	private void addToUserDictionary(String word) {
+		userDictionary.addWord(word);
+		addIgnoreWord(word);
+	}
+
 	private void ignoreWord(String word) {
 		wordsToBeIgnored.add(word);
+		addIgnoreWord(word);
+	}
+
+	private void addIgnoreWord(String word) {
 		cache.invalidate(word);
 		addIgnoreTokens(Collections.singletonList(word));
 		reCheckAsync();
