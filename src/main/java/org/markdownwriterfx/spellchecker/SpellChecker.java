@@ -358,6 +358,24 @@ public class SpellChecker
 
 	//---- context menu -------------------------------------------------------
 
+	private void showQuickFixMenu() {
+		editor.hideContextMenu();
+
+		ContextMenu quickFixMenu = new ContextMenu();
+		initQuickFixMenu(quickFixMenu, textArea.getCaretPosition());
+
+		if (quickFixMenu.getItems().isEmpty())
+			return;
+
+		Optional<Bounds> caretBounds = textArea.getCaretBounds();
+		if (!caretBounds.isPresent())
+			return;
+
+		// show context menu
+		quickFixMenu.show(textArea, caretBounds.get().getMaxX(), caretBounds.get().getMaxY());
+		this.quickFixMenu = quickFixMenu;
+	}
+
 	public void initContextMenu(ContextMenu contextMenu, int characterIndex) {
 		initQuickFixMenu(contextMenu, characterIndex);
 
@@ -531,24 +549,6 @@ public class SpellChecker
 	private void selectProblem(SpellProblem problem) {
 		textArea.selectRange(problem.getFromPos(), problem.getToPos());
 		editor.scrollCaretToVisible();
-	}
-
-	private void showQuickFixMenu() {
-		editor.hideContextMenu();
-
-		ContextMenu quickFixMenu = new ContextMenu();
-		initQuickFixMenu(quickFixMenu, textArea.getCaretPosition());
-
-		if (quickFixMenu.getItems().isEmpty())
-			return;
-
-		Optional<Bounds> caretBounds = textArea.getCaretBounds();
-		if (!caretBounds.isPresent())
-			return;
-
-		// show context menu
-		quickFixMenu.show(textArea, caretBounds.get().getMaxX(), caretBounds.get().getMaxY());
-		this.quickFixMenu = quickFixMenu;
 	}
 
 	private void addIgnoreTokens(List<String> words) {
