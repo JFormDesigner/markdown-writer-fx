@@ -373,18 +373,25 @@ public class MarkdownEditorPane
 	}
 
 	public void scrollParagraphToVisible(int paragraph) {
-		int firstVisible = textArea.firstVisibleParToAllParIndex();
-		int lastVisible = textArea.lastVisibleParToAllParIndex();
-		int visibleCount = lastVisible - firstVisible;
-		int distance = visibleCount / 8;
+		try {
+			int firstVisible = textArea.firstVisibleParToAllParIndex();
+			int lastVisible = textArea.lastVisibleParToAllParIndex();
+			int visibleCount = lastVisible - firstVisible;
+			int distance = visibleCount / 8;
 
-		if (paragraph > lastVisible - distance) {
-			// scroll down so that paragraph is in the upper area
-			textArea.showParagraphAtTop(paragraph - distance);
+			if (paragraph > lastVisible - distance) {
+				// scroll down so that paragraph is in the upper area
+				textArea.showParagraphAtTop(paragraph - distance);
 
-		} else if (paragraph < firstVisible + distance) {
-			// scroll up so that paragraph is in the lower area
-			textArea.showParagraphAtBottom(paragraph + distance);
+			} else if (paragraph < firstVisible + distance) {
+				// scroll up so that paragraph is in the lower area
+				textArea.showParagraphAtBottom(paragraph + distance);
+			}
+		} catch (AssertionError e) {
+			// may be thrown in textArea.visibleParToAllParIndex()
+			// occurs if the last line is empty and and the text fits into
+			// the visible area (no vertical scroll bar shown)
+			// --> ignore
 		}
 	}
 
