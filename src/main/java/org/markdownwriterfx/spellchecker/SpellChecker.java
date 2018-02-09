@@ -52,11 +52,13 @@ import javafx.beans.InvalidationListener;
 import javafx.beans.WeakInvalidationListener;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
+import javafx.event.Event;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.CustomMenuItem;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.text.TextFlow;
 import org.apache.commons.lang3.StringUtils;
@@ -526,7 +528,11 @@ public class SpellChecker
 
 	private void selectProblem(SpellProblem problem) {
 		textArea.selectRange(problem.getFromPos(), problem.getToPos());
-		textArea.requestFollowCaret();
+		editor.scrollCaretToVisible();
+
+		// show context menu at caret (keyboard triggered)
+		Event.fireEvent(textArea, new ContextMenuEvent(
+			ContextMenuEvent.CONTEXT_MENU_REQUESTED, 0, 0, 0, 0, true, null));
 	}
 
 	private void addIgnoreTokens(List<String> words) {

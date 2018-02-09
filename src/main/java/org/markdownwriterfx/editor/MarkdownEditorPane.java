@@ -102,6 +102,7 @@ public class MarkdownEditorPane
 
 		textArea.textProperty().addListener((observable, oldText, newText) -> {
 			textChanged(newText);
+			hideContextMenu(null);
 		});
 
 		textArea.addEventHandler(ContextMenuEvent.CONTEXT_MENU_REQUESTED, this::showContextMenu);
@@ -367,6 +368,26 @@ public class MarkdownEditorPane
 		textArea.selectAll();
 	}
 
+	public void scrollCaretToVisible() {
+		scrollParagraphToVisible(textArea.getCurrentParagraph());
+	}
+
+	public void scrollParagraphToVisible(int paragraph) {
+		int firstVisible = textArea.firstVisibleParToAllParIndex();
+		int lastVisible = textArea.lastVisibleParToAllParIndex();
+		int visibleCount = lastVisible - firstVisible;
+		int distance = visibleCount / 8;
+
+		if (paragraph > lastVisible - distance) {
+			// scroll down so that paragraph is in the upper area
+			textArea.showParagraphAtTop(paragraph - distance);
+
+		} else if (paragraph < firstVisible + distance) {
+			// scroll up so that paragraph is in the lower area
+			textArea.showParagraphAtBottom(paragraph + distance);
+		}
+	}
+
 	//---- context menu -------------------------------------------------------
 
 	private void showContextMenu(ContextMenuEvent e) {
@@ -407,6 +428,7 @@ public class MarkdownEditorPane
 			return;
 
 		// show context menu
+		contextMenu.hide();
 		contextMenu.show(textArea, menuX, menuY);
 		e.consume();
 	}
