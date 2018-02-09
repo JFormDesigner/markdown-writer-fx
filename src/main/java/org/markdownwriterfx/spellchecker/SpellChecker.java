@@ -45,6 +45,7 @@ import javafx.beans.InvalidationListener;
 import javafx.beans.WeakInvalidationListener;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
+import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.CustomMenuItem;
 import javafx.scene.control.MenuItem;
@@ -343,6 +344,16 @@ public class SpellChecker
 	private static final Pattern SUGGESTION_PATTERN = Pattern.compile("<suggestion>(.*?)</suggestion>");
 
 	public void initContextMenu(ContextMenu contextMenu) {
+		ObservableList<MenuItem> menuItems = contextMenu.getItems();
+
+		// add separator (if necessary)
+		if (!menuItems.isEmpty())
+			menuItems.add(new SeparatorMenuItem());
+
+		// add "Check Spelling and Grammar" item
+		CheckMenuItem checkSpellingItem = new CheckMenuItem(Messages.get("SpellChecker.checkSpelling"));
+		checkSpellingItem.selectedProperty().bindBidirectional(Options.spellCheckerProperty());
+		menuItems.add(checkSpellingItem);
 	}
 
 	public void updateContextMenu(ContextMenu contextMenu, int characterIndex) {
