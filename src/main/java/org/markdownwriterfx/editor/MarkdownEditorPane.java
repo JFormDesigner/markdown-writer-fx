@@ -35,6 +35,7 @@ import static org.fxmisc.wellbehaved.event.InputMap.*;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.WeakInvalidationListener;
@@ -48,6 +49,7 @@ import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.geometry.Bounds;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.IndexRange;
 import javafx.scene.input.ContextMenuEvent;
@@ -377,15 +379,35 @@ public class MarkdownEditorPane
 			initContextMenu();
 		}
 
+		int characterIndex;
+		int insertionIndex;
+		double menuX = e.getScreenX();
+		double menuY = e.getScreenY();
+
+		if (e.isKeyboardTrigger()) {
+			// keyboard triggered --> use caret
+			characterIndex = insertionIndex = textArea.getCaretPosition();
+
+			Optional<Bounds> caretBounds = textArea.getCaretBounds();
+			if (caretBounds.isPresent()) {
+				menuX = caretBounds.get().getMaxX();
+				menuY = caretBounds.get().getMaxY();
+			}
+		} else {
+			// mouse triggered
+			CharacterHit hit = textArea.hit(e.getX(), e.getY());
+			characterIndex = hit.getCharacterIndex().orElse(-1);
+			insertionIndex = hit.getInsertionIndex();
+		}
+
 		// update context menu
-		CharacterHit hit = textArea.hit(e.getX(), e.getY());
-		updateContextMenu(hit.getCharacterIndex().orElse(-1), hit.getInsertionIndex());
+		updateContextMenu(characterIndex, insertionIndex);
 
 		if (contextMenu.getItems().isEmpty())
 			return;
 
 		// show context menu
-		contextMenu.show(textArea, e.getScreenX(), e.getScreenY());
+		contextMenu.show(textArea, menuX, menuY);
 		e.consume();
 	}
 

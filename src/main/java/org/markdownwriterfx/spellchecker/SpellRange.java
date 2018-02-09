@@ -54,7 +54,7 @@ class SpellRange
 	}
 
 	final boolean contains(int index) {
-		return fromPos <= index && index < toPos;
+		return fromPos <= index && index <= toPos;
 	}
 
 	final boolean isValid() {
