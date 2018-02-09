@@ -49,6 +49,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.WeakInvalidationListener;
 import javafx.collections.ObservableList;
@@ -105,6 +106,7 @@ public class SpellChecker
 	private final ParagraphOverlayGraphicFactory overlayGraphicFactory;
 	private final InvalidationListener optionsListener;
 	private ContextMenu quickFixMenu;
+	private int lastQuickFixNavigationDirection;
 
 	private List<SpellBlockProblems> spellProblems;
 
@@ -379,6 +381,7 @@ public class SpellChecker
 
 	public void initContextMenu(ContextMenu contextMenu, int characterIndex) {
 		initQuickFixMenu(contextMenu, characterIndex, true);
+		lastQuickFixNavigationDirection = 0;
 
 		ObservableList<MenuItem> menuItems = contextMenu.getItems();
 
@@ -413,6 +416,7 @@ public class SpellChecker
 					item.getStyleClass().add("spell-menu-suggestion");
 					item.setOnAction(e -> {
 						textArea.replaceText(problem.getFromPos(), problem.getToPos(), suggestedReplacement);
+						navigateNextPrevious();
 					});
 					newItems.add(item);
 				}
@@ -429,12 +433,14 @@ public class SpellChecker
 				MenuItem addDictItem = new MenuItem(Messages.get("SpellChecker.addToDictionary"));
 				addDictItem.setOnAction(e -> {
 					addToUserDictionary(word);
+					navigateNextPrevious();
 				});
 				newItems.add(addDictItem);
 
 				MenuItem ignoreItem = new MenuItem(Messages.get("SpellChecker.ignoreWord"));
 				ignoreItem.setOnAction(e -> {
 					ignoreWord(word);
+					navigateNextPrevious();
 				});
 				newItems.add(ignoreItem);
 			}
@@ -535,10 +541,23 @@ public class SpellChecker
 
 	//---- navigation ---------------------------------------------------------
 
+	private void navigateNextPrevious() {
+		if (lastQuickFixNavigationDirection == 0)
+			return;
+
+		Platform.runLater(() -> {
+			if (lastQuickFixNavigationDirection > 0)
+				navigateNext(null);
+			else if (lastQuickFixNavigationDirection < 0)
+				navigatePrevious(null);
+		});
+	}
+
 	private void navigateNext(KeyEvent e) {
 		if (spellProblems == null)
 			return;
 
+		lastQuickFixNavigationDirection = 1;
 		int caretPosition = textArea.getCaretPosition();
 		SpellProblem problem = findNextProblemAt(caretPosition);
 		if (problem == null)
@@ -554,6 +573,7 @@ public class SpellChecker
 		if (spellProblems == null)
 			return;
 
+		lastQuickFixNavigationDirection = -1;
 		int caretPosition = textArea.getCaretPosition();
 		SpellProblem problem = findPreviousProblemAt(caretPosition);
 		if (problem == null)
