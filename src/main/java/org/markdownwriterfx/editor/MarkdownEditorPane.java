@@ -394,20 +394,16 @@ public class MarkdownEditorPane
 		if (e.isConsumed())
 			return;
 
-		// create context menu
-		if (contextMenu == null) {
-			contextMenu = new ContextMenu();
-			initContextMenu();
-		}
+		// hide old context menu
+		hideContextMenu();
 
+		// determine character index and menu x/y
 		int characterIndex;
-		int insertionIndex;
 		double menuX = e.getScreenX();
 		double menuY = e.getScreenY();
-
 		if (e.isKeyboardTrigger()) {
 			// keyboard triggered --> use caret
-			characterIndex = insertionIndex = textArea.getCaretPosition();
+			characterIndex = textArea.getCaretPosition();
 
 			Optional<Bounds> caretBounds = textArea.getCaretBounds();
 			if (caretBounds.isPresent()) {
@@ -418,36 +414,31 @@ public class MarkdownEditorPane
 			// mouse triggered
 			CharacterHit hit = textArea.hit(e.getX(), e.getY());
 			characterIndex = hit.getCharacterIndex().orElse(-1);
-			insertionIndex = hit.getInsertionIndex();
 		}
 
-		// update context menu
-		updateContextMenu(characterIndex, insertionIndex);
+		// create context menu
+		ContextMenu contextMenu = new ContextMenu();
+
+		// initialize context menu
+		SmartEditActions.initContextMenu(this, contextMenu, characterIndex);
+		spellChecker.initContextMenu(contextMenu, characterIndex);
 
 		if (contextMenu.getItems().isEmpty())
 			return;
 
 		// show context menu
-		contextMenu.hide();
 		contextMenu.show(textArea, menuX, menuY);
+		this.contextMenu = contextMenu;
 		e.consume();
 	}
 
 	public void hideContextMenu() {
-		if (contextMenu != null)
+		if (contextMenu != null) {
 			contextMenu.hide();
+			contextMenu = null;
+		}
 
 		spellChecker.hideContextMenu();
-	}
-
-	private void initContextMenu() {
-		SmartEditActions.initContextMenu(this, contextMenu);
-		spellChecker.initContextMenu(contextMenu);
-	}
-
-	private void updateContextMenu(int characterIndex, int insertionIndex) {
-		SmartEditActions.updateContextMenu(this, contextMenu, characterIndex);
-		spellChecker.updateContextMenu(contextMenu, characterIndex);
 	}
 
 	//---- find/replace -------------------------------------------------------

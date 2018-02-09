@@ -358,10 +358,9 @@ public class SpellChecker
 
 	//---- context menu -------------------------------------------------------
 
-	private static final String CONTEXT_SPELL_PROBLEM_ITEM = "spell-problem-item";
-	private static final Pattern SUGGESTION_PATTERN = Pattern.compile("<suggestion>(.*?)</suggestion>");
+	public void initContextMenu(ContextMenu contextMenu, int characterIndex) {
+		initQuickFixMenu(contextMenu, characterIndex);
 
-	public void initContextMenu(ContextMenu contextMenu) {
 		ObservableList<MenuItem> menuItems = contextMenu.getItems();
 
 		// add separator (if necessary)
@@ -374,12 +373,7 @@ public class SpellChecker
 		menuItems.add(checkSpellingItem);
 	}
 
-	public void updateContextMenu(ContextMenu contextMenu, int characterIndex) {
-		ObservableList<MenuItem> menuItems = contextMenu.getItems();
-
-		// remove old menu items
-		menuItems.removeAll(menuItems.filtered(menuItem -> CONTEXT_SPELL_PROBLEM_ITEM.equals(menuItem.getUserData())));
-
+	private void initQuickFixMenu(ContextMenu contextMenu, int characterIndex) {
 		if( languageTool == null )
 			return;
 
@@ -393,7 +387,6 @@ public class SpellChecker
 		for (SpellProblem problem : problems) {
 			CustomMenuItem problemItem = new SeparatorMenuItem();
 			problemItem.setContent(buildMessage(problem.getMessage()));
-			problemItem.setUserData(CONTEXT_SPELL_PROBLEM_ITEM);
 			newItems.add(problemItem);
 
 			List<String> suggestedReplacements = problem.getSuggestedReplacements();
@@ -401,7 +394,6 @@ public class SpellChecker
 				for (String suggestedReplacement : suggestedReplacements) {
 					MenuItem item = new MenuItem(suggestedReplacement);
 					item.getStyleClass().add("spell-menu-suggestion");
-					item.setUserData(CONTEXT_SPELL_PROBLEM_ITEM);
 					item.setOnAction(e -> {
 						textArea.replaceText(problem.getFromPos(), problem.getToPos(), suggestedReplacement);
 					});
@@ -409,26 +401,21 @@ public class SpellChecker
 				}
 			} else {
 				MenuItem item = new MenuItem(Messages.get("SpellChecker.noSuggestionsAvailable"));
-				item.setUserData(CONTEXT_SPELL_PROBLEM_ITEM);
 				item.setDisable(true);
 				newItems.add(item);
 			}
 
 			String word = textArea.getText(problem.getFromPos(), problem.getToPos());
 			if (problem.isTypo() && !word.contains(" ")) {
-				SeparatorMenuItem separator = new SeparatorMenuItem();
-				separator.setUserData(CONTEXT_SPELL_PROBLEM_ITEM);
-				newItems.add(separator);
+				newItems.add(new SeparatorMenuItem());
 
 				MenuItem addDictItem = new MenuItem(Messages.get("SpellChecker.addToDictionary"));
-				addDictItem.setUserData(CONTEXT_SPELL_PROBLEM_ITEM);
 				addDictItem.setOnAction(e -> {
 					addToUserDictionary(word);
 				});
 				newItems.add(addDictItem);
 
 				MenuItem ignoreItem = new MenuItem(Messages.get("SpellChecker.ignoreWord"));
-				ignoreItem.setUserData(CONTEXT_SPELL_PROBLEM_ITEM);
 				ignoreItem.setOnAction(e -> {
 					ignoreWord(word);
 				});
@@ -436,21 +423,24 @@ public class SpellChecker
 			}
 		}
 
+		ObservableList<MenuItem> menuItems = contextMenu.getItems();
+
 		// add separator (if necessary)
-		if (!newItems.isEmpty() && !menuItems.isEmpty()) {
-			SeparatorMenuItem separator = new SeparatorMenuItem();
-			separator.setUserData(CONTEXT_SPELL_PROBLEM_ITEM);
-			newItems.add(separator);
-		}
+		if (!newItems.isEmpty() && !menuItems.isEmpty())
+			newItems.add(new SeparatorMenuItem());
 
 		// add new menu items to context menu
 		menuItems.addAll(0, newItems);
 	}
 
 	public void hideContextMenu() {
-		if (quickFixMenu != null)
+		if (quickFixMenu != null) {
 			quickFixMenu.hide();
+			quickFixMenu = null;
+		}
 	}
+
+	private static final Pattern SUGGESTION_PATTERN = Pattern.compile("<suggestion>(.*?)</suggestion>");
 
 	private TextFlow buildMessage(String message) {
 		ArrayList<javafx.scene.text.Text> texts = new ArrayList<>();
@@ -546,10 +536,8 @@ public class SpellChecker
 	private void showQuickFixMenu() {
 		editor.hideContextMenu();
 
-		if (quickFixMenu == null)
-			quickFixMenu = new ContextMenu();
-
-		updateContextMenu(quickFixMenu, textArea.getCaretPosition());
+		ContextMenu quickFixMenu = new ContextMenu();
+		initQuickFixMenu(quickFixMenu, textArea.getCaretPosition());
 
 		if (quickFixMenu.getItems().isEmpty())
 			return;
@@ -559,8 +547,8 @@ public class SpellChecker
 			return;
 
 		// show context menu
-		quickFixMenu.hide();
 		quickFixMenu.show(textArea, caretBounds.get().getMaxX(), caretBounds.get().getMaxY());
+		this.quickFixMenu = quickFixMenu;
 	}
 
 	private void addIgnoreTokens(List<String> words) {
