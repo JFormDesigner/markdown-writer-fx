@@ -41,6 +41,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -52,13 +53,12 @@ import javafx.beans.InvalidationListener;
 import javafx.beans.WeakInvalidationListener;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
-import javafx.event.Event;
+import javafx.geometry.Bounds;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.CustomMenuItem;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
-import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.text.TextFlow;
 import org.apache.commons.lang3.StringUtils;
@@ -103,6 +103,8 @@ public class SpellChecker
 	private final StyleClassedTextArea textArea;
 	private final ParagraphOverlayGraphicFactory overlayGraphicFactory;
 	private final InvalidationListener optionsListener;
+	private ContextMenu quickFixMenu;
+
 	private List<SpellBlockProblems> spellProblems;
 
 	private Subscription textChangesSubscribtion;
@@ -445,6 +447,10 @@ public class SpellChecker
 		menuItems.addAll(0, newItems);
 	}
 
+	public void hideContextMenu() {
+		if (quickFixMenu != null)
+			quickFixMenu.hide();
+	}
 
 	private TextFlow buildMessage(String message) {
 		ArrayList<javafx.scene.text.Text> texts = new ArrayList<>();
@@ -508,8 +514,11 @@ public class SpellChecker
 		SpellProblem problem = findNextProblemAt(caretPosition);
 		if (problem == null)
 			problem = findNextProblemAt(0);
-		if (problem != null)
-			selectProblem(problem);
+		if (problem == null)
+			return;
+
+		selectProblem(problem);
+		showQuickFixMenu();
 	}
 
 	private void navigatePrevious(KeyEvent e) {
@@ -520,8 +529,11 @@ public class SpellChecker
 		SpellProblem problem = findPreviousProblemAt(caretPosition);
 		if (problem == null)
 			problem = findPreviousProblemAt(textArea.getLength());
-		if (problem != null)
-			selectProblem(problem);
+		if (problem == null)
+			return;
+
+		selectProblem(problem);
+		showQuickFixMenu();
 	}
 
 	//---- utility ------------------------------------------------------------
@@ -529,10 +541,26 @@ public class SpellChecker
 	private void selectProblem(SpellProblem problem) {
 		textArea.selectRange(problem.getFromPos(), problem.getToPos());
 		editor.scrollCaretToVisible();
+	}
 
-		// show context menu at caret (keyboard triggered)
-		Event.fireEvent(textArea, new ContextMenuEvent(
-			ContextMenuEvent.CONTEXT_MENU_REQUESTED, 0, 0, 0, 0, true, null));
+	private void showQuickFixMenu() {
+		editor.hideContextMenu();
+
+		if (quickFixMenu == null)
+			quickFixMenu = new ContextMenu();
+
+		updateContextMenu(quickFixMenu, textArea.getCaretPosition());
+
+		if (quickFixMenu.getItems().isEmpty())
+			return;
+
+		Optional<Bounds> caretBounds = textArea.getCaretBounds();
+		if (!caretBounds.isPresent())
+			return;
+
+		// show context menu
+		quickFixMenu.hide();
+		quickFixMenu.show(textArea, caretBounds.get().getMaxX(), caretBounds.get().getMaxY());
 	}
 
 	private void addIgnoreTokens(List<String> words) {

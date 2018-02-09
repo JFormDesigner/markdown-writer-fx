@@ -102,11 +102,11 @@ public class MarkdownEditorPane
 
 		textArea.textProperty().addListener((observable, oldText, newText) -> {
 			textChanged(newText);
-			hideContextMenu(null);
+			hideContextMenu();
 		});
 
 		textArea.addEventHandler(ContextMenuEvent.CONTEXT_MENU_REQUESTED, this::showContextMenu);
-		textArea.addEventHandler(MouseEvent.MOUSE_PRESSED, this::hideContextMenu);
+		textArea.addEventHandler(MouseEvent.MOUSE_PRESSED, e -> hideContextMenu());
 
 		smartEdit = new SmartEdit(this, textArea);
 
@@ -433,9 +433,11 @@ public class MarkdownEditorPane
 		e.consume();
 	}
 
-	private void hideContextMenu(MouseEvent e) {
+	public void hideContextMenu() {
 		if (contextMenu != null)
 			contextMenu.hide();
+
+		spellChecker.hideContextMenu();
 	}
 
 	private void initContextMenu() {
