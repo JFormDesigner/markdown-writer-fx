@@ -27,6 +27,13 @@
 
 package org.markdownwriterfx.spellchecker;
 
+import static javafx.scene.input.KeyCode.COMMA;
+import static javafx.scene.input.KeyCode.PERIOD;
+import static javafx.scene.input.KeyCombination.SHORTCUT_DOWN;
+import static org.fxmisc.wellbehaved.event.EventPattern.keyPressed;
+import static org.fxmisc.wellbehaved.event.InputMap.consume;
+import static org.fxmisc.wellbehaved.event.InputMap.sequence;
+
 import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -50,10 +57,12 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.CustomMenuItem;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.text.TextFlow;
 import org.apache.commons.lang3.StringUtils;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.richtext.model.PlainTextChange;
+import org.fxmisc.wellbehaved.event.Nodes;
 import org.languagetool.JLanguageTool;
 import org.languagetool.Language;
 import org.languagetool.language.AmericanEnglish;
@@ -120,6 +129,11 @@ public class SpellChecker
 		this.overlayGraphicFactory = overlayGraphicFactory;
 
 		enableDisable();
+
+		Nodes.addInputMap(textArea, sequence(
+			consume(keyPressed(PERIOD, SHORTCUT_DOWN),		this::navigateNext),
+			consume(keyPressed(COMMA, SHORTCUT_DOWN),		this::navigatePrevious)
+		));
 
 		// listen to option changes
 		optionsListener = e -> {
@@ -482,7 +496,38 @@ public class SpellChecker
 		checkAsync(true);
 	}
 
+	//---- navigation ---------------------------------------------------------
+
+	private void navigateNext(KeyEvent e) {
+		if (spellProblems == null)
+			return;
+
+		int caretPosition = textArea.getCaretPosition();
+		SpellProblem problem = findNextProblemAt(caretPosition);
+		if (problem == null)
+			problem = findNextProblemAt(0);
+		if (problem != null)
+			selectProblem(problem);
+	}
+
+	private void navigatePrevious(KeyEvent e) {
+		if (spellProblems == null)
+			return;
+
+		int caretPosition = textArea.getCaretPosition();
+		SpellProblem problem = findPreviousProblemAt(caretPosition);
+		if (problem == null)
+			problem = findPreviousProblemAt(textArea.getLength());
+		if (problem != null)
+			selectProblem(problem);
+	}
+
 	//---- utility ------------------------------------------------------------
+
+	private void selectProblem(SpellProblem problem) {
+		textArea.selectRange(problem.getFromPos(), problem.getToPos());
+		textArea.requestFollowCaret();
+	}
 
 	private void addIgnoreTokens(List<String> words) {
 		forEachSpellingCheckRule(rule -> {
@@ -512,5 +557,33 @@ public class SpellChecker
 			}
 		}
 		return result;
+	}
+
+	private SpellProblem findNextProblemAt(int index) {
+		for (SpellBlockProblems blockProblems : spellProblems) {
+			if (index > blockProblems.getToPos())
+				continue; // index is after block
+
+			for (SpellProblem problem : blockProblems.problems) {
+				if (index < problem.getFromPos())
+					return problem;
+			}
+		}
+		return null;
+	}
+
+	private SpellProblem findPreviousProblemAt(int index) {
+		for (int i = spellProblems.size() - 1; i >= 0; i--) {
+			SpellBlockProblems blockProblems = spellProblems.get(i);
+			if (index < blockProblems.getFromPos())
+				continue; // index is before block
+
+			for (int j = blockProblems.problems.size() - 1; j >= 0; j--) {
+				SpellProblem problem = blockProblems.problems.get(j);
+				if (index > problem.getToPos())
+					return problem;
+			}
+		}
+		return null;
 	}
 }
