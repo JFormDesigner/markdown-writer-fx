@@ -127,9 +127,18 @@ public class SpellChecker
 
 			if (e == Options.spellCheckerProperty())
 				enableDisable();
+			else if (e == Options.userDictionaryProperty()) {
+				languageTool = null;
+				cache = null;
+				userDictionary = null;
+				spellProblems = null;
+
+				checkAsync(true);
+			}
 		};
 		WeakInvalidationListener weakOptionsListener = new WeakInvalidationListener(optionsListener);
 		Options.spellCheckerProperty().addListener(weakOptionsListener);
+		Options.userDictionaryProperty().addListener(weakOptionsListener);
 	}
 
 	private void enableDisable() {

@@ -27,9 +27,20 @@
 
 package org.markdownwriterfx.options;
 
+import java.io.File;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
+import javafx.event.ActionEvent;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.stage.FileChooser;
 import org.markdownwriterfx.Messages;
+import org.markdownwriterfx.controls.BrowseFileButton;
+import org.markdownwriterfx.util.Utils;
 import org.tbee.javafx.scene.layout.fxml.MigPane;
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
+import de.jensd.fx.glyphs.fontawesome.utils.FontAwesomeIconFactory;
 
 /**
  * Spell checker options pane
@@ -41,31 +52,98 @@ public class SpellCheckerOptionsPane
 {
 	public SpellCheckerOptionsPane() {
 		initComponents();
+
+		browseUserDictionaryButton.setBasePath(new File(System.getProperty("user.home")).toPath());
+		browseUserDictionaryButton.urlProperty().bindBidirectional(userDictionaryField.textProperty());
+
+		BooleanBinding disabled = Bindings.not(spellCheckerCheckBox.selectedProperty());
+		userDictionaryLabel.disableProperty().bind(disabled);
+		userDictionaryField.disableProperty().bind(disabled);
+		browseUserDictionaryButton.disableProperty().bind(disabled);
+		userDictionaryNote.disableProperty().bind(disabled);
 	}
 
 	void load() {
 		spellCheckerCheckBox.setSelected(Options.isSpellChecker());
+		userDictionaryField.setText(Options.getUserDictionary());
 	}
 
 	void save() {
 		Options.setSpellChecker(spellCheckerCheckBox.isSelected());
+		Options.setUserDictionary(Utils.defaultIfEmpty(userDictionaryField.getText(), null));
 	}
 
 	private void initComponents() {
 		// JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
 		spellCheckerCheckBox = new CheckBox();
+		userDictionaryLabel = new Label();
+		userDictionaryField = new TextField();
+		browseUserDictionaryButton = new SpellCheckerOptionsPane.BrowseUserDictionaryButton();
+		userDictionaryNote = new Label();
 
 		//======== this ========
-		setCols("[fill]");
-		setRows("[]");
+		setCols("[shrink 0,fill][400,grow,fill]");
+		setRows("[][][]");
 
 		//---- spellCheckerCheckBox ----
 		spellCheckerCheckBox.setText(Messages.get("SpellCheckerOptionsPane.spellCheckerCheckBox.text"));
-		add(spellCheckerCheckBox, "cell 0 0,alignx left,growx 0");
+		add(spellCheckerCheckBox, "cell 0 0 2 1,alignx left,growx 0");
+
+		//---- userDictionaryLabel ----
+		userDictionaryLabel.setText(Messages.get("SpellCheckerOptionsPane.userDictionaryLabel.text"));
+		userDictionaryLabel.setMnemonicParsing(true);
+		add(userDictionaryLabel, "cell 0 1");
+		add(userDictionaryField, "cell 1 1");
+
+		//---- browseUserDictionaryButton ----
+		browseUserDictionaryButton.setFocusTraversable(true);
+		add(browseUserDictionaryButton, "cell 1 1,alignx right,growx 0");
+
+		//---- userDictionaryNote ----
+		userDictionaryNote.setText(Messages.get("SpellCheckerOptionsPane.userDictionaryNote.text"));
+		userDictionaryNote.setWrapText(true);
+		add(userDictionaryNote, "cell 1 2");
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
+
+		// TODO set this in JFormDesigner as soon as it supports labelFor
+		userDictionaryLabel.setLabelFor(userDictionaryField);
 	}
 
 	// JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
 	private CheckBox spellCheckerCheckBox;
+	private Label userDictionaryLabel;
+	private TextField userDictionaryField;
+	private SpellCheckerOptionsPane.BrowseUserDictionaryButton browseUserDictionaryButton;
+	private Label userDictionaryNote;
 	// JFormDesigner - End of variables declaration  //GEN-END:variables
+
+	//---- class BrowseUserDictionaryButton -----------------------------------
+
+	private static class BrowseUserDictionaryButton
+		extends BrowseFileButton
+	{
+		private BrowseUserDictionaryButton() {
+			setGraphic(FontAwesomeIconFactory.get().createIcon(FontAwesomeIcon.ELLIPSIS_H, "1.2em"));
+			setTooltip(null);
+		}
+
+		@Override
+		protected void browse(ActionEvent e) {
+			FileChooser fileChooser = new FileChooser();
+			fileChooser.setTitle(Messages.get("SpellCheckerOptionsPane.browseUserDictionaryButton.chooser.title"));
+			fileChooser.setInitialDirectory(getInitialDirectory());
+			File result = fileChooser.showOpenDialog(getScene().getWindow());
+			if (result != null)
+				setUrl(result.getAbsolutePath());
+		}
+
+		@Override
+		protected File getInitialDirectory() {
+			String url = getUrl();
+			if (url != null)
+				return new File(url).getParentFile();
+			else
+				return new File(System.getProperty("user.home"));
+		}
+	}
 }

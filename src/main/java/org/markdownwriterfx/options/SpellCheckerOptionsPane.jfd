@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "9.9.9.9.9999" Java: "1.8.0_102" encoding: "UTF-8"
+JFDML JFormDesigner: "9.9.9.9.9999" Java: "1.8.0_162" encoding: "UTF-8"
 
 new FormModel {
 	"i18n.bundlePackage": "org.markdownwriterfx"
@@ -9,19 +9,44 @@ new FormModel {
 	root: new FormRoot {
 		add( new FormContainer( "org.tbee.javafx.scene.layout.fxml.MigPane", new FormLayoutManager( class org.tbee.javafx.scene.layout.fxml.MigPane ) {
 			"$layoutConstraints": ""
-			"$columnConstraints": "[fill]"
-			"$rowConstraints": "[]"
+			"$columnConstraints": "[shrink 0,fill][400,grow,fill]"
+			"$rowConstraints": "[][][]"
 		} ) {
 			name: "this"
 			add( new FormComponent( "javafx.scene.control.CheckBox" ) {
 				name: "spellCheckerCheckBox"
 				"text": new FormMessage( null, "SpellCheckerOptionsPane.spellCheckerCheckBox.text" )
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 0,alignx left,growx 0"
+				"value": "cell 0 0 2 1,alignx left,growx 0"
+			} )
+			add( new FormComponent( "javafx.scene.control.Label" ) {
+				name: "userDictionaryLabel"
+				"text": new FormMessage( null, "SpellCheckerOptionsPane.userDictionaryLabel.text" )
+				"mnemonicParsing": true
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 1"
+			} )
+			add( new FormComponent( "javafx.scene.control.TextField" ) {
+				name: "userDictionaryField"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 1 1"
+			} )
+			add( new FormComponent( "org.markdownwriterfx.options.SpellCheckerOptionsPane$BrowseUserDictionaryButton" ) {
+				name: "browseUserDictionaryButton"
+				"focusTraversable": true
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 1 1,alignx right,growx 0"
+			} )
+			add( new FormComponent( "javafx.scene.control.Label" ) {
+				name: "userDictionaryNote"
+				"text": new FormMessage( null, "SpellCheckerOptionsPane.userDictionaryNote.text" )
+				"wrapText": true
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 1 2"
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new javafx.geometry.Point2D( 0.0, 0.0 )
-			"size": new javafx.geometry.Dimension2D( 400.0, 300.0 )
+			"size": new javafx.geometry.Dimension2D( 500.0, 300.0 )
 		} )
 	}
 }
