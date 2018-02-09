@@ -59,6 +59,7 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.CustomMenuItem;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.text.TextFlow;
 import org.apache.commons.lang3.StringUtils;
@@ -362,7 +363,7 @@ public class SpellChecker
 		editor.hideContextMenu();
 
 		ContextMenu quickFixMenu = new ContextMenu();
-		initQuickFixMenu(quickFixMenu, textArea.getCaretPosition());
+		initQuickFixMenu(quickFixMenu, textArea.getCaretPosition(), false);
 
 		if (quickFixMenu.getItems().isEmpty())
 			return;
@@ -377,7 +378,7 @@ public class SpellChecker
 	}
 
 	public void initContextMenu(ContextMenu contextMenu, int characterIndex) {
-		initQuickFixMenu(contextMenu, characterIndex);
+		initQuickFixMenu(contextMenu, characterIndex, true);
 
 		ObservableList<MenuItem> menuItems = contextMenu.getItems();
 
@@ -391,14 +392,12 @@ public class SpellChecker
 		menuItems.add(checkSpellingItem);
 	}
 
-	private void initQuickFixMenu(ContextMenu contextMenu, int characterIndex) {
+	private void initQuickFixMenu(ContextMenu contextMenu, int characterIndex, boolean addNavigation) {
 		if( languageTool == null )
 			return;
 
 		// find problems
 		List<SpellProblem> problems = findProblemsAt(characterIndex);
-		if (problems.isEmpty())
-			return;
 
 		// create menu items
 		ArrayList<MenuItem> newItems = new ArrayList<>();
@@ -439,6 +438,28 @@ public class SpellChecker
 				});
 				newItems.add(ignoreItem);
 			}
+		}
+
+		if (addNavigation) {
+			// add separator (if necessary)
+			if (!newItems.isEmpty())
+				newItems.add(new SeparatorMenuItem());
+
+			// add "Next Problem" item
+			MenuItem nextProblemItem = new MenuItem(Messages.get("SpellChecker.nextProblem"));
+			nextProblemItem.setAccelerator(KeyCombination.valueOf("Shortcut+."));
+			nextProblemItem.setOnAction(e -> {
+				navigateNext(null);
+			});
+			newItems.add(nextProblemItem);
+
+			// add "Next Problem" item
+			MenuItem previousProblemItem = new MenuItem(Messages.get("SpellChecker.previousProblem"));
+			previousProblemItem.setAccelerator(KeyCombination.valueOf("Shortcut+,"));
+			previousProblemItem.setOnAction(e -> {
+				navigatePrevious(null);
+			});
+			newItems.add(previousProblemItem);
 		}
 
 		ObservableList<MenuItem> menuItems = contextMenu.getItems();
