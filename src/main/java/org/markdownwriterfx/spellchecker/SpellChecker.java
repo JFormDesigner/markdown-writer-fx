@@ -249,7 +249,7 @@ public class SpellChecker
 			Language language = new AmericanEnglish();
 			cache = new ResultCacheEx(10000, 1, TimeUnit.DAYS);
 			languageTool = new JLanguageTool(language, null, cache);
-			languageTool.disableRule("WHITESPACE_RULE");
+			languageTool.disableRules(Arrays.asList(Options.getDisabledRules()));
 
 			userDictionary = new UserDictionary();
 			addIgnoreTokens(userDictionary.getWords());
@@ -411,6 +411,7 @@ public class SpellChecker
 
 			List<String> suggestedReplacements = problem.getSuggestedReplacements();
 			if (!suggestedReplacements.isEmpty()) {
+				// add suggestion items
 				for (String suggestedReplacement : suggestedReplacements) {
 					MenuItem item = new MenuItem(suggestedReplacement);
 					item.getStyleClass().add("spell-menu-suggestion");
@@ -421,6 +422,7 @@ public class SpellChecker
 					newItems.add(item);
 				}
 			} else {
+				// add "No suggestions available" item
 				MenuItem item = new MenuItem(Messages.get("SpellChecker.noSuggestionsAvailable"));
 				item.setDisable(true);
 				newItems.add(item);
@@ -428,8 +430,10 @@ public class SpellChecker
 
 			String word = textArea.getText(problem.getFromPos(), problem.getToPos());
 			if (problem.isTypo() && !word.contains(" ")) {
+				// add separator
 				newItems.add(new SeparatorMenuItem());
 
+				// add "Add to Dictionary" item
 				MenuItem addDictItem = new MenuItem(Messages.get("SpellChecker.addToDictionary"));
 				addDictItem.setOnAction(e -> {
 					addToUserDictionary(word);
@@ -437,12 +441,27 @@ public class SpellChecker
 				});
 				newItems.add(addDictItem);
 
+				// add "Ignore Word" item
 				MenuItem ignoreItem = new MenuItem(Messages.get("SpellChecker.ignoreWord"));
 				ignoreItem.setOnAction(e -> {
 					ignoreWord(word);
 					navigateNextPrevious();
 				});
 				newItems.add(ignoreItem);
+			}
+
+			Rule rule = problem.getRule();
+			if( !(rule instanceof SpellingCheckRule) ) {
+				// add separator
+				newItems.add(new SeparatorMenuItem());
+
+				// add "Disable Rule" item
+				MenuItem disableRuleItem = new MenuItem(Messages.get("SpellChecker.disableRule", rule.getDescription()));
+				disableRuleItem.setOnAction(e -> {
+					disableRule(rule.getId());
+					navigateNextPrevious();
+				});
+				newItems.add(disableRuleItem);
 			}
 		}
 
@@ -537,6 +556,18 @@ public class SpellChecker
 		cache.invalidate(word);
 		addIgnoreTokens(Collections.singletonList(word));
 		checkAsync(true);
+	}
+
+	private void disableRule(String ruleId) {
+		languageTool.disableRule(ruleId);
+		checkAsync(true);
+
+		// add to options
+		List<String> disabledRules = new ArrayList<>(Arrays.asList(Options.getDisabledRules()));
+		if (!disabledRules.contains(ruleId)) {
+			disabledRules.add(ruleId);
+			Options.setDisabledRules(disabledRules.toArray(new String[disabledRules.size()]));
+		}
 	}
 
 	//---- navigation ---------------------------------------------------------

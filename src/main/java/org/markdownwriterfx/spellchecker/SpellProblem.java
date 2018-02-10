@@ -29,6 +29,7 @@ package org.markdownwriterfx.spellchecker;
 
 import java.util.List;
 import org.languagetool.rules.ITSIssueType;
+import org.languagetool.rules.Rule;
 import org.languagetool.rules.RuleMatch;
 import org.languagetool.rules.spelling.SpellingCheckRule;
 
@@ -48,6 +49,14 @@ class SpellProblem
 	SpellProblem(int offset, RuleMatch ruleMatch) {
 		super(offset + ruleMatch.getFromPos(), offset + ruleMatch.getToPos());
 		this.ruleMatch = ruleMatch;
+	}
+
+	RuleMatch getRuleMatch() {
+		return ruleMatch;
+	}
+
+	Rule getRule() {
+		return ruleMatch.getRule();
 	}
 
 	boolean isError() {

@@ -77,6 +77,7 @@ public class Options
 
 		spellChecker.init(options, "spellChecker", true);
 		userDictionary.init(options, "userDictionary", null);
+		disabledRules.init(options, "disabledRules");
 	}
 
 	/**
@@ -178,4 +179,10 @@ public class Options
 	public static String getUserDictionary() { return userDictionary.get(); }
 	public static void setUserDictionary(String userDictionary) { Options.userDictionary.set(userDictionary); }
 	public static StringProperty userDictionaryProperty() { return userDictionary; }
+
+	// 'disabledRules' property
+	private static final PrefsStringsProperty disabledRules = new PrefsStringsProperty();
+	public static String[] getDisabledRules() { return disabledRules.get(); }
+	public static void setDisabledRules(String[] disabledRules) { Options.disabledRules.set(disabledRules); }
+	public static ObjectProperty<String[]> disabledRulesProperty() { return disabledRules; }
 }
