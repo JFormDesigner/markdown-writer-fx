@@ -49,6 +49,7 @@ public class OptionsDialog
 	public OptionsDialog(Window owner) {
 		setTitle(Messages.get("OptionsDialog.title"));
 		initOwner(owner);
+		setResizable(true);
 
 		initComponents();
 
