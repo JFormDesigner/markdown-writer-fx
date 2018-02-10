@@ -424,6 +424,7 @@ public class SpellChecker
 			List<String> suggestedReplacements = problem.getSuggestedReplacements();
 			if (!suggestedReplacements.isEmpty()) {
 				// add suggestion items
+				int count = 0;
 				for (String suggestedReplacement : suggestedReplacements) {
 					MenuItem item = new MenuItem(suggestedReplacement);
 					item.getStyleClass().add("spell-menu-suggestion");
@@ -432,6 +433,11 @@ public class SpellChecker
 						navigateNextPrevious();
 					});
 					newItems.add(item);
+
+					// limit number of suggestions
+					count++;
+					if (count >= 20)
+						break;
 				}
 			} else {
 				// add "No suggestions available" item
