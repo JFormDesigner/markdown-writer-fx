@@ -27,14 +27,24 @@
 
 package org.markdownwriterfx.options;
 
+import static javafx.scene.input.KeyCode.DELETE;
+import static org.fxmisc.wellbehaved.event.EventPattern.keyPressed;
+import static org.fxmisc.wellbehaved.event.InputMap.consume;
+import static org.fxmisc.wellbehaved.event.InputMap.sequence;
+
 import java.io.File;
+import java.util.Arrays;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.event.ActionEvent;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyEvent;
 import javafx.stage.FileChooser;
+import org.fxmisc.wellbehaved.event.Nodes;
 import org.markdownwriterfx.Messages;
 import org.markdownwriterfx.controls.BrowseFileButton;
 import org.markdownwriterfx.util.Utils;
@@ -56,21 +66,41 @@ public class SpellCheckerOptionsPane
 		browseUserDictionaryButton.setBasePath(new File(System.getProperty("user.home")).toPath());
 		browseUserDictionaryButton.urlProperty().bindBidirectional(userDictionaryField.textProperty());
 
+		disabledRulesField.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+
+		Nodes.addInputMap(disabledRulesField, sequence(
+			consume(keyPressed(DELETE),		this::deleteDisabledRules)
+		));
+
 		BooleanBinding disabled = Bindings.not(spellCheckerCheckBox.selectedProperty());
 		userDictionaryLabel.disableProperty().bind(disabled);
 		userDictionaryField.disableProperty().bind(disabled);
 		browseUserDictionaryButton.disableProperty().bind(disabled);
 		userDictionaryNote.disableProperty().bind(disabled);
+		disabledRulesLabel.disableProperty().bind(disabled);
+		disabledRulesField.disableProperty().bind(disabled);
+		disabledRulesNote.disableProperty().bind(disabled);
+		disabledRulesNote2.disableProperty().bind(disabled);
 	}
 
 	void load() {
 		spellCheckerCheckBox.setSelected(Options.isSpellChecker());
 		userDictionaryField.setText(Options.getUserDictionary());
+		disabledRulesField.getItems().addAll(Options.getDisabledRules());
 	}
 
 	void save() {
 		Options.setSpellChecker(spellCheckerCheckBox.isSelected());
 		Options.setUserDictionary(Utils.defaultIfEmpty(userDictionaryField.getText(), null));
+
+		String[] newDisabledRules = disabledRulesField.getItems().toArray(new String[0]);
+		if (!Arrays.equals(newDisabledRules, Options.getDisabledRules()))
+			Options.setDisabledRules(newDisabledRules);
+	}
+
+	private void deleteDisabledRules(KeyEvent e) {
+		// remove selected items
+		disabledRulesField.getItems().removeAll(disabledRulesField.getSelectionModel().getSelectedItem());
 	}
 
 	private void initComponents() {
@@ -80,10 +110,14 @@ public class SpellCheckerOptionsPane
 		userDictionaryField = new TextField();
 		browseUserDictionaryButton = new SpellCheckerOptionsPane.BrowseUserDictionaryButton();
 		userDictionaryNote = new Label();
+		disabledRulesLabel = new Label();
+		disabledRulesField = new ListView<>();
+		disabledRulesNote = new Label();
+		disabledRulesNote2 = new Label();
 
 		//======== this ========
-		setCols("[shrink 0,fill][400,grow,fill]");
-		setRows("[][][]");
+		setCols("[shrink 0,fill][430,grow,fill]");
+		setRows("[][][]para[250,grow,fill][]0[]");
 
 		//---- spellCheckerCheckBox ----
 		spellCheckerCheckBox.setText(Messages.get("SpellCheckerOptionsPane.spellCheckerCheckBox.text"));
@@ -96,13 +130,28 @@ public class SpellCheckerOptionsPane
 		add(userDictionaryField, "cell 1 1");
 
 		//---- browseUserDictionaryButton ----
-		browseUserDictionaryButton.setFocusTraversable(true);
+		browseUserDictionaryButton.setFocusTraversable(false);
 		add(browseUserDictionaryButton, "cell 1 1,alignx right,growx 0");
 
 		//---- userDictionaryNote ----
 		userDictionaryNote.setText(Messages.get("SpellCheckerOptionsPane.userDictionaryNote.text"));
 		userDictionaryNote.setWrapText(true);
 		add(userDictionaryNote, "cell 1 2");
+
+		//---- disabledRulesLabel ----
+		disabledRulesLabel.setText(Messages.get("SpellCheckerOptionsPane.disabledRulesLabel.text"));
+		add(disabledRulesLabel, "cell 0 3,aligny top,growy 0");
+		add(disabledRulesField, "cell 1 3");
+
+		//---- disabledRulesNote ----
+		disabledRulesNote.setText(Messages.get("SpellCheckerOptionsPane.disabledRulesNote.text"));
+		disabledRulesNote.setWrapText(true);
+		add(disabledRulesNote, "cell 1 4");
+
+		//---- disabledRulesNote2 ----
+		disabledRulesNote2.setText(Messages.get("SpellCheckerOptionsPane.disabledRulesNote2.text"));
+		disabledRulesNote2.setWrapText(true);
+		add(disabledRulesNote2, "cell 1 5");
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 
 		// TODO set this in JFormDesigner as soon as it supports labelFor
@@ -115,6 +164,10 @@ public class SpellCheckerOptionsPane
 	private TextField userDictionaryField;
 	private SpellCheckerOptionsPane.BrowseUserDictionaryButton browseUserDictionaryButton;
 	private Label userDictionaryNote;
+	private Label disabledRulesLabel;
+	private ListView<String> disabledRulesField;
+	private Label disabledRulesNote;
+	private Label disabledRulesNote2;
 	// JFormDesigner - End of variables declaration  //GEN-END:variables
 
 	//---- class BrowseUserDictionaryButton -----------------------------------

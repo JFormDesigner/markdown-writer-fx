@@ -156,11 +156,23 @@ public class SpellChecker
 				spellProblems = null;
 
 				checkAsync(true);
+			} else if (e == Options.disabledRulesProperty()) {
+				if (languageTool != null) {
+					// remove all disabled rules
+					for (String ruleId : languageTool.getDisabledRules().toArray(new String[0]))
+						languageTool.enableRule(ruleId);
+
+					// add new disabled rules
+					languageTool.disableRules(Arrays.asList(Options.getDisabledRules()));
+
+					checkAsync(true);
+				}
 			}
 		};
 		WeakInvalidationListener weakOptionsListener = new WeakInvalidationListener(optionsListener);
 		Options.spellCheckerProperty().addListener(weakOptionsListener);
 		Options.userDictionaryProperty().addListener(weakOptionsListener);
+		Options.disabledRulesProperty().addListener(weakOptionsListener);
 	}
 
 	private void enableDisable() {
