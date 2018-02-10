@@ -42,6 +42,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -76,9 +77,11 @@ import org.languagetool.rules.Rule;
 import org.languagetool.rules.RuleMatch;
 import org.languagetool.rules.spelling.SpellingCheckRule;
 import org.markdownwriterfx.Messages;
+import org.markdownwriterfx.addons.SpellCheckerAddon;
 import org.markdownwriterfx.editor.MarkdownEditorPane;
 import org.markdownwriterfx.editor.ParagraphOverlayGraphicFactory;
 import org.markdownwriterfx.options.Options;
+import org.markdownwriterfx.util.Range;
 import org.reactfx.EventStream;
 import org.reactfx.Subscription;
 import org.reactfx.util.FxTimer;
@@ -127,6 +130,8 @@ public class SpellChecker
 
 	// global ignored words (keeps ignored words when switching spell checking off and on)
 	private static Set<String> wordsToBeIgnored = new HashSet<>();
+
+	private static final ServiceLoader<SpellCheckerAddon> addons = ServiceLoader.load(SpellCheckerAddon.class);
 
 	public SpellChecker(MarkdownEditorPane editor, StyleClassedTextArea textArea,
 		ParagraphOverlayGraphicFactory overlayGraphicFactory)
@@ -339,7 +344,26 @@ public class SpellChecker
 			private void addText(int start, String text) {
 				if (start > prevTextEnd)
 					builder.addMarkup(getMarkupFiller(start - prevTextEnd));
-				builder.addText(text);
+
+				Range[] ranges = null;
+				for (SpellCheckerAddon addon : addons) {
+					ranges = addon.getAnnotatedRanges(text);
+					if (ranges != null)
+						break;
+				}
+
+				if (ranges != null) {
+					int i = 0;
+					for (Range range : ranges) {
+						if (i < range.start)
+							builder.addText(text.substring(i, range.start));
+						builder.addMarkup(getMarkupFiller(range.end - range.start));
+						i = range.end;
+					}
+					if (i < text.length())
+						builder.addText(text.substring(i));
+				} else
+					builder.addText(text);
 				prevTextEnd = start + text.length();
 			}
 		};
