@@ -88,6 +88,7 @@ public class SpellCheckerOptionsPane
 		));
 
 		BooleanBinding disabled = Bindings.not(spellCheckerCheckBox.selectedProperty());
+		grammarCheckerCheckBox.disableProperty().bind(disabled);
 		languageLabel.disableProperty().bind(disabled);
 		languageField.disableProperty().bind(disabled);
 		userDictionaryLabel.disableProperty().bind(disabled);
@@ -102,6 +103,7 @@ public class SpellCheckerOptionsPane
 
 	void load() {
 		spellCheckerCheckBox.setSelected(Options.isSpellChecker());
+		grammarCheckerCheckBox.setSelected(Options.isGrammarChecker());
 		languageField.setValue(shortCode2language(Options.getLanguage()));
 		userDictionaryField.setText(Options.getUserDictionary());
 		disabledRulesField.getItems().addAll(Options.getDisabledRules());
@@ -109,6 +111,7 @@ public class SpellCheckerOptionsPane
 
 	void save() {
 		Options.setSpellChecker(spellCheckerCheckBox.isSelected());
+		Options.setGrammarChecker(grammarCheckerCheckBox.isSelected());
 		Options.setLanguage(language2shortCode(languageField.getValue()));
 		Options.setUserDictionary(Utils.defaultIfEmpty(userDictionaryField.getText(), null));
 
@@ -148,6 +151,7 @@ public class SpellCheckerOptionsPane
 	private void initComponents() {
 		// JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
 		spellCheckerCheckBox = new CheckBox();
+		grammarCheckerCheckBox = new CheckBox();
 		languageLabel = new Label();
 		languageField = new ComboBox<>();
 		userDictionaryLabel = new Label();
@@ -161,50 +165,54 @@ public class SpellCheckerOptionsPane
 
 		//======== this ========
 		setCols("[shrink 0,fill][430,grow,fill]");
-		setRows("[][][][]para[250,grow,fill][]0[]");
+		setRows("[][][][][][]para[250,grow,fill][]0[]");
 
 		//---- spellCheckerCheckBox ----
 		spellCheckerCheckBox.setText(Messages.get("SpellCheckerOptionsPane.spellCheckerCheckBox.text"));
 		add(spellCheckerCheckBox, "cell 0 0 2 1,alignx left,growx 0");
 
+		//---- grammarCheckerCheckBox ----
+		grammarCheckerCheckBox.setText(Messages.get("SpellCheckerOptionsPane.grammarCheckerCheckBox.text"));
+		add(grammarCheckerCheckBox, "cell 0 1 2 1,alignx left,growx 0");
+
 		//---- languageLabel ----
 		languageLabel.setText(Messages.get("SpellCheckerOptionsPane.languageLabel.text"));
 		languageLabel.setMnemonicParsing(true);
-		add(languageLabel, "cell 0 1");
+		add(languageLabel, "cell 0 3");
 
 		//---- languageField ----
 		languageField.setVisibleRowCount(20);
-		add(languageField, "cell 1 1");
+		add(languageField, "cell 1 3");
 
 		//---- userDictionaryLabel ----
 		userDictionaryLabel.setText(Messages.get("SpellCheckerOptionsPane.userDictionaryLabel.text"));
 		userDictionaryLabel.setMnemonicParsing(true);
-		add(userDictionaryLabel, "cell 0 2");
-		add(userDictionaryField, "cell 1 2");
+		add(userDictionaryLabel, "cell 0 4");
+		add(userDictionaryField, "cell 1 4");
 
 		//---- browseUserDictionaryButton ----
 		browseUserDictionaryButton.setFocusTraversable(false);
-		add(browseUserDictionaryButton, "cell 1 2,alignx right,growx 0");
+		add(browseUserDictionaryButton, "cell 1 4,alignx right,growx 0");
 
 		//---- userDictionaryNote ----
 		userDictionaryNote.setText(Messages.get("SpellCheckerOptionsPane.userDictionaryNote.text"));
 		userDictionaryNote.setWrapText(true);
-		add(userDictionaryNote, "cell 1 3");
+		add(userDictionaryNote, "cell 1 5");
 
 		//---- disabledRulesLabel ----
 		disabledRulesLabel.setText(Messages.get("SpellCheckerOptionsPane.disabledRulesLabel.text"));
-		add(disabledRulesLabel, "cell 0 4,aligny top,growy 0");
-		add(disabledRulesField, "cell 1 4");
+		add(disabledRulesLabel, "cell 0 6,aligny top,growy 0");
+		add(disabledRulesField, "cell 1 6");
 
 		//---- disabledRulesNote ----
 		disabledRulesNote.setText(Messages.get("SpellCheckerOptionsPane.disabledRulesNote.text"));
 		disabledRulesNote.setWrapText(true);
-		add(disabledRulesNote, "cell 1 5");
+		add(disabledRulesNote, "cell 1 7");
 
 		//---- disabledRulesNote2 ----
 		disabledRulesNote2.setText(Messages.get("SpellCheckerOptionsPane.disabledRulesNote2.text"));
 		disabledRulesNote2.setWrapText(true);
-		add(disabledRulesNote2, "cell 1 6");
+		add(disabledRulesNote2, "cell 1 8");
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 
 		// TODO set this in JFormDesigner as soon as it supports labelFor
@@ -213,6 +221,7 @@ public class SpellCheckerOptionsPane
 
 	// JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
 	private CheckBox spellCheckerCheckBox;
+	private CheckBox grammarCheckerCheckBox;
 	private Label languageLabel;
 	private ComboBox<Language> languageField;
 	private Label userDictionaryLabel;

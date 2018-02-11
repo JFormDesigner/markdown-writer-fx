@@ -54,6 +54,8 @@ import java.util.regex.Pattern;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.WeakInvalidationListener;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.WeakChangeListener;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.geometry.Bounds;
@@ -110,6 +112,7 @@ public class SpellChecker
 	private final StyleClassedTextArea textArea;
 	private final ParagraphOverlayGraphicFactory overlayGraphicFactory;
 	private final InvalidationListener optionsListener;
+	private final ChangeListener<String[]> disabledRulesListener;
 	private ContextMenu quickFixMenu;
 	private int lastQuickFixNavigationDirection;
 
@@ -156,31 +159,38 @@ public class SpellChecker
 
 			if (e == Options.spellCheckerProperty())
 				enableDisable();
-			else if (e == Options.languageProperty() || e == Options.userDictionaryProperty()) {
+			else if (e == Options.grammarCheckerProperty() ||
+					e == Options.languageProperty() ||
+					e == Options.userDictionaryProperty())
+			{
 				languageTool = null;
 				cache = null;
 				userDictionary = null;
 				spellProblems = null;
 
 				checkAsync(true);
-			} else if (e == Options.disabledRulesProperty()) {
-				if (languageTool != null) {
-					// remove all disabled rules
-					for (String ruleId : languageTool.getDisabledRules().toArray(new String[0]))
-						languageTool.enableRule(ruleId);
-
-					// add new disabled rules
-					languageTool.disableRules(Arrays.asList(Options.getDisabledRules()));
-
-					checkAsync(true);
-				}
 			}
 		};
 		WeakInvalidationListener weakOptionsListener = new WeakInvalidationListener(optionsListener);
 		Options.spellCheckerProperty().addListener(weakOptionsListener);
+		Options.grammarCheckerProperty().addListener(weakOptionsListener);
 		Options.languageProperty().addListener(weakOptionsListener);
 		Options.userDictionaryProperty().addListener(weakOptionsListener);
-		Options.disabledRulesProperty().addListener(weakOptionsListener);
+
+		disabledRulesListener = (observer, oldValue, newValue) -> {
+			if (languageTool == null)
+				return;
+
+			// remove old disabled rules
+			for (String ruleId : oldValue)
+				languageTool.enableRule(ruleId);
+
+			// add new disabled rules
+			languageTool.disableRules(Arrays.asList(newValue));
+
+			checkAsync(true);
+		};
+		Options.disabledRulesProperty().addListener(new WeakChangeListener<>(disabledRulesListener));
 	}
 
 	private void enableDisable() {
@@ -266,6 +276,7 @@ public class SpellChecker
 
 	private List<SpellBlockProblems> check(Node astRoot, boolean updatePeriodically) throws IOException {
 		if (languageTool == null) {
+			// get language
 			Language language;
 			try {
 				String langCode = Options.getLanguage();
@@ -276,11 +287,25 @@ public class SpellChecker
 				language = new AmericanEnglish();
 			}
 
+			// create cache
 			cache = new ResultCacheEx(10000, 1, TimeUnit.DAYS);
-			languageTool = new JLanguageTool(language, null, cache);
-			languageTool.disableRules(Arrays.asList(Options.getDisabledRules()));
 
+			// create language tool
+			languageTool = new JLanguageTool(language, null, cache);
+
+			// disable rules
+			languageTool.disableRules(Arrays.asList(Options.getDisabledRules()));
+			if (!Options.isGrammarChecker()) {
+				for (Rule rule : languageTool.getAllRules()) {
+					if (!rule.isDictionaryBasedSpellingRule())
+						languageTool.disableRule(rule.getId());
+				}
+			}
+
+			// get user dictionary
 			userDictionary = new UserDictionary();
+
+			// ignore words
 			addIgnoreTokens(userDictionary.getWords());
 			addIgnoreTokens(Arrays.asList(wordsToBeIgnored.toArray(new String[wordsToBeIgnored.size()])));
 		}
@@ -613,10 +638,7 @@ public class SpellChecker
 	}
 
 	private void disableRule(String ruleId) {
-		languageTool.disableRule(ruleId);
-		checkAsync(true);
-
-		// add to options
+		// add to options (which triggers re-checking)
 		List<String> disabledRules = new ArrayList<>(Arrays.asList(Options.getDisabledRules()));
 		if (!disabledRules.contains(ruleId)) {
 			disabledRules.add(ruleId);
