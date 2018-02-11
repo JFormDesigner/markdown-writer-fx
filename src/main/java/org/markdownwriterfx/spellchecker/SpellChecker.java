@@ -643,8 +643,7 @@ public class SpellChecker
 			return;
 
 		lastQuickFixNavigationDirection = 1;
-		int caretPosition = textArea.getCaretPosition();
-		SpellProblem problem = findNextProblemAt(caretPosition);
+		SpellProblem problem = findNextProblemAt(textArea.getSelection().getStart());
 		if (problem == null)
 			problem = findNextProblemAt(0);
 		if (problem == null)
@@ -659,8 +658,7 @@ public class SpellChecker
 			return;
 
 		lastQuickFixNavigationDirection = -1;
-		int caretPosition = textArea.getCaretPosition();
-		SpellProblem problem = findPreviousProblemAt(caretPosition);
+		SpellProblem problem = findPreviousProblemAt(textArea.getSelection().getEnd());
 		if (problem == null)
 			problem = findPreviousProblemAt(textArea.getLength());
 		if (problem == null)
