@@ -49,6 +49,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import org.fxmisc.wellbehaved.event.Nodes;
 import org.languagetool.Language;
@@ -76,6 +77,10 @@ public class SpellCheckerOptionsPane
 	public SpellCheckerOptionsPane() {
 		initComponents();
 
+		Font titleFont = Font.font(16);
+		spellingSettingsLabel.setFont(titleFont);
+		grammarSettingsLabel.setFont(titleFont);
+
 		languageField.getItems().addAll(getLanguages());
 
 		browseUserDictionaryButton.setBasePath(new File(System.getProperty("user.home")).toPath());
@@ -95,10 +100,13 @@ public class SpellCheckerOptionsPane
 		userDictionaryField.disableProperty().bind(disabled);
 		browseUserDictionaryButton.disableProperty().bind(disabled);
 		userDictionaryNote.disableProperty().bind(disabled);
-		disabledRulesLabel.disableProperty().bind(disabled);
-		disabledRulesField.disableProperty().bind(disabled);
-		disabledRulesNote.disableProperty().bind(disabled);
-		disabledRulesNote2.disableProperty().bind(disabled);
+
+		BooleanBinding grammarDisabled = Bindings.not(Bindings.and(
+			spellCheckerCheckBox.selectedProperty(), grammarCheckerCheckBox.selectedProperty()));
+		disabledRulesLabel.disableProperty().bind(grammarDisabled);
+		disabledRulesField.disableProperty().bind(grammarDisabled);
+		disabledRulesNote.disableProperty().bind(grammarDisabled);
+		disabledRulesNote2.disableProperty().bind(grammarDisabled);
 	}
 
 	void load() {
@@ -150,69 +158,79 @@ public class SpellCheckerOptionsPane
 
 	private void initComponents() {
 		// JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+		spellingSettingsLabel = new Label();
 		spellCheckerCheckBox = new CheckBox();
-		grammarCheckerCheckBox = new CheckBox();
 		languageLabel = new Label();
 		languageField = new ComboBox<>();
 		userDictionaryLabel = new Label();
 		userDictionaryField = new TextField();
 		browseUserDictionaryButton = new SpellCheckerOptionsPane.BrowseUserDictionaryButton();
 		userDictionaryNote = new Label();
+		grammarSettingsLabel = new Label();
+		grammarCheckerCheckBox = new CheckBox();
 		disabledRulesLabel = new Label();
 		disabledRulesField = new ListView<>();
 		disabledRulesNote = new Label();
 		disabledRulesNote2 = new Label();
 
 		//======== this ========
-		setCols("[shrink 0,fill][430,grow,fill]");
-		setRows("[][][][][][]para[250,grow,fill][]0[]");
+		setCols("[indent]0[shrink 0,fill][430,grow,fill]");
+		setRows("[][][][][][]para[][][200,grow,fill][]0[][]");
+
+		//---- spellingSettingsLabel ----
+		spellingSettingsLabel.setText(Messages.get("SpellCheckerOptionsPane.spellingSettingsLabel.text"));
+		add(spellingSettingsLabel, "cell 0 0 3 1");
 
 		//---- spellCheckerCheckBox ----
 		spellCheckerCheckBox.setText(Messages.get("SpellCheckerOptionsPane.spellCheckerCheckBox.text"));
-		add(spellCheckerCheckBox, "cell 0 0 2 1,alignx left,growx 0");
-
-		//---- grammarCheckerCheckBox ----
-		grammarCheckerCheckBox.setText(Messages.get("SpellCheckerOptionsPane.grammarCheckerCheckBox.text"));
-		add(grammarCheckerCheckBox, "cell 0 1 2 1,alignx left,growx 0");
+		add(spellCheckerCheckBox, "cell 1 1 2 1,alignx left,growx 0");
 
 		//---- languageLabel ----
 		languageLabel.setText(Messages.get("SpellCheckerOptionsPane.languageLabel.text"));
 		languageLabel.setMnemonicParsing(true);
-		add(languageLabel, "cell 0 3");
+		add(languageLabel, "cell 1 3");
 
 		//---- languageField ----
 		languageField.setVisibleRowCount(20);
-		add(languageField, "cell 1 3");
+		add(languageField, "cell 2 3");
 
 		//---- userDictionaryLabel ----
 		userDictionaryLabel.setText(Messages.get("SpellCheckerOptionsPane.userDictionaryLabel.text"));
 		userDictionaryLabel.setMnemonicParsing(true);
-		add(userDictionaryLabel, "cell 0 4");
-		add(userDictionaryField, "cell 1 4");
+		add(userDictionaryLabel, "cell 1 4");
+		add(userDictionaryField, "cell 2 4");
 
 		//---- browseUserDictionaryButton ----
 		browseUserDictionaryButton.setFocusTraversable(false);
-		add(browseUserDictionaryButton, "cell 1 4,alignx right,growx 0");
+		add(browseUserDictionaryButton, "cell 2 4,alignx right,growx 0");
 
 		//---- userDictionaryNote ----
 		userDictionaryNote.setText(Messages.get("SpellCheckerOptionsPane.userDictionaryNote.text"));
 		userDictionaryNote.setWrapText(true);
-		add(userDictionaryNote, "cell 1 5");
+		add(userDictionaryNote, "cell 2 5");
+
+		//---- grammarSettingsLabel ----
+		grammarSettingsLabel.setText(Messages.get("SpellCheckerOptionsPane.grammarSettingsLabel.text"));
+		add(grammarSettingsLabel, "cell 0 6 3 1");
+
+		//---- grammarCheckerCheckBox ----
+		grammarCheckerCheckBox.setText(Messages.get("SpellCheckerOptionsPane.grammarCheckerCheckBox.text"));
+		add(grammarCheckerCheckBox, "cell 1 7 2 1,alignx left,growx 0");
 
 		//---- disabledRulesLabel ----
 		disabledRulesLabel.setText(Messages.get("SpellCheckerOptionsPane.disabledRulesLabel.text"));
-		add(disabledRulesLabel, "cell 0 6,aligny top,growy 0");
-		add(disabledRulesField, "cell 1 6");
+		add(disabledRulesLabel, "cell 1 8,aligny top,growy 0");
+		add(disabledRulesField, "cell 2 8");
 
 		//---- disabledRulesNote ----
 		disabledRulesNote.setText(Messages.get("SpellCheckerOptionsPane.disabledRulesNote.text"));
 		disabledRulesNote.setWrapText(true);
-		add(disabledRulesNote, "cell 1 7");
+		add(disabledRulesNote, "cell 2 9");
 
 		//---- disabledRulesNote2 ----
 		disabledRulesNote2.setText(Messages.get("SpellCheckerOptionsPane.disabledRulesNote2.text"));
 		disabledRulesNote2.setWrapText(true);
-		add(disabledRulesNote2, "cell 1 8");
+		add(disabledRulesNote2, "cell 2 10");
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 
 		// TODO set this in JFormDesigner as soon as it supports labelFor
@@ -220,14 +238,16 @@ public class SpellCheckerOptionsPane
 	}
 
 	// JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
+	private Label spellingSettingsLabel;
 	private CheckBox spellCheckerCheckBox;
-	private CheckBox grammarCheckerCheckBox;
 	private Label languageLabel;
 	private ComboBox<Language> languageField;
 	private Label userDictionaryLabel;
 	private TextField userDictionaryField;
 	private SpellCheckerOptionsPane.BrowseUserDictionaryButton browseUserDictionaryButton;
 	private Label userDictionaryNote;
+	private Label grammarSettingsLabel;
+	private CheckBox grammarCheckerCheckBox;
 	private Label disabledRulesLabel;
 	private ListView<String> disabledRulesField;
 	private Label disabledRulesNote;
