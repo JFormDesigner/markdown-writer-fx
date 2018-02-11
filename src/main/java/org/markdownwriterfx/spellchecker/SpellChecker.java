@@ -178,6 +178,9 @@ public class SpellChecker
 		Options.userDictionaryProperty().addListener(weakOptionsListener);
 
 		disabledRulesListener = (observer, oldValue, newValue) -> {
+			if (textArea.getScene() == null)
+				return; // editor closed but not yet GCed
+
 			if (languageTool == null)
 				return;
 
