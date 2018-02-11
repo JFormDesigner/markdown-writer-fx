@@ -154,7 +154,7 @@ public class SpellChecker
 
 		// listen to option changes
 		optionsListener = e -> {
-			if (textArea.getScene() == null)
+			if (isEditorClosed())
 				return; // editor closed but not yet GCed
 
 			if (e == Options.spellCheckerProperty())
@@ -178,7 +178,7 @@ public class SpellChecker
 		Options.userDictionaryProperty().addListener(weakOptionsListener);
 
 		disabledRulesListener = (observer, oldValue, newValue) -> {
-			if (textArea.getScene() == null)
+			if (isEditorClosed())
 				return; // editor closed but not yet GCed
 
 			if (languageTool == null)
@@ -194,6 +194,10 @@ public class SpellChecker
 			checkAsync(true);
 		};
 		Options.disabledRulesProperty().addListener(new WeakChangeListener<>(disabledRulesListener));
+	}
+
+	private boolean isEditorClosed() {
+		return textArea.getScene() == null;
 	}
 
 	private void enableDisable() {
@@ -265,6 +269,9 @@ public class SpellChecker
 	}
 
 	private void checkFinished(Try<List<SpellBlockProblems>> result) {
+		if (isEditorClosed())
+			return;
+
 		if (overlayGraphicFactory == null)
 			return; // ignore result; user turned spell checking off
 
@@ -346,13 +353,15 @@ public class SpellChecker
 		// check spelling of nodes
 		try {
 			for (Node node : nodesToCheck) {
-				AnnotatedText annotatedText = annotatedNodeText(node);
+				if (isEditorClosed())
+					return null;
 
 				// languageTool may be set to null in another thread --> get it only once
 				JLanguageTool languageTool = SpellChecker.languageTool;
 				if (languageTool == null)
 					return null; // user turned spell checking off
 
+				AnnotatedText annotatedText = annotatedNodeText(node);
 				List<RuleMatch> ruleMatches = languageTool.check(annotatedText);
 
 				SpellBlockProblems problem = new SpellBlockProblems(node.getStartOffset(), node.getEndOffset(), ruleMatches);
