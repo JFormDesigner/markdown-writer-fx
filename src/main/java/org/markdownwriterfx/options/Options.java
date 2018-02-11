@@ -76,6 +76,7 @@ public class Options
 		bulletListMarker.init(options, "bulletListMarker", "-");
 
 		spellChecker.init(options, "spellChecker", true);
+		language.init(options, "language", null);
 		userDictionary.init(options, "userDictionary", null);
 		disabledRules.init(options, "disabledRules");
 	}
@@ -173,6 +174,12 @@ public class Options
 	public static boolean isSpellChecker() { return spellChecker.get(); }
 	public static void setSpellChecker(boolean spellChecker) { Options.spellChecker.set(spellChecker); }
 	public static BooleanProperty spellCheckerProperty() { return spellChecker; }
+
+	// 'language' property
+	private static final PrefsStringProperty language = new PrefsStringProperty();
+	public static String getLanguage() { return language.get(); }
+	public static void setLanguage(String language) { Options.language.set(language); }
+	public static StringProperty languageProperty() { return language; }
 
 	// 'userDictionary' property
 	private static final PrefsStringProperty userDictionary = new PrefsStringProperty();

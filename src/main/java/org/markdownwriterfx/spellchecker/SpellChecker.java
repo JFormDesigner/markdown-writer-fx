@@ -41,6 +41,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -70,6 +71,7 @@ import org.fxmisc.richtext.model.PlainTextChange;
 import org.fxmisc.wellbehaved.event.Nodes;
 import org.languagetool.JLanguageTool;
 import org.languagetool.Language;
+import org.languagetool.Languages;
 import org.languagetool.language.AmericanEnglish;
 import org.languagetool.markup.AnnotatedText;
 import org.languagetool.markup.AnnotatedTextBuilder;
@@ -154,7 +156,7 @@ public class SpellChecker
 
 			if (e == Options.spellCheckerProperty())
 				enableDisable();
-			else if (e == Options.userDictionaryProperty()) {
+			else if (e == Options.languageProperty() || e == Options.userDictionaryProperty()) {
 				languageTool = null;
 				cache = null;
 				userDictionary = null;
@@ -176,6 +178,7 @@ public class SpellChecker
 		};
 		WeakInvalidationListener weakOptionsListener = new WeakInvalidationListener(optionsListener);
 		Options.spellCheckerProperty().addListener(weakOptionsListener);
+		Options.languageProperty().addListener(weakOptionsListener);
 		Options.userDictionaryProperty().addListener(weakOptionsListener);
 		Options.disabledRulesProperty().addListener(weakOptionsListener);
 	}
@@ -263,7 +266,16 @@ public class SpellChecker
 
 	private List<SpellBlockProblems> check(Node astRoot, boolean updatePeriodically) throws IOException {
 		if (languageTool == null) {
-			Language language = new AmericanEnglish();
+			Language language;
+			try {
+				String langCode = Options.getLanguage();
+				language = (langCode != null)
+					? Languages.getLanguageForShortCode(langCode)
+					: Languages.getLanguageForLocale(Locale.getDefault());
+			} catch (RuntimeException ex) {
+				language = new AmericanEnglish();
+			}
+
 			cache = new ResultCacheEx(10000, 1, TimeUnit.DAYS);
 			languageTool = new JLanguageTool(language, null, cache);
 			languageTool.disableRules(Arrays.asList(Options.getDisabledRules()));
