@@ -344,6 +344,12 @@ public class SpellChecker
 		try {
 			for (Node node : nodesToCheck) {
 				AnnotatedText annotatedText = annotatedNodeText(node);
+
+				// languageTool may be set to null in another thread --> get it only once
+				JLanguageTool languageTool = SpellChecker.languageTool;
+				if (languageTool == null)
+					return null; // user turned spell checking off
+
 				List<RuleMatch> ruleMatches = languageTool.check(annotatedText);
 
 				SpellBlockProblems problem = new SpellBlockProblems(node.getStartOffset(), node.getEndOffset(), ruleMatches);
