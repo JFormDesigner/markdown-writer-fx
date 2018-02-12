@@ -39,16 +39,11 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.ServiceLoader;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javafx.application.Platform;
@@ -71,10 +66,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.richtext.model.PlainTextChange;
 import org.fxmisc.wellbehaved.event.Nodes;
-import org.languagetool.JLanguageTool;
-import org.languagetool.Language;
-import org.languagetool.Languages;
-import org.languagetool.language.AmericanEnglish;
 import org.languagetool.markup.AnnotatedText;
 import org.languagetool.markup.AnnotatedTextBuilder;
 import org.languagetool.rules.Rule;
@@ -112,7 +103,7 @@ public class SpellChecker
 	private final StyleClassedTextArea textArea;
 	private final ParagraphOverlayGraphicFactory overlayGraphicFactory;
 	private final InvalidationListener optionsListener;
-	private final ChangeListener<String[]> disabledRulesListener;
+	private final ChangeListener<Number> checkRequestIDListener;
 	private ContextMenu quickFixMenu;
 	private int lastQuickFixNavigationDirection;
 
@@ -124,17 +115,8 @@ public class SpellChecker
 	// global executor used for all spell checking
 	private static ExecutorService executor;
 
-	// global JLanguageTool used in executor
-	private static JLanguageTool languageTool;
-
-	// global ResultCache used by global JLanguageTool
-	private static ResultCacheEx cache;
-
-	// global user dictionary
-	private static UserDictionary userDictionary;
-
-	// global ignored words (keeps ignored words when switching spell checking off and on)
-	private static Set<String> wordsToBeIgnored = new HashSet<>();
+	// global language tool used in executor for all spell checking
+	private static final GlobalLanguageTool languageTool = new GlobalLanguageTool();
 
 	private static final ServiceLoader<SpellCheckerAddon> addons = ServiceLoader.load(SpellCheckerAddon.class);
 
@@ -145,55 +127,33 @@ public class SpellChecker
 		this.textArea = textArea;
 		this.overlayGraphicFactory = overlayGraphicFactory;
 
-		enableDisable();
-
 		Nodes.addInputMap(textArea, sequence(
 			consume(keyPressed(PERIOD, SHORTCUT_DOWN),		this::navigateNext),
 			consume(keyPressed(COMMA, SHORTCUT_DOWN),		this::navigatePrevious)
 		));
+
+		enableDisable();
 
 		// listen to option changes
 		optionsListener = e -> {
 			if (isEditorClosed())
 				return; // editor closed but not yet GCed
 
-			if (e == Options.spellCheckerProperty())
-				enableDisable();
-			else if (e == Options.grammarCheckerProperty() ||
-					e == Options.languageProperty() ||
-					e == Options.userDictionaryProperty())
-			{
-				languageTool = null;
-				cache = null;
-				userDictionary = null;
-				spellProblems = null;
-
-				checkAsync(true);
-			}
+			enableDisable();
 		};
 		WeakInvalidationListener weakOptionsListener = new WeakInvalidationListener(optionsListener);
 		Options.spellCheckerProperty().addListener(weakOptionsListener);
-		Options.grammarCheckerProperty().addListener(weakOptionsListener);
-		Options.languageProperty().addListener(weakOptionsListener);
-		Options.userDictionaryProperty().addListener(weakOptionsListener);
 
-		disabledRulesListener = (observer, oldValue, newValue) -> {
+		// listen to checkRequestID changes
+		checkRequestIDListener = (observer, oldValue, newValue) -> {
 			if (isEditorClosed())
 				return; // editor closed but not yet GCed
 
-			if (languageTool == null)
-				return;
-
-			// remove old disabled rules
-			for (String ruleId : oldValue)
-				languageTool.enableRule(ruleId);
-
-			// add new disabled rules
-			languageTool.disableRules(Arrays.asList(newValue));
+			spellProblems = null;
 
 			checkAsync(true);
 		};
-		Options.disabledRulesProperty().addListener(new WeakChangeListener<>(disabledRulesListener));
+		languageTool.checkRequestIDProperty().addListener(new WeakChangeListener<>(checkRequestIDListener));
 	}
 
 	private boolean isEditorClosed() {
@@ -232,9 +192,6 @@ public class SpellChecker
 			overlayGraphicFactory.removeOverlayFactory(spellCheckerOverlayFactory);
 			spellCheckerOverlayFactory = null;
 
-			languageTool = null;
-			cache = null;
-			userDictionary = null;
 			spellProblems = null;
 
 			if (executor != null) {
@@ -285,41 +242,6 @@ public class SpellChecker
 	}
 
 	private List<SpellBlockProblems> check(Node astRoot, boolean updatePeriodically) throws IOException {
-		if (languageTool == null) {
-			// get language
-			Language language;
-			try {
-				String langCode = Options.getLanguage();
-				language = (langCode != null)
-					? Languages.getLanguageForShortCode(langCode)
-					: Languages.getLanguageForLocale(Locale.getDefault());
-			} catch (RuntimeException ex) {
-				language = new AmericanEnglish();
-			}
-
-			// create cache
-			cache = new ResultCacheEx(10000, 1, TimeUnit.DAYS);
-
-			// create language tool
-			languageTool = new JLanguageTool(language, null, cache);
-
-			// disable rules
-			languageTool.disableRules(Arrays.asList(Options.getDisabledRules()));
-			if (!Options.isGrammarChecker()) {
-				for (Rule rule : languageTool.getAllRules()) {
-					if (!rule.isDictionaryBasedSpellingRule())
-						languageTool.disableRule(rule.getId());
-				}
-			}
-
-			// get user dictionary
-			userDictionary = new UserDictionary();
-
-			// ignore words
-			addIgnoreTokens(userDictionary.getWords());
-			addIgnoreTokens(Arrays.asList(wordsToBeIgnored.toArray(new String[wordsToBeIgnored.size()])));
-		}
-
 		// find nodes that should be checked
 		ArrayList<Node> nodesToCheck = new ArrayList<>();
 		NodeVisitor visitor = new NodeVisitor(Collections.emptyList()) {
@@ -333,6 +255,12 @@ public class SpellChecker
 			}
 		};
 		visitor.visit(astRoot);
+
+		if (nodesToCheck.isEmpty())
+			return Collections.emptyList();
+
+		// initialize language tool
+		languageTool.initialize();
 
 		ArrayList<SpellBlockProblems> spellProblems = new ArrayList<>();
 
@@ -356,13 +284,13 @@ public class SpellChecker
 				if (isEditorClosed())
 					return null;
 
-				// languageTool may be set to null in another thread --> get it only once
-				JLanguageTool languageTool = SpellChecker.languageTool;
-				if (languageTool == null)
-					return null; // user turned spell checking off
-
 				AnnotatedText annotatedText = annotatedNodeText(node);
-				List<RuleMatch> ruleMatches = languageTool.check(annotatedText);
+				List<RuleMatch> ruleMatches;
+				try {
+					ruleMatches = languageTool.check(annotatedText);
+				} catch (IllegalStateException ex) {
+					return null; // user turned spell checking off
+				}
 
 				SpellBlockProblems problem = new SpellBlockProblems(node.getStartOffset(), node.getEndOffset(), ruleMatches);
 				synchronized (spellProblems) {
@@ -487,7 +415,7 @@ public class SpellChecker
 	}
 
 	private void initQuickFixMenu(ContextMenu contextMenu, int characterIndex, boolean addNavigation) {
-		if( languageTool == null )
+		if (!languageTool.isInitialized())
 			return;
 
 		// find problems
@@ -533,7 +461,8 @@ public class SpellChecker
 				// add "Add to Dictionary" item
 				MenuItem addDictItem = new MenuItem(Messages.get("SpellChecker.addToDictionary"));
 				addDictItem.setOnAction(e -> {
-					addToUserDictionary(word);
+					languageTool.addToUserDictionary(word);
+					checkAsync(true);
 					navigateNextPrevious();
 				});
 				newItems.add(addDictItem);
@@ -541,7 +470,8 @@ public class SpellChecker
 				// add "Ignore Word" item
 				MenuItem ignoreItem = new MenuItem(Messages.get("SpellChecker.ignoreWord"));
 				ignoreItem.setOnAction(e -> {
-					ignoreWord(word);
+					languageTool.ignoreWord(word);
+					checkAsync(true);
 					navigateNextPrevious();
 				});
 				newItems.add(ignoreItem);
@@ -639,22 +569,6 @@ public class SpellChecker
 		return textFlow;
 	}
 
-	private void addToUserDictionary(String word) {
-		userDictionary.addWord(word);
-		addIgnoreWord(word);
-	}
-
-	private void ignoreWord(String word) {
-		wordsToBeIgnored.add(word);
-		addIgnoreWord(word);
-	}
-
-	private void addIgnoreWord(String word) {
-		cache.invalidate(word);
-		addIgnoreTokens(Collections.singletonList(word));
-		checkAsync(true);
-	}
-
 	private void disableRule(String ruleId) {
 		// add to options (which triggers re-checking)
 		List<String> disabledRules = new ArrayList<>(Arrays.asList(Options.getDisabledRules()));
@@ -713,19 +627,6 @@ public class SpellChecker
 	private void selectProblem(SpellProblem problem) {
 		textArea.selectRange(problem.getFromPos(), problem.getToPos());
 		editor.scrollCaretToVisible();
-	}
-
-	private void addIgnoreTokens(List<String> words) {
-		forEachSpellingCheckRule(rule -> {
-			rule.addIgnoreTokens(words);
-		});
-	}
-
-	private void forEachSpellingCheckRule(Consumer<SpellingCheckRule> action) {
-		for (Rule rule : languageTool.getAllActiveRules()) {
-			if (rule instanceof SpellingCheckRule)
-				action.accept((SpellingCheckRule) rule);
-		}
 	}
 
 	private List<SpellProblem> findProblemsAt(int index) {
