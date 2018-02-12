@@ -73,6 +73,7 @@ class GlobalLanguageTool
 		Options.spellCheckerProperty().addListener((observer, oldValue, newValue) -> {
 			if (!newValue)
 				uninitialize();
+			requestCheck();
 		});
 
 		InvalidationListener optionsListener = e -> {
@@ -147,7 +148,7 @@ class GlobalLanguageTool
 	}
 
 	// 'checkRequestID' property
-	private final SimpleIntegerProperty checkRequestID = new SimpleIntegerProperty();
+	private final SimpleIntegerProperty checkRequestID = new SimpleIntegerProperty(1);
 	int getCheckRequestID() { return checkRequestID.get(); }
 	IntegerProperty checkRequestIDProperty() { return checkRequestID; }
 

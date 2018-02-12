@@ -104,6 +104,8 @@ class FileEditor
 
 				mainWindow.stageFocusedProperty.addListener(stageFocusedListener);
 			} else {
+				Platform.runLater(() -> deactivated());
+
 				Options.markdownRendererProperty().removeListener(previewTypeListener);
 				fileEditorTabPane.previewVisible.removeListener(previewTypeListener);
 				fileEditorTabPane.htmlSourceVisible.removeListener(previewTypeListener);
@@ -202,6 +204,7 @@ class FileEditor
 		if (tab.getContent() != null) {
 			reload();
 			updatePreviewType();
+			markdownEditorPane.setVisible(true);
 			markdownEditorPane.requestFocus();
 			return;
 		}
@@ -237,13 +240,21 @@ class FileEditor
 		tab.setContent(splitPane);
 
 		updatePreviewType();
+		markdownEditorPane.setVisible(true);
 		markdownEditorPane.requestFocus();
 
 		// update 'editor' property
 		editor.set(markdownEditorPane);
 	}
 
-	void load() {
+	private void deactivated() {
+		if (markdownEditorPane == null)
+			return;
+
+		markdownEditorPane.setVisible(false);
+	}
+
+	private void load() {
 		Path path = this.path.get();
 		if (path == null)
 			return;

@@ -40,6 +40,8 @@ import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.WeakInvalidationListener;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -263,6 +265,12 @@ public class MarkdownEditorPane
 	public Path getPath() { return path.get(); }
 	public void setPath(Path path) { this.path.set(path); }
 	public ObjectProperty<Path> pathProperty() { return path; }
+
+	// 'visible' property
+	private final ReadOnlyBooleanWrapper visible = new ReadOnlyBooleanWrapper(false);
+	public boolean isVisible() { return visible.get(); }
+	public void setVisible(boolean visible) { this.visible.set(visible); }
+	public ReadOnlyBooleanProperty visibleProperty() { return visible.getReadOnlyProperty(); }
 
 	Path getParentPath() {
 		Path path = getPath();

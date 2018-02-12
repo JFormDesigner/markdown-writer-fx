@@ -48,9 +48,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
-import javafx.beans.WeakInvalidationListener;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.WeakChangeListener;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.geometry.Bounds;
@@ -77,6 +74,7 @@ import org.markdownwriterfx.editor.MarkdownEditorPane;
 import org.markdownwriterfx.editor.ParagraphOverlayGraphicFactory;
 import org.markdownwriterfx.options.Options;
 import org.markdownwriterfx.util.Range;
+import org.markdownwriterfx.util.Utils;
 import org.reactfx.EventStream;
 import org.reactfx.Subscription;
 import org.reactfx.util.FxTimer;
@@ -102,8 +100,7 @@ public class SpellChecker
 	private final MarkdownEditorPane editor;
 	private final StyleClassedTextArea textArea;
 	private final ParagraphOverlayGraphicFactory overlayGraphicFactory;
-	private final InvalidationListener optionsListener;
-	private final ChangeListener<Number> checkRequestIDListener;
+	private int checkRequestID;
 	private ContextMenu quickFixMenu;
 	private int lastQuickFixNavigationDirection;
 
@@ -132,32 +129,37 @@ public class SpellChecker
 			consume(keyPressed(COMMA, SHORTCUT_DOWN),		this::navigatePrevious)
 		));
 
+		// listen to checkRequestID changes
+		InvalidationListener checkRequestIDListener = e -> {
+			checkIfNecessary();
+		};
+
+		// listen to editor visibility changes
+		editor.visibleProperty().addListener((observer, oldVisible, newVisible) -> {
+			if (newVisible)
+				languageTool.checkRequestIDProperty().addListener(checkRequestIDListener);
+			else
+				languageTool.checkRequestIDProperty().removeListener(checkRequestIDListener);
+
+			checkIfNecessary();
+		});
+	}
+
+	private void checkIfNecessary() {
+		if (!editor.isVisible())
+			return;
+
 		enableDisable();
 
-		// listen to option changes
-		optionsListener = e -> {
-			if (isEditorClosed())
-				return; // editor closed but not yet GCed
+		if (!Options.isSpellChecker())
+			return;
 
-			enableDisable();
-		};
-		WeakInvalidationListener weakOptionsListener = new WeakInvalidationListener(optionsListener);
-		Options.spellCheckerProperty().addListener(weakOptionsListener);
-
-		// listen to checkRequestID changes
-		checkRequestIDListener = (observer, oldValue, newValue) -> {
-			if (isEditorClosed())
-				return; // editor closed but not yet GCed
-
+		if (checkRequestID != languageTool.getCheckRequestID() || spellProblems == null) {
+			checkRequestID = languageTool.getCheckRequestID();
 			spellProblems = null;
 
 			checkAsync(true);
-		};
-		languageTool.checkRequestIDProperty().addListener(new WeakChangeListener<>(checkRequestIDListener));
-	}
-
-	private boolean isEditorClosed() {
-		return textArea.getScene() == null;
+		}
 	}
 
 	private void enableDisable() {
@@ -183,8 +185,6 @@ public class SpellChecker
 			spellCheckerOverlayFactory = new SpellCheckerOverlayFactory(() -> spellProblems);
 			overlayGraphicFactory.addOverlayFactory(spellCheckerOverlayFactory);
 
-			checkAsync(true);
-
 		} else if (!spellChecker && spellCheckerOverlayFactory != null) {
 			textChangesSubscribtion.unsubscribe();
 			textChangesSubscribtion = null;
@@ -208,7 +208,7 @@ public class SpellChecker
 		Task<List<SpellBlockProblems>> task = new Task<List<SpellBlockProblems>>() {
 			@Override
 			protected List<SpellBlockProblems> call() throws Exception {
-				return check(astRoot, updatePeriodically);
+				return check(this, astRoot, updatePeriodically);
 			}
 			@Override
 			protected void succeeded() {
@@ -220,28 +220,32 @@ public class SpellChecker
 				if (invokeFinished)
 					checkFinished(Try.failure(getException()));
 			}
+			@Override
+			protected void cancelled() {
+				spellProblems = null;
+			}
 		};
 		executor.execute(task);
 		return task;
 	}
 
 	private void checkFinished(Try<List<SpellBlockProblems>> result) {
-		if (isEditorClosed())
-			return;
-
 		if (overlayGraphicFactory == null)
 			return; // ignore result; user turned spell checking off
 
 		if (result.isSuccess()) {
-			spellProblems = result.get();
-			overlayGraphicFactory.update();
+			List<SpellBlockProblems> newSpellProblems = result.get();
+			if (!Utils.safeEquals(newSpellProblems, spellProblems)) {
+				spellProblems = newSpellProblems;
+				overlayGraphicFactory.update();
+			}
 		} else {
 			//TODO
 			result.getFailure().printStackTrace();
 		}
 	}
 
-	private List<SpellBlockProblems> check(Node astRoot, boolean updatePeriodically) throws IOException {
+	private List<SpellBlockProblems> check(Task<?> task, Node astRoot, boolean updatePeriodically) throws IOException {
 		// find nodes that should be checked
 		ArrayList<Node> nodesToCheck = new ArrayList<>();
 		NodeVisitor visitor = new NodeVisitor(Collections.emptyList()) {
@@ -281,14 +285,17 @@ public class SpellChecker
 		// check spelling of nodes
 		try {
 			for (Node node : nodesToCheck) {
-				if (isEditorClosed())
+				if (!editor.isVisible()) {
+					task.cancel(false);
 					return null;
+				}
 
 				AnnotatedText annotatedText = annotatedNodeText(node);
 				List<RuleMatch> ruleMatches;
 				try {
 					ruleMatches = languageTool.check(annotatedText);
 				} catch (IllegalStateException ex) {
+					task.cancel(false);
 					return null; // user turned spell checking off
 				}
 
