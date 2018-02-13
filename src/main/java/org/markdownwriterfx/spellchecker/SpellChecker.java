@@ -467,7 +467,6 @@ public class SpellChecker
 				MenuItem addDictItem = new MenuItem(Messages.get("SpellChecker.addToDictionary"));
 				addDictItem.setOnAction(e -> {
 					languageTool.addToUserDictionary(word);
-					checkAsync(true);
 					navigateNextPrevious();
 				});
 				newItems.add(addDictItem);
@@ -476,7 +475,6 @@ public class SpellChecker
 				MenuItem ignoreItem = new MenuItem(Messages.get("SpellChecker.ignoreWord"));
 				ignoreItem.setOnAction(e -> {
 					languageTool.ignoreWord(word);
-					checkAsync(true);
 					navigateNextPrevious();
 				});
 				newItems.add(ignoreItem);

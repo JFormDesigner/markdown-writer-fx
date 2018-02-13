@@ -195,6 +195,7 @@ class GlobalLanguageTool
 	private void addIgnoreWord(String word) {
 		cache.invalidate(word);
 		addIgnoreTokens(Collections.singletonList(word));
+		requestCheck();
 	}
 
 	private void addIgnoreTokens(List<String> words) {
