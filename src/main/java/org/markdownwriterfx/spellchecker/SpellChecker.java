@@ -37,7 +37,6 @@ import static org.fxmisc.wellbehaved.event.InputMap.sequence;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -492,7 +491,7 @@ public class SpellChecker
 				// add "Disable Rule" item
 				MenuItem disableRuleItem = new MenuItem(Messages.get("SpellChecker.disableRule", rule.getDescription()));
 				disableRuleItem.setOnAction(e -> {
-					disableRule(rule.getId());
+					languageTool.disableRule(rule);
 					navigateNextPrevious();
 				});
 				newItems.add(disableRuleItem);
@@ -574,15 +573,6 @@ public class SpellChecker
 		};
 		textFlow.getStyleClass().add("spell-menu-message");
 		return textFlow;
-	}
-
-	private void disableRule(String ruleId) {
-		// add to options (which triggers re-checking)
-		List<String> disabledRules = new ArrayList<>(Arrays.asList(Options.getDisabledRules()));
-		if (!disabledRules.contains(ruleId)) {
-			disabledRules.add(ruleId);
-			Options.setDisabledRules(disabledRules.toArray(new String[disabledRules.size()]));
-		}
 	}
 
 	//---- navigation ---------------------------------------------------------

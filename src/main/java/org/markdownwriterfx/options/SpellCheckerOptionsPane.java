@@ -40,6 +40,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.event.ActionEvent;
@@ -57,6 +59,7 @@ import org.languagetool.Languages;
 import org.languagetool.language.AmericanEnglish;
 import org.markdownwriterfx.Messages;
 import org.markdownwriterfx.controls.BrowseFileButton;
+import org.markdownwriterfx.util.Item;
 import org.markdownwriterfx.util.Utils;
 import org.tbee.javafx.scene.layout.fxml.MigPane;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
@@ -67,14 +70,14 @@ import de.jensd.fx.glyphs.fontawesome.utils.FontAwesomeIconFactory;
  *
  * @author Karl Tauber
  */
-public class SpellCheckerOptionsPane
+class SpellCheckerOptionsPane
 	extends MigPane
 {
 	/** languages that are marked as deprecated in their {@link Language} classes */
 	private static final Set<String> DEPRECATED_LANGUAGES = new HashSet<>(Arrays.asList(
 		"ast-ES", "be-BY", "da-DK", "de", "en", "sl-SI", "sv", "tl-PH"));
 
-	public SpellCheckerOptionsPane() {
+	SpellCheckerOptionsPane() {
 		initComponents();
 
 		Font titleFont = Font.font(16);
@@ -114,7 +117,9 @@ public class SpellCheckerOptionsPane
 		grammarCheckerCheckBox.setSelected(Options.isGrammarChecker());
 		languageField.setValue(shortCode2language(Options.getLanguage()));
 		userDictionaryField.setText(Options.getUserDictionary());
-		disabledRulesField.getItems().addAll(Options.getDisabledRules());
+		disabledRulesField.getItems().addAll(Stream.of(sortRules(Options.getDisabledRules()))
+			.map(rule -> new Item<>(Options.ruleIdDesc2desc(rule), rule))
+			.collect(Collectors.toList()));
 	}
 
 	void save() {
@@ -123,9 +128,17 @@ public class SpellCheckerOptionsPane
 		Options.setLanguage(language2shortCode(languageField.getValue()));
 		Options.setUserDictionary(Utils.defaultIfEmpty(userDictionaryField.getText(), null));
 
-		String[] newDisabledRules = disabledRulesField.getItems().toArray(new String[0]);
-		if (!Arrays.equals(newDisabledRules, Options.getDisabledRules()))
+		String[] newDisabledRules = disabledRulesField.getItems().stream()
+			.map(item -> item.value)
+			.toArray(String[]::new);
+		if (!Arrays.equals(newDisabledRules, sortRules(Options.getDisabledRules())))
 			Options.setDisabledRules(newDisabledRules);
+	}
+
+	private String[] sortRules(String[] rules) {
+		return Stream.of(rules)
+			.sorted((rule1, rule2) -> Options.ruleIdDesc2desc(rule1).compareToIgnoreCase(Options.ruleIdDesc2desc(rule2)))
+			.toArray(String[]::new);
 	}
 
 	private List<Language> getLanguages() {
@@ -153,7 +166,7 @@ public class SpellCheckerOptionsPane
 
 	private void deleteDisabledRules(KeyEvent e) {
 		// remove selected items
-		disabledRulesField.getItems().removeAll(disabledRulesField.getSelectionModel().getSelectedItem());
+		disabledRulesField.getItems().remove(disabledRulesField.getSelectionModel().getSelectedItem());
 	}
 
 	private void initComponents() {
@@ -249,7 +262,7 @@ public class SpellCheckerOptionsPane
 	private Label grammarSettingsLabel;
 	private CheckBox grammarCheckerCheckBox;
 	private Label disabledRulesLabel;
-	private ListView<String> disabledRulesField;
+	private ListView<Item<String>> disabledRulesField;
 	private Label disabledRulesNote;
 	private Label disabledRulesNote2;
 	// JFormDesigner - End of variables declaration  //GEN-END:variables

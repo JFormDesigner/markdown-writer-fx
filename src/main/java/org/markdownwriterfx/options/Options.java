@@ -29,6 +29,8 @@ package org.markdownwriterfx.options;
 
 import java.util.List;
 import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
@@ -195,8 +197,23 @@ public class Options
 	public static StringProperty userDictionaryProperty() { return userDictionary; }
 
 	// 'disabledRules' property
+	// (value syntax: ruleID=ruleDescription)
 	private static final PrefsStringsProperty disabledRules = new PrefsStringsProperty();
 	public static String[] getDisabledRules() { return disabledRules.get(); }
 	public static void setDisabledRules(String[] disabledRules) { Options.disabledRules.set(disabledRules); }
 	public static ObjectProperty<String[]> disabledRulesProperty() { return disabledRules; }
+
+	public static String ruleIdDesc2id(String str) {
+		return str.contains("=") ? str.substring(0, str.indexOf('=')) : str;
+	}
+
+	public static String ruleIdDesc2desc(String str) {
+		return str.contains("=") ? str.substring(str.indexOf('=') + 1) : str;
+	}
+
+	public static List<String> ruleIdDescs2ids(String[] strs) {
+		return Stream.of(strs)
+			.map(Options::ruleIdDesc2id)
+			.collect(Collectors.toList());
+	}
 }

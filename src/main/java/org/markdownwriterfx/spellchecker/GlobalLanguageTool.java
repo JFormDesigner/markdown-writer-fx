@@ -28,6 +28,7 @@
 package org.markdownwriterfx.spellchecker;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -84,16 +85,16 @@ class GlobalLanguageTool
 		Options.languageProperty().addListener(optionsListener);
 		Options.userDictionaryProperty().addListener(optionsListener);
 
-		Options.disabledRulesProperty().addListener((observer, oldValue, newValue) -> {
+		Options.disabledRulesProperty().addListener((observer, oldDisabledRules, newDisabledRules) -> {
 			if (!isInitialized())
 				return;
 
 			// remove old disabled rules
-			for (String ruleId : oldValue)
+			for (String ruleId : Options.ruleIdDescs2ids(oldDisabledRules))
 				languageTool.enableRule(ruleId);
 
 			// add new disabled rules
-			languageTool.disableRules(Arrays.asList(newValue));
+			languageTool.disableRules(Options.ruleIdDescs2ids(newDisabledRules));
 
 			requestCheck();
 		});
@@ -125,7 +126,7 @@ class GlobalLanguageTool
 		languageTool = new JLanguageTool(language, null, cache);
 
 		// disable rules
-		languageTool.disableRules(Arrays.asList(Options.getDisabledRules()));
+		languageTool.disableRules(Options.ruleIdDescs2ids(Options.getDisabledRules()));
 		if (!Options.isGrammarChecker()) {
 			for (Rule rule : languageTool.getAllRules()) {
 				if (!rule.isDictionaryBasedSpellingRule())
@@ -196,6 +197,18 @@ class GlobalLanguageTool
 		for (Rule rule : languageTool.getAllActiveRules()) {
 			if (rule instanceof SpellingCheckRule)
 				action.accept((SpellingCheckRule) rule);
+		}
+	}
+
+	void disableRule(Rule rule) {
+		String ruleId = rule.getId();
+		String ruleIdEq = ruleId + "=";
+
+		// add to options (which triggers re-checking)
+		List<String> disabledRules = new ArrayList<>(Arrays.asList(Options.getDisabledRules()));
+		if (!disabledRules.stream().anyMatch(id -> id.equals(ruleId) || id.startsWith(ruleIdEq))) {
+			disabledRules.add(ruleId + "=" + rule.getDescription());
+			Options.setDisabledRules(disabledRules.toArray(new String[disabledRules.size()]));
 		}
 	}
 }

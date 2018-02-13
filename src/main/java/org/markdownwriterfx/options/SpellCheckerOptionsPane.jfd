@@ -87,7 +87,7 @@ new FormModel {
 			add( new FormComponent( "javafx.scene.control.ListView" ) {
 				name: "disabledRulesField"
 				auxiliary() {
-					"JavaCodeGenerator.typeParameters": "String"
+					"JavaCodeGenerator.typeParameters": "Item<String>"
 				}
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 2 8"
