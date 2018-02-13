@@ -155,7 +155,6 @@ public class SpellChecker
 
 		if (checkRequestID != languageTool.getCheckRequestID() || spellProblems == null) {
 			checkRequestID = languageTool.getCheckRequestID();
-			spellProblems = null;
 
 			checkAsync(true);
 		}
