@@ -125,6 +125,9 @@ class GlobalLanguageTool
 
 		// create language tool
 		int availableProcessors = Runtime.getRuntime().availableProcessors();
+		// disable multi-threaded language tool because is gives incomplete results
+		// see https://github.com/languagetool-org/languagetool/issues/897
+		availableProcessors = 1;
 		languageTool = (availableProcessors > 2)
 			? new MultiThreadedJLanguageTool(language, null, availableProcessors - 1, cache)
 			: new JLanguageTool(language, null, cache);
