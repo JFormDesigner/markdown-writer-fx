@@ -109,6 +109,7 @@ public class MarkdownEditorPane
 
 		textArea.addEventHandler(ContextMenuEvent.CONTEXT_MENU_REQUESTED, this::showContextMenu);
 		textArea.addEventHandler(MouseEvent.MOUSE_PRESSED, e -> hideContextMenu());
+		textArea.focusedProperty().addListener(e -> hideContextMenu());
 
 		smartEdit = new SmartEdit(this, textArea);
 
