@@ -43,7 +43,6 @@ import javafx.beans.property.SimpleIntegerProperty;
 import org.languagetool.JLanguageTool;
 import org.languagetool.Language;
 import org.languagetool.Languages;
-import org.languagetool.MultiThreadedJLanguageTool;
 import org.languagetool.language.AmericanEnglish;
 import org.languagetool.markup.AnnotatedText;
 import org.languagetool.rules.Rule;
@@ -124,13 +123,7 @@ class GlobalLanguageTool
 		cache = new ResultCacheEx(10000, 1, TimeUnit.DAYS);
 
 		// create language tool
-		int availableProcessors = Runtime.getRuntime().availableProcessors();
-		// disable multi-threaded language tool because is gives incomplete results
-		// see https://github.com/languagetool-org/languagetool/issues/897
-		availableProcessors = 1;
-		languageTool = (availableProcessors > 2)
-			? new MultiThreadedJLanguageTool(language, null, availableProcessors - 1, cache)
-			: new JLanguageTool(language, null, cache);
+		languageTool = new JLanguageTool(language, null, cache);
 
 		// disable rules
 		languageTool.disableRules(Options.ruleIdDescs2ids(Options.getDisabledRules()));
@@ -150,9 +143,6 @@ class GlobalLanguageTool
 	}
 
 	private void uninitialize() {
-		if (languageTool instanceof MultiThreadedJLanguageTool)
-			((MultiThreadedJLanguageTool)languageTool).shutdown();
-
 		languageTool = null;
 		cache = null;
 		userDictionary = null;
