@@ -591,7 +591,7 @@ public class SpellChecker
 			return;
 
 		lastQuickFixNavigationDirection = 1;
-		SpellProblem problem = findNextProblemAt(textArea.getSelection().getStart());
+		SpellProblem problem = findNextProblemAt(textArea.getSelection().getEnd());
 		if (problem == null)
 			problem = findNextProblemAt(0);
 		if (problem == null)
@@ -606,7 +606,7 @@ public class SpellChecker
 			return;
 
 		lastQuickFixNavigationDirection = -1;
-		SpellProblem problem = findPreviousProblemAt(textArea.getSelection().getEnd());
+		SpellProblem problem = findPreviousProblemAt(textArea.getSelection().getStart());
 		if (problem == null)
 			problem = findPreviousProblemAt(textArea.getLength());
 		if (problem == null)
@@ -642,11 +642,11 @@ public class SpellChecker
 
 	private SpellProblem findNextProblemAt(int index) {
 		for (SpellBlockProblems blockProblems : spellProblems) {
-			if (index > blockProblems.getToPos())
+			if (index >= blockProblems.getToPos())
 				continue; // index is after block
 
 			for (SpellProblem problem : blockProblems.problems) {
-				if (index < problem.getFromPos())
+				if (index < problem.getToPos())
 					return problem;
 			}
 		}
@@ -656,12 +656,12 @@ public class SpellChecker
 	private SpellProblem findPreviousProblemAt(int index) {
 		for (int i = spellProblems.size() - 1; i >= 0; i--) {
 			SpellBlockProblems blockProblems = spellProblems.get(i);
-			if (index < blockProblems.getFromPos())
+			if (index <= blockProblems.getFromPos())
 				continue; // index is before block
 
 			for (int j = blockProblems.problems.size() - 1; j >= 0; j--) {
 				SpellProblem problem = blockProblems.problems.get(j);
-				if (index > problem.getToPos())
+				if (index > problem.getFromPos())
 					return problem;
 			}
 		}
