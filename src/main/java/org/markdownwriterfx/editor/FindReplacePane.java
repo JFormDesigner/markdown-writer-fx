@@ -40,6 +40,7 @@ import static org.fxmisc.wellbehaved.event.InputMap.consume;
 import static org.fxmisc.wellbehaved.event.InputMap.sequence;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -55,6 +56,7 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.layout.Region;
 import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.control.textfield.CustomTextField;
+import org.fxmisc.richtext.MultiChangeBuilder;
 import org.fxmisc.richtext.model.TwoDimensional.Bias;
 import org.fxmisc.wellbehaved.event.Nodes;
 import org.markdownwriterfx.MarkdownWriterFXApp;
@@ -266,34 +268,21 @@ class FindReplacePane
 		if (hits.isEmpty())
 			return;
 
-		// Note: using single textArea.replaceText() to avoid multiple changes to undo history
-
 		final String replace = replaceField.getText();
-		Range first = hits.get(0);
-		Range last = hits.get(hits.size() - 1);
 		Pattern regexReplacePattern = regexReplacePattern();
 
-		int estimatedSize = last.end - first.start + (replace.length() * hits.size());
-		StringBuilder buf = new StringBuilder(estimatedSize);
-		Range prev = null;
+		MultiChangeBuilder<Collection<String>, String, Collection<String>> multiChange = textArea.createMultiChange(hits.size());
 		for (Range hit : hits) {
-			if (prev != null)
-				buf.append(textArea.getText(prev.end, hit.start));
-
 			String replace2 = replace;
 			if (regexReplacePattern != null) {
 				replace2 = regexReplace(regexReplacePattern, hit, replace);
 				if (replace2 == null)
 					return; // error
 			}
-			buf.append(replace2);
-			prev = hit;
+			multiChange.replaceText(hit.start, hit.end, replace2);
 		}
+		SmartEdit.commitMultiChange(textArea, multiChange);
 
-		SmartEdit.replaceText(textArea, first.start, last.end, buf.toString());
-
-		int caret = first.start + buf.length();
-		SmartEdit.selectRange(textArea, caret, caret);
 		textArea.requestFocus();
 	}
 

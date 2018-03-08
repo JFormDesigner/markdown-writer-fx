@@ -34,6 +34,7 @@ import static org.fxmisc.wellbehaved.event.InputMap.consume;
 import static org.fxmisc.wellbehaved.event.InputMap.sequence;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -44,6 +45,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.control.IndexRange;
 import javafx.scene.input.KeyEvent;
 import org.apache.commons.lang3.StringUtils;
+import org.fxmisc.richtext.MultiChangeBuilder;
 import org.fxmisc.richtext.model.TwoDimensional.Bias;
 import org.fxmisc.wellbehaved.event.Nodes;
 import org.markdownwriterfx.dialogs.ImageDialog;
@@ -814,21 +816,41 @@ public class SmartEdit
 	//---- text modification --------------------------------------------------
 
 	/**
-	 * Central method to replace text in editor that prevents undo merging.
+	 * Run runnable and prevent undo merging with previous and following changes.
 	 */
-	static void replaceText(MarkdownTextArea textArea, int start, int end, String text) {
+	static void runInPreventUndoMerge(MarkdownTextArea textArea, Runnable runnable) {
 		// prevent undo merging with previous text entered by user
 		textArea.getUndoManager().preventMerge();
 
-		// replace text
-		textArea.replaceText(start, end, text);
+		// commit multi-change
+		runnable.run();
+
+		// prevent undo merging with following text entered by user
+		textArea.getUndoManager().preventMerge();
+	}
+
+	/**
+	 * Central method to commit multi-change in editor that prevents undo merging.
+	 */
+	static void commitMultiChange(MarkdownTextArea textArea, MultiChangeBuilder<Collection<String>, String, Collection<String>> multiChange) {
+		runInPreventUndoMerge(textArea, () -> {
+			// commit multi-change
+			multiChange.commit();
+		});
+	}
+
+	/**
+	 * Central method to replace text in editor that prevents undo merging.
+	 */
+	static void replaceText(MarkdownTextArea textArea, int start, int end, String text) {
+		runInPreventUndoMerge(textArea, () -> {
+			// replace text
+			textArea.replaceText(start, end, text);
+		});
 
 		// textArea.replaceText() moves the caret to the end of the selected text, which may
 		// it make necessary to scroll if large text is inserted and selectRange() is not called
 		textArea.requestFollowCaret();
-
-		// prevent undo merging with following text entered by user
-		textArea.getUndoManager().preventMerge();
 	}
 
 	static void replaceSelection(MarkdownTextArea textArea, String replacement) {

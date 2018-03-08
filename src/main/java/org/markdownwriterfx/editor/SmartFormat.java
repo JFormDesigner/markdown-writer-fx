@@ -91,7 +91,7 @@ class SmartFormat
 
 			multiChange.replaceText(startOffset, endOffset, newText);
 		}
-		multiChange.commit();
+		SmartEdit.commitMultiChange(textArea, multiChange);
 
 		SmartEdit.selectRange(textArea, 0, 0);
 	}
