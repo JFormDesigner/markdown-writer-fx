@@ -27,17 +27,11 @@
 
 package org.markdownwriterfx.spellchecker;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import org.languagetool.AnalyzedSentence;
-import org.languagetool.InputSentence;
 import org.languagetool.ResultCache;
-import org.languagetool.SimpleInputSentence;
-import org.languagetool.rules.RuleMatch;
 import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 
 /**
  * A ResultCache that supports invalidation (empty cache).
@@ -47,95 +41,37 @@ import com.google.common.cache.CacheBuilder;
 class ResultCacheEx
 	extends ResultCache
 {
-	private final Cache<InputSentence, List<RuleMatch>> matchesCache;
-	private final Cache<SimpleInputSentence, AnalyzedSentence> sentenceCache;
-
-	private static Field inputSentenceTextField;
-	private static Field simpleInputSentenceTextField;
-
-	static {
-		try {
-			inputSentenceTextField = InputSentence.class.getDeclaredField("text");
-			inputSentenceTextField.setAccessible(true);
-		} catch (NoSuchFieldException | SecurityException e) {
-			e.printStackTrace();
-		}
-		try {
-			simpleInputSentenceTextField = SimpleInputSentence.class.getDeclaredField("text");
-			simpleInputSentenceTextField.setAccessible(true);
-		} catch (NoSuchFieldException | SecurityException e) {
-			e.printStackTrace();
-		}
-	}
-
 	ResultCacheEx(long maxSize, int expireAfter, TimeUnit timeUnit) {
-		super(1);
-
-		matchesCache = CacheBuilder.newBuilder()
-			.maximumSize(maxSize / 2)
-			.recordStats()
-			.expireAfterAccess(expireAfter, timeUnit)
-			.build();
-		sentenceCache = CacheBuilder.newBuilder()
-			.maximumSize(maxSize / 2)
-			.recordStats()
-			.expireAfterAccess(expireAfter, timeUnit)
-			.build();
+		super(maxSize, expireAfter, timeUnit);
 	}
 
 	void invalidateAll() {
-		matchesCache.invalidateAll();
-		sentenceCache.invalidateAll();
+		getMatchesCache().invalidateAll();
+		getSentenceCache().invalidateAll();
 	}
 
 	void invalidate(String word) {
-		invalidate(matchesCache, inputSentenceTextField, word);
-		invalidate(sentenceCache, simpleInputSentenceTextField, word);
+		invalidate(getMatchesCache(), word);
+		invalidate(getSentenceCache(), word);
 	}
 
-	private static <T> void invalidate(Cache<T, ?> cache, Field textField, String word) {
-		List<T> matchesKeys = findWordInKeys(cache, textField, word);
+	private static <T> void invalidate(Cache<T, ?> cache, String word) {
+		List<T> matchesKeys = findWordInKeys(cache, word);
 		if (matchesKeys != null)
 			cache.invalidateAll(matchesKeys);
 		else
 			cache.invalidateAll();
 	}
 
-	private static <T> List<T> findWordInKeys(Cache<T, ?> cache, Field textField, String word) {
-		if (textField == null)
-			return null;
-
+	private static <T> List<T> findWordInKeys(Cache<T, ?> cache, String word) {
 		List<T> result = new ArrayList<>();
 		for (T key : cache.asMap().keySet()) {
-			try {
-				String text = (String) textField.get(key);
-				if (text.contains(word))
-					result.add(key);
-			} catch (IllegalArgumentException | IllegalAccessException e) {
-				e.printStackTrace();
-				return null;
-			}
+			// assume that InputSentence.toString() and SimpleInputSentence.toString()
+			// return the text of the sentence
+			String text = key.toString();
+			if (text.contains(word))
+				result.add(key);
 		}
 		return result;
-	}
-
-	@Override
-	public List<RuleMatch> getIfPresent(InputSentence key) {
-		return matchesCache.getIfPresent(key);
-	}
-
-	@Override
-	public AnalyzedSentence getIfPresent(SimpleInputSentence key) {
-		return sentenceCache.getIfPresent(key);
-	}
-
-	@Override
-	public void put(InputSentence key, List<RuleMatch> sentenceMatches) {
-		matchesCache.put(key, sentenceMatches);
-	}
-
-	@Override
-	public void put(SimpleInputSentence key, AnalyzedSentence aSentence) {
-		sentenceCache.put(key, aSentence);
 	}
 }
