@@ -53,7 +53,7 @@ class PreviewStyledTextArea
 		setEditable(false);
 		setFocusTraversable(false);
 		getStyleClass().add("padding");
-		setUndoManager(UndoManagerFactory.zeroHistoryUndoManager(richChanges()));
+		setUndoManager(UndoManagerFactory.zeroHistorySingleChangeUM(richChanges()));
 
 		updateFont();
 
