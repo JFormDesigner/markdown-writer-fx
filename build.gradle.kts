@@ -1,8 +1,12 @@
+import org.gradle.plugins.ide.eclipse.model.AbstractClasspathEntry
+import org.gradle.plugins.ide.eclipse.model.AccessRule
+
 version = "0.10"
 
 plugins {
 	java
 	application
+	eclipse
 }
 
 repositories {
@@ -75,27 +79,26 @@ distributions {
 
 //---- eclipse ----------------------------------------------------------------
 
-/*
-apply plugin: 'eclipse'
-
-import org.gradle.plugins.ide.eclipse.model.AccessRule
-
 eclipse {
 	classpath {
 		file {
-			whenMerged {
-				def jre = entries.find { it.path.contains 'org.eclipse.jdt.launching.JRE_CONTAINER' }
+			whenMerged.add( object: Action<org.gradle.plugins.ide.eclipse.model.Classpath> {
+				override fun execute( classpath: org.gradle.plugins.ide.eclipse.model.Classpath ) {
+					val jre = classpath.entries.find {
+						it is AbstractClasspathEntry &&
+							it.path.contains("org.eclipse.jdt.launching.JRE_CONTAINER")
+					} as AbstractClasspathEntry
 
-				// make JavaFX API accessible in Eclipse project
-				// (when refreshing Gradle project in buildship)
-				jre.accessRules.add(new AccessRule('0', 'javafx/**'))
-				jre.accessRules.add(new AccessRule('0', 'com/sun/javafx/**'))
+					// make JavaFX API accessible in Eclipse project
+					// (when refreshing Gradle project in buildship)
+					jre.accessRules.add(AccessRule("accessible", "javafx/**"))
+					jre.accessRules.add(AccessRule("accessible", "com/sun/javafx/**"))
 
-				// remove trailing slash from jre path
-				if (jre.path.endsWith('/'))
-					jre.path = jre.path.substring(0, jre.path.length() - 1)
-			}
+					// remove trailing slash from jre path
+					if (jre.path.endsWith("/"))
+						jre.path = jre.path.substring(0, jre.path.length - 1)
+				}
+			} )
 		}
 	}
 }
-*/
