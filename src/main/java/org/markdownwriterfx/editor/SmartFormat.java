@@ -29,10 +29,12 @@ package org.markdownwriterfx.editor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.ServiceLoader;
 import javafx.scene.input.KeyEvent;
+import org.fxmisc.richtext.MultiChangeBuilder;
 import org.markdownwriterfx.addons.SmartFormatAddon;
 import com.vladsch.flexmark.ast.Block;
 import com.vladsch.flexmark.ast.BlockQuote;
@@ -77,20 +79,19 @@ class SmartFormat
 		List<Pair<Paragraph, String>> formattedParagraphs = formatParagraphs(markdownAST, wrapLength);
 
 		// replace text of formatted paragraphs
-		CompoundChange.run(textArea, changer -> {
-			for (int i = formattedParagraphs.size() - 1; i >= 0; i--) {
-				Pair<Paragraph, String> pair = formattedParagraphs.get(i);
-				Paragraph paragraph = pair.getFirst();
-				String newText = pair.getSecond();
+		MultiChangeBuilder<Collection<String>, String, Collection<String>> multiChange = textArea.createMultiChange(formattedParagraphs.size());
+		for (Pair<Paragraph, String> pair : formattedParagraphs) {
+			Paragraph paragraph = pair.getFirst();
+			String newText = pair.getSecond();
 
-				int startOffset = paragraph.getStartOffset();
-				int endOffset = paragraph.getEndOffset();
-				if (paragraph.getChars().endsWith("\n"))
-					endOffset--;
+			int startOffset = paragraph.getStartOffset();
+			int endOffset = paragraph.getEndOffset();
+			if (paragraph.getChars().endsWith("\n"))
+				endOffset--;
 
-				changer.replaceText(startOffset, endOffset, newText);
-			}
-		} );
+			multiChange.replaceText(startOffset, endOffset, newText);
+		}
+		SmartEdit.commitMultiChange(textArea, multiChange);
 
 		SmartEdit.selectRange(textArea, 0, 0);
 	}

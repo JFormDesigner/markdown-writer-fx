@@ -9,7 +9,7 @@ cache:
     - $HOME/.gradle/wrapper/
 
 before_install:
-  - gradle --version
+  - ./gradlew --version
   - java -version
 
 matrix:
@@ -22,5 +22,3 @@ matrix:
         apt:
           packages:
             - oracle-java8-installer
-
-

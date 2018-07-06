@@ -75,7 +75,9 @@ public class CommonmarkSourcePositions
 			public void visit(Link node) {
 				super.visit(node);
 
-				if (Utils.safeEquals(node.getDestination(), ((Text)node.getFirstChild()).getLiteral())) {
+				if (node.getFirstChild() instanceof Text &&
+					Utils.safeEquals(node.getDestination(), ((Text)node.getFirstChild()).getLiteral()))
+				{
 					// Syntax: <destination> or without <> if autolinks extension is enabled
 					Range range = get(node);
 					if (range != null && isAt(range.start - 1, '<') && isAt(range.end, '>'))
