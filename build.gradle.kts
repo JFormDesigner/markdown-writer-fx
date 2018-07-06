@@ -20,7 +20,7 @@ dependencies {
 	compile( "org.controlsfx:controlsfx:8.40.14" )
 	compile( "org.fxmisc.cssfx:cssfx:1.0.0" )
 	compile( "org.apache.commons:commons-lang3:3.7" )
-	compile( "org.languagetool:language-en:4.1" )
+	compile( "org.languagetool:language-en:4.2" )
 
 	val flexmarkVersion = "0.32.20"
 	compile( "com.vladsch.flexmark:flexmark:" + flexmarkVersion )
