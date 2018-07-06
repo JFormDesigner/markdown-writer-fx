@@ -1,1 +1,1 @@
-rootProject.name = 'markdown-writer-fx'
+rootProject.name = "markdown-writer-fx"
