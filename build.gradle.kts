@@ -14,7 +14,7 @@ repositories {
 }
 
 dependencies {
-	compile( "org.fxmisc.richtext:richtextfx:0.9.0" )
+	compile( "org.fxmisc.richtext:richtextfx:0.9.1" )
 	compile( "com.miglayout:miglayout-javafx:5.1" )
 	compile( "de.jensd:fontawesomefx-fontawesome:4.7.0-5" )
 	compile( "org.controlsfx:controlsfx:8.40.14" )
