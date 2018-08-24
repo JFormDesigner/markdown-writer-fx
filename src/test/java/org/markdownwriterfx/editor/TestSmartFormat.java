@@ -109,7 +109,7 @@ public class TestSmartFormat
 
 		// format
 		List<Pair<Paragraph, String>> formattedParagraphs = new SmartFormat(null, null)
-			.formatParagraphs(document, wrapLength);
+			.formatParagraphs(document, wrapLength, null);
 
 		// build result
 		StringBuilder output = new StringBuilder(input);

@@ -7,6 +7,7 @@ Markdown Writer FX Change Log
 - Reformat fixes:
   - Avoid wrapping before blockquote and list markers.
   - Wrapping of block quotes.
+- (experimental) Reformat selected paragraphs with `Ctrl+Shift+Alt+F` wraps lines at 80 characters.
 
 
 ## 0.10

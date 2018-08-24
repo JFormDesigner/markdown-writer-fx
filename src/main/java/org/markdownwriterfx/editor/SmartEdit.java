@@ -109,7 +109,8 @@ public class SmartEdit
 			consume(keyPressed(UP, SHORTCUT_DOWN, ALT_DOWN),	this::duplicateLinesUp),
 			consume(keyPressed(DOWN, SHORTCUT_DOWN, ALT_DOWN),	this::duplicateLinesDown),
 
-			consume(keyPressed(F, SHORTCUT_DOWN, SHIFT_DOWN),	smartFormat::format)
+			consume(keyPressed(F, SHORTCUT_DOWN, SHIFT_DOWN),	smartFormat::format),
+			consume(keyPressed(F, SHORTCUT_DOWN, SHIFT_DOWN, ALT_DOWN),	smartFormat::format)
 		));
 
 //		textArea.selectionProperty().addListener((ob, o, n) ->
@@ -999,7 +1000,7 @@ public class SmartEdit
 	 * Returns start and end character offsets of the lines that are (partly) selected.
 	 * The end offset includes the line separator if includeLastLineSeparator is true.
 	 */
-	private IndexRange getSelectedLinesRange(boolean includeLastLineSeparator) {
+	IndexRange getSelectedLinesRange(boolean includeLastLineSeparator) {
 		IndexRange selection = getSelectedLines();
 		return linesToRange(selection.getStart(), selection.getEnd(), includeLastLineSeparator);
 	}

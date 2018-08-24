@@ -33,6 +33,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.ServiceLoader;
+import javafx.scene.control.IndexRange;
 import javafx.scene.input.KeyEvent;
 import org.fxmisc.richtext.MultiChangeBuilder;
 import org.markdownwriterfx.addons.SmartFormatAddon;
@@ -73,10 +74,15 @@ class SmartFormat
 		if (markdownAST == null)
 			return;
 
+		boolean formatSelectionOnly = e.isAltDown();
+		IndexRange selectedLinesRange = formatSelectionOnly ? editor.getSmartEdit().getSelectedLinesRange(false) : null;
+		IndexRange selection = textArea.getSelection();
 		int wrapLength = WRAP_LENGTH;
 
 		// find and format paragraphs
-		List<Pair<Paragraph, String>> formattedParagraphs = formatParagraphs(markdownAST, wrapLength);
+		List<Pair<Paragraph, String>> formattedParagraphs = formatParagraphs(markdownAST, wrapLength, selectedLinesRange);
+		if (formattedParagraphs.isEmpty())
+			return;
 
 		// replace text of formatted paragraphs
 		MultiChangeBuilder<Collection<String>, String, Collection<String>> multiChange = textArea.createMultiChange(formattedParagraphs.size());
@@ -93,15 +99,19 @@ class SmartFormat
 		}
 		SmartEdit.commitMultiChange(textArea, multiChange);
 
-		SmartEdit.selectRange(textArea, 0, 0);
+		// make sure that selection is not out of bounds if text becomes shorter
+		SmartEdit.selectRange(textArea, Math.min(selection.getStart(), textArea.getLength()), Math.min(selection.getEnd(), textArea.getLength()));
 	}
 
-	/*private*/ List<Pair<Paragraph, String>> formatParagraphs(Node markdownAST, int wrapLength) {
+	/*private*/ List<Pair<Paragraph, String>> formatParagraphs(Node markdownAST, int wrapLength, IndexRange selection) {
 		ArrayList<Pair<Paragraph, String>> formattedParagraphs = new ArrayList<>();
 		NodeVisitor visitor = new NodeVisitor(Collections.emptyList()) {
 			@Override
 			public void visit(Node node) {
 				if (node instanceof Paragraph) {
+					if (selection != null && !isNodeSelected(node, selection))
+						return;
+
 					Paragraph paragraph = (Paragraph) node;
 					String newText = formatParagraph(paragraph, wrapLength);
 					if (!paragraph.getChars().equals(newText, false))
@@ -112,6 +122,10 @@ class SmartFormat
 		};
 		visitor.visit(markdownAST);
 		return formattedParagraphs;
+	}
+
+	private boolean isNodeSelected(Node node, IndexRange selection) {
+		return node.getStartOffset() <= selection.getEnd() && node.getEndOffset() > selection.getStart();
 	}
 
 	private String formatParagraph(Paragraph paragraph, int wrapLength) {
