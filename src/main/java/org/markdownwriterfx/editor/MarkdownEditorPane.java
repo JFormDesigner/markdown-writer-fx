@@ -170,6 +170,19 @@ public class MarkdownEditorPane
 		Options.markdownExtensionsProperty().addListener(weakOptionsListener);
 		Options.showLineNoProperty().addListener(weakOptionsListener);
 		Options.showWhitespaceProperty().addListener(weakOptionsListener);
+
+		// workaround a problem with wrong selection after undo:
+		//   after undo the selection is 0-0, anchor is 0, but caret position is correct
+		//   --> set selection to caret position
+		textArea.selectionProperty().addListener((observable,oldSelection,newSelection) -> {
+			// use runLater because the wrong selection temporary occurs while edition
+			Platform.runLater(() -> {
+				IndexRange selection = textArea.getSelection();
+				int caretPosition = textArea.getCaretPosition();
+				if (selection.getStart() == 0 && selection.getEnd() == 0 && textArea.getAnchor() == 0 && caretPosition > 0)
+					textArea.selectRange(caretPosition, caretPosition);
+			});
+		});
 	}
 
 	private void updateFont() {
