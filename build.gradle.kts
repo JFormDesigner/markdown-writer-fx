@@ -3,6 +3,21 @@ import org.gradle.plugins.ide.eclipse.model.AccessRule
 
 version = "0.10"
 
+// check required Java version
+if( JavaVersion.current() < JavaVersion.VERSION_1_8 || JavaVersion.current() > JavaVersion.VERSION_1_10 )
+	throw RuntimeException( "Java 8, 9 or 10 required (running ${System.getProperty( "java.version" )})" )
+
+// use Java version that currently runs Gradle for source/target compatibility
+val javaCompatibility = JavaVersion.current()
+
+// log version, Gradle and Java versions
+println()
+println( "-------------------------------------------------------------------------------" )
+println( "Markdown Writer FX Version: ${version}" )
+println( "Gradle ${gradle.gradleVersion} at ${gradle.gradleHomeDir}" )
+println( "Java ${System.getProperty( "java.version" )}" )
+println()
+
 plugins {
 	java
 	application
@@ -16,8 +31,11 @@ repositories {
 dependencies {
 	compile( "org.fxmisc.richtext:richtextfx:0.9.1" )
 	compile( "com.miglayout:miglayout-javafx:5.2" )
-	compile( "de.jensd:fontawesomefx-fontawesome:4.7.0-5" )
-	compile( "org.controlsfx:controlsfx:8.40.14" )
+
+	val fontawesomefxVersion = if( javaCompatibility >= JavaVersion.VERSION_1_9 ) "4.7.0-9" else "4.7.0-5"
+	val controlsfxVersion = if( javaCompatibility >= JavaVersion.VERSION_1_9 ) "9.0.0" else "8.40.14"
+	compile( "de.jensd:fontawesomefx-fontawesome:${fontawesomefxVersion}" )
+	compile( "org.controlsfx:controlsfx:${controlsfxVersion}" )
 	compile( "org.fxmisc.cssfx:cssfx:1.0.0" )
 	compile( "org.apache.commons:commons-lang3:3.7" )
 
@@ -49,8 +67,8 @@ dependencies {
 }
 
 java {
-	sourceCompatibility = JavaVersion.VERSION_1_8
-	targetCompatibility = JavaVersion.VERSION_1_8
+	sourceCompatibility = javaCompatibility
+	targetCompatibility = javaCompatibility
 }
 
 application {
