@@ -34,8 +34,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import org.junit.Test;
+import com.vladsch.flexmark.ast.Block;
 import com.vladsch.flexmark.ast.Document;
-import com.vladsch.flexmark.ast.Paragraph;
 import com.vladsch.flexmark.parser.Parser;
 import com.vladsch.flexmark.util.Pair;
 
@@ -108,14 +108,14 @@ public class TestSmartFormat
 		Document document = Parser.builder().build().parse(input);
 
 		// format
-		List<Pair<Paragraph, String>> formattedParagraphs = new SmartFormat(null, null)
+		List<Pair<Block, String>> formattedParagraphs = new SmartFormat(null, null)
 			.formatParagraphs(document, wrapLength, null);
 
 		// build result
 		StringBuilder output = new StringBuilder(input);
 		for (int i = formattedParagraphs.size() - 1; i >= 0; i--) {
-			Pair<Paragraph, String> pair = formattedParagraphs.get(i);
-			Paragraph paragraph = pair.getFirst();
+			Pair<Block, String> pair = formattedParagraphs.get(i);
+			Block paragraph = pair.getFirst();
 			String newText = pair.getSecond();
 
 			int startOffset = paragraph.getStartOffset();

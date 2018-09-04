@@ -41,6 +41,7 @@ import com.vladsch.flexmark.ast.Block;
 import com.vladsch.flexmark.ast.BlockQuote;
 import com.vladsch.flexmark.ast.DelimitedNode;
 import com.vladsch.flexmark.ast.HardLineBreak;
+import com.vladsch.flexmark.ast.HtmlBlock;
 import com.vladsch.flexmark.ast.ListItem;
 import com.vladsch.flexmark.ast.Node;
 import com.vladsch.flexmark.ast.NodeVisitor;
@@ -80,14 +81,14 @@ class SmartFormat
 		int wrapLength = WRAP_LENGTH;
 
 		// find and format paragraphs
-		List<Pair<Paragraph, String>> formattedParagraphs = formatParagraphs(markdownAST, wrapLength, selectedLinesRange);
+		List<Pair<Block, String>> formattedParagraphs = formatParagraphs(markdownAST, wrapLength, selectedLinesRange);
 		if (formattedParagraphs.isEmpty())
 			return;
 
 		// replace text of formatted paragraphs
 		MultiChangeBuilder<Collection<String>, String, Collection<String>> multiChange = textArea.createMultiChange(formattedParagraphs.size());
-		for (Pair<Paragraph, String> pair : formattedParagraphs) {
-			Paragraph paragraph = pair.getFirst();
+		for (Pair<Block, String> pair : formattedParagraphs) {
+			Block paragraph = pair.getFirst();
 			String newText = pair.getSecond();
 
 			int startOffset = paragraph.getStartOffset();
@@ -103,19 +104,20 @@ class SmartFormat
 		SmartEdit.selectRange(textArea, Math.min(selection.getStart(), textArea.getLength()), Math.min(selection.getEnd(), textArea.getLength()));
 	}
 
-	/*private*/ List<Pair<Paragraph, String>> formatParagraphs(Node markdownAST, int wrapLength, IndexRange selection) {
-		ArrayList<Pair<Paragraph, String>> formattedParagraphs = new ArrayList<>();
+	/*private*/ List<Pair<Block, String>> formatParagraphs(Node markdownAST, int wrapLength, IndexRange selection) {
+		ArrayList<Pair<Block, String>> formattedParagraphs = new ArrayList<>();
 		NodeVisitor visitor = new NodeVisitor(Collections.emptyList()) {
 			@Override
 			public void visit(Node node) {
-				if (node instanceof Paragraph) {
+				if (node instanceof Paragraph || node instanceof HtmlBlock) {
 					if (selection != null && !isNodeSelected(node, selection))
 						return;
 
-					Paragraph paragraph = (Paragraph) node;
-					String newText = formatParagraph(paragraph, wrapLength);
-					if (!paragraph.getChars().equals(newText, false))
-						formattedParagraphs.add(new Pair<>(paragraph, newText));
+					String newText = (node instanceof Paragraph)
+						? formatParagraph((Paragraph) node, wrapLength)
+						: formatHtmlBlock((HtmlBlock) node, wrapLength);
+					if (!node.getChars().equals(newText, false))
+						formattedParagraphs.add(new Pair<>((Block) node, newText));
 				} else
 					visitChildren(node);
 			}
@@ -199,6 +201,14 @@ class SmartFormat
 				buf.append(protectWhitespace(n.getChars().toString()));
 			}
 		}
+	}
+
+	private String formatHtmlBlock(HtmlBlock htmlBlock, int wrapLength) {
+		String text = htmlBlock.getChars().toString();
+		String[] lines = text.split("\n");
+		for (int i = 0; i < lines.length; i++)
+			lines[i] = formatText(lines[i], wrapLength, "", 0);
+		return String.join("\n", lines);
 	}
 
 	/**
