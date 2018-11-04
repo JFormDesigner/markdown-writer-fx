@@ -196,6 +196,13 @@ class MainWindow
 				e -> getActiveEditor().findNextPrevious(false),
 				activeFileEditorIsNull);
 
+		Action editFormatAllAction = new Action(Messages.get("MainWindow.editFormatAll"), "Shortcut+Shift+F", null,
+				e -> getActiveSmartEdit().format(false),
+				activeFileEditorIsNull);
+		Action editFormatSelectionAction = new Action(Messages.get("MainWindow.editFormatSelection"), "Shortcut+Shift+Alt+F", null,
+				e -> getActiveSmartEdit().format(true),
+				activeFileEditorIsNull);
+
 		// View actions
 		Action viewPreviewAction = new Action(Messages.get("MainWindow.viewPreviewAction"), null, EYE,
 				null, null, fileEditorTabPane.previewVisible);
@@ -300,7 +307,10 @@ class MainWindow
 				editReplaceAction,
 				null,
 				editFindNextAction,
-				editFindPreviousAction);
+				editFindPreviousAction,
+				null,
+				editFormatAllAction,
+				editFormatSelectionAction);
 
 		Menu viewMenu = ActionUtils.createMenu(Messages.get("MainWindow.viewMenu"),
 				viewPreviewAction,

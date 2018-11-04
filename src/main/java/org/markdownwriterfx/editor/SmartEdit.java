@@ -814,6 +814,12 @@ public class SmartEdit
 		surroundSelection("\n\n" + Options.getBulletListMarker() + " ", "");
 	}
 
+	//---- format -------------------------------------------------------------
+
+	public void format(boolean formatSelectionOnly) {
+		smartFormat.format(formatSelectionOnly);
+	}
+
 	//---- text modification --------------------------------------------------
 
 	/**

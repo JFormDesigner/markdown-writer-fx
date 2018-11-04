@@ -70,11 +70,14 @@ class SmartFormat
 	}
 
 	void format(KeyEvent e) {
+		format(e.isAltDown());
+	}
+
+	void format(boolean formatSelectionOnly) {
 		Node markdownAST = editor.getMarkdownAST();
 		if (markdownAST == null)
 			return;
 
-		boolean formatSelectionOnly = e.isAltDown();
 		IndexRange selectedLinesRange = formatSelectionOnly ? editor.getSmartEdit().getSelectedLinesRange(false) : null;
 		IndexRange selection = textArea.getSelection();
 		int wrapLength = Options.getWrapLineLength();
