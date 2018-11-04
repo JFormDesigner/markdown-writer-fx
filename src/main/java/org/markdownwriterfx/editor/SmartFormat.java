@@ -37,6 +37,7 @@ import javafx.scene.control.IndexRange;
 import javafx.scene.input.KeyEvent;
 import org.fxmisc.richtext.MultiChangeBuilder;
 import org.markdownwriterfx.addons.SmartFormatAddon;
+import org.markdownwriterfx.options.Options;
 import com.vladsch.flexmark.ast.Block;
 import com.vladsch.flexmark.ast.BlockQuote;
 import com.vladsch.flexmark.ast.DelimitedNode;
@@ -58,8 +59,6 @@ import static org.markdownwriterfx.addons.SmartFormatAddon.*;
  */
 class SmartFormat
 {
-	private static final int WRAP_LENGTH = 80;
-
 	private static final ServiceLoader<SmartFormatAddon> addons = ServiceLoader.load(SmartFormatAddon.class);
 
 	private final MarkdownEditorPane editor;
@@ -78,7 +77,7 @@ class SmartFormat
 		boolean formatSelectionOnly = e.isAltDown();
 		IndexRange selectedLinesRange = formatSelectionOnly ? editor.getSmartEdit().getSelectedLinesRange(false) : null;
 		IndexRange selection = textArea.getSelection();
-		int wrapLength = WRAP_LENGTH;
+		int wrapLength = Options.getWrapLineLength();
 
 		// find and format paragraphs
 		List<Pair<Block, String>> formattedParagraphs = formatParagraphs(markdownAST, wrapLength, selectedLinesRange);

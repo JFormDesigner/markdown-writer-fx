@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "9.9.9.9.9999" Java: "1.8.0_112" encoding: "UTF-8"
+JFDML JFormDesigner: "999.9.9.9.9999" Java: "1.8.0_181" encoding: "UTF-8"
 
 new FormModel {
 	"i18n.autoExternalize": true
@@ -9,8 +9,8 @@ new FormModel {
 	root: new FormRoot {
 		add( new FormContainer( "org.tbee.javafx.scene.layout.fxml.MigPane", new FormLayoutManager( class org.tbee.javafx.scene.layout.fxml.MigPane ) {
 			"$layoutConstraints": "hidemode 3"
-			"$columnConstraints": "[indent,fill]0[fill][fill]"
-			"$rowConstraints": "[][][][]"
+			"$columnConstraints": "[indent,fill]0[fill][fill][fill]"
+			"$rowConstraints": "[][][][]para[][]"
 		} ) {
 			name: "this"
 			add( new FormComponent( "javafx.scene.control.Label" ) {
@@ -72,6 +72,33 @@ new FormModel {
 				}
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 2 3"
+			} )
+			add( new FormComponent( "javafx.scene.control.Label" ) {
+				name: "formatTitle"
+				"text": new FormMessage( null, "EditorOptionsPane.formatTitle.text" )
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 4 2 1"
+			} )
+			add( new FormComponent( "javafx.scene.control.Label" ) {
+				name: "wrapLineLengthLabel"
+				"text": new FormMessage( null, "EditorOptionsPane.wrapLineLengthLabel.text" )
+				"mnemonicParsing": true
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 1 5"
+			} )
+			add( new FormComponent( "org.markdownwriterfx.controls.IntSpinner" ) {
+				name: "wrapLineLengthField"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 2 5"
+			} )
+			add( new FormComponent( "javafx.scene.control.Label" ) {
+				name: "wrapLineLengthLabel2"
+				"text": new FormMessage( null, "EditorOptionsPane.wrapLineLengthLabel2.text" )
+				auxiliary() {
+					"JavaCodeGenerator.variableLocal": true
+				}
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 3 5"
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new javafx.geometry.Point2D( 0.0, 0.0 )
