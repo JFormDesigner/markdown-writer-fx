@@ -275,6 +275,9 @@ class FileEditor
 	}
 
 	boolean save() {
+		if (Options.isFormatOnSave())
+			markdownEditorPane.getSmartEdit().format(false);
+
 		String markdown = markdownEditorPane.getMarkdown();
 
 		byte[] bytes;

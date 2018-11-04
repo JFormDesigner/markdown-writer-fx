@@ -27,6 +27,7 @@
 
 package org.markdownwriterfx.options;
 
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.SpinnerValueFactory;
@@ -65,6 +66,7 @@ class EditorOptionsPane
 
 		// format
 		wrapLineLengthField.getValueFactory().setValue(Options.getWrapLineLength());
+		formatOnSaveCheckBox.setSelected(Options.isFormatOnSave());
 	}
 
 	void save() {
@@ -75,6 +77,7 @@ class EditorOptionsPane
 
 		// format
 		Options.setWrapLineLength(wrapLineLengthField.getValue());
+		Options.setFormatOnSave(formatOnSaveCheckBox.isSelected());
 	}
 
 	private void initComponents() {
@@ -90,6 +93,7 @@ class EditorOptionsPane
 		wrapLineLengthLabel = new Label();
 		wrapLineLengthField = new IntSpinner();
 		Label wrapLineLengthLabel2 = new Label();
+		formatOnSaveCheckBox = new CheckBox();
 
 		//======== this ========
 		setLayout("hidemode 3");
@@ -103,6 +107,7 @@ class EditorOptionsPane
 			"[]" +
 			"[]" +
 			"[]para" +
+			"[]" +
 			"[]" +
 			"[]");
 
@@ -141,6 +146,10 @@ class EditorOptionsPane
 		//---- wrapLineLengthLabel2 ----
 		wrapLineLengthLabel2.setText(Messages.get("EditorOptionsPane.wrapLineLengthLabel2.text"));
 		add(wrapLineLengthLabel2, "cell 3 5");
+
+		//---- formatOnSaveCheckBox ----
+		formatOnSaveCheckBox.setText(Messages.get("EditorOptionsPane.formatOnSaveCheckBox.text"));
+		add(formatOnSaveCheckBox, "cell 1 6 2 1,alignx left,growx 0");
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 
 		// TODO set this in JFormDesigner as soon as it supports labelFor
@@ -158,5 +167,6 @@ class EditorOptionsPane
 	private Label formatTitle;
 	private Label wrapLineLengthLabel;
 	private IntSpinner wrapLineLengthField;
+	private CheckBox formatOnSaveCheckBox;
 	// JFormDesigner - End of variables declaration  //GEN-END:variables
 }

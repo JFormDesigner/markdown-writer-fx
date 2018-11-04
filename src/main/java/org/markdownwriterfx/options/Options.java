@@ -78,6 +78,7 @@ public class Options
 		bulletListMarker.init(options, "bulletListMarker", "-");
 
 		wrapLineLength.init(options, "wrapLineLength", DEF_WRAP_LINE_LENGTH);
+		formatOnSave.init(options, "formatOnSave", false);
 	}
 
 	/**
@@ -173,4 +174,10 @@ public class Options
 	public static int getWrapLineLength() { return wrapLineLength.get(); }
 	public static void setWrapLineLength(int wrapLineLength) { Options.wrapLineLength.set(Math.max(wrapLineLength, MIN_WRAP_LINE_LENGTH)); }
 	public static IntegerProperty wrapLineLengthProperty() { return wrapLineLength; }
+
+	// 'formatOnSave' property
+	private static final PrefsBooleanProperty formatOnSave = new PrefsBooleanProperty();
+	public static boolean isFormatOnSave() { return formatOnSave.get(); }
+	public static void setFormatOnSave(boolean formatOnSave) { Options.formatOnSave.set(formatOnSave); }
+	public static BooleanProperty formatOnSaveProperty() { return formatOnSave; }
 }

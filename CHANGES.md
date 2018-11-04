@@ -10,6 +10,7 @@ Markdown Writer FX Change Log
 - (experimental) Reformat selected paragraphs with `Ctrl+Shift+Alt+F` wraps lines at 80 characters.
 - "Format All" and "Format Selection" commands added to "Edit" menu.
 - Configurable formatting wrap line length in Options dialog.
+- "Format on Save" checkbox added to Options dialog.
 
 
 ## 0.10
