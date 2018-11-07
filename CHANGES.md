@@ -3,6 +3,8 @@ Markdown Writer FX Change Log
 
 ## Unreleased
 
+- Smarter "Insert > Bold/Italic/Strikethrough/Inline Code": if selection is
+  empty, then the word at the caret will be used as selection.
 - Move selected lines down (with `Alt+Down`) no longer eats empty lines.
 - Reformat fixes:
   - Avoid wrapping before blockquote and list markers.

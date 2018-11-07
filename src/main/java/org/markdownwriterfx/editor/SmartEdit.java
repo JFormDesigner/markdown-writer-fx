@@ -534,6 +534,10 @@ public class SmartEdit
 	}
 
 	public void surroundSelection(String leading, String trailing, String hint) {
+		surroundSelection(leading, trailing, hint, false);
+	}
+
+	public void surroundSelection(String leading, String trailing, String hint, boolean selectWordIfEmpty) {
 		// Note: not using textArea.insertText() to insert leading and trailing
 		//       because this would add two changes to undo history
 
@@ -541,7 +545,24 @@ public class SmartEdit
 		int start = selection.getStart();
 		int end = selection.getEnd();
 
-		String selectedText = textArea.getSelectedText();
+		if (selectWordIfEmpty && start == end) {
+			// add letters or digits before selection
+			for (int i = start - 1; i >= 0; i--) {
+				if (!Character.isLetterOrDigit(textArea.getText(i, i + 1).charAt(0)))
+					break;
+				start--;
+			}
+
+			// add letters or digits after selection
+			int textLength = textArea.getLength();
+			for (int i = end; i < textLength; i++) {
+				if (!Character.isLetterOrDigit(textArea.getText(i, i + 1).charAt(0)))
+					break;
+				end++;
+			}
+		}
+
+		String selectedText = textArea.getText(start, end);
 
 		// remove leading and trailing whitespaces from selected text
 		String trimmedSelectedText = selectedText.trim();
@@ -640,7 +661,7 @@ public class SmartEdit
 		if (codeNode != null)
 			surroundSelectionAndReplaceMarker(openCloseMarker, openCloseMarker, hint, codeNode, "<code>", "</code>");
 		else
-			surroundSelection(openCloseMarker, openCloseMarker, hint);
+			surroundSelection(openCloseMarker, openCloseMarker, hint, true);
 	}
 
 	//---- delimited inlines --------------------------------------------------
