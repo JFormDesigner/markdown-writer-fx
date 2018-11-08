@@ -28,6 +28,7 @@
 package org.markdownwriterfx.controls;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.util.ArrayList;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
@@ -40,12 +41,19 @@ import javafx.scene.control.TreeItem;
 public class FileTreeItem
 	extends TreeItem<File>
 {
+	private final FilenameFilter filter;
+
 	private boolean leaf;
 	private boolean leafInitialized;
 	private boolean childrenInitialized;
 
 	public FileTreeItem(File file) {
+		this(file, null);
+	}
+
+	public FileTreeItem(File file, FilenameFilter filter) {
 		super(file);
+		this.filter = filter;
 	}
 
 	@Override
@@ -64,11 +72,11 @@ public class FileTreeItem
 
 			File f = getValue();
 			if (f.isDirectory()) {
-				File[] files = f.listFiles();
+				File[] files = f.listFiles(filter);
 				if (files != null) {
 					ArrayList<TreeItem<File>> children = new ArrayList<>();
 					for (File file : files)
-						children.add(new FileTreeItem(file));
+						children.add(new FileTreeItem(file, filter));
 					super.getChildren().setAll(children);
 				}
 			}

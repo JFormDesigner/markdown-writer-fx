@@ -45,7 +45,9 @@ public class FileTreeViewTest
 	@Override
 	public void start(Stage primaryStage) {
 		FileTreeView fileTreeView = new FileTreeView();
-		fileTreeView.setRoot(new FileTreeItem(new File("").getAbsoluteFile()));
+		fileTreeView.setRoot(new FileTreeItem(
+			new File("").getAbsoluteFile(),
+			(dir, name) -> !name.startsWith(".")));
 		primaryStage.setScene(new Scene(fileTreeView, 400, 600));
 		primaryStage.setTitle("FileTreeViewTest");
 		primaryStage.show();
