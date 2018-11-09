@@ -63,6 +63,16 @@
 }
 
 
+/*---- main project pane ----*/
+
+.main .projects-combo-box .list-cell {
+	/* necessary on all cells for correct resizing of ListView when adding items */
+	-fx-border-width: 0 0 1 0;
+}
+.main .projects-combo-box .list-cell.open-project {
+	-fx-border-color: -fx-outer-border;
+}
+
 /*---- main tab pane ----*/
 
 .main .tab-pane {

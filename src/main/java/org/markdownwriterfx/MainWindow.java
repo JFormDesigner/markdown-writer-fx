@@ -48,6 +48,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.Separator;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.ToolBar;
@@ -70,6 +71,8 @@ import org.markdownwriterfx.options.Options;
 import org.markdownwriterfx.options.Options.RendererType;
 import org.markdownwriterfx.options.OptionsDialog;
 import org.markdownwriterfx.preview.MarkdownPreviewPane;
+import org.markdownwriterfx.projects.ProjectManager;
+import org.markdownwriterfx.projects.ProjectPane;
 import org.markdownwriterfx.util.Action;
 import org.markdownwriterfx.util.ActionUtils;
 import org.markdownwriterfx.util.Utils;
@@ -83,19 +86,25 @@ import static de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon.*;
 class MainWindow
 {
 	private final Scene scene;
+	private final ProjectPane projectPane;
 	private final FileEditorTabPane fileEditorTabPane;
 	private MenuBar menuBar;
 	private Node extensionsButton;
 	final BooleanProperty stageFocusedProperty = new SimpleBooleanProperty();
 
 	MainWindow() {
+		projectPane = new ProjectPane();
 		fileEditorTabPane = new FileEditorTabPane(this);
+
+		SplitPane splitPane = new SplitPane(projectPane.getNode(), fileEditorTabPane.getNode());
+		SplitPane.setResizableWithParent(projectPane.getNode(), false);
+		splitPane.setDividerPosition(0, 0.2);
 
 		BorderPane borderPane = new BorderPane();
 		borderPane.getStyleClass().add("main");
 		borderPane.setPrefSize(800, 800);
 		borderPane.setTop(createMenuBarAndToolBar());
-		borderPane.setCenter(fileEditorTabPane.getNode());
+		borderPane.setCenter(splitPane);
 
 		scene = new Scene(borderPane);
 		scene.getStylesheets().add("org/markdownwriterfx/MarkdownWriter.css");
@@ -155,6 +164,7 @@ class MainWindow
 		// File actions
 		Action fileNewAction = new Action(Messages.get("MainWindow.fileNewAction"), "Shortcut+N", FILE_ALT, e -> fileNew());
 		Action fileOpenAction = new Action(Messages.get("MainWindow.fileOpenAction"), "Shortcut+O", FOLDER_OPEN_ALT, e -> fileOpen());
+		Action fileOpenProjectAction = new Action(Messages.get("MainWindow.fileOpenProjectAction"), "Shortcut+Shift+O", FOLDER_OPEN, e -> fileOpenProject());
 		Action fileCloseAction = new Action(Messages.get("MainWindow.fileCloseAction"), "Shortcut+W", null, e -> fileClose(), activeFileEditorIsNull);
 		Action fileCloseAllAction = new Action(Messages.get("MainWindow.fileCloseAllAction"), null, null, e -> fileCloseAll(), activeFileEditorIsNull);
 		Action fileSaveAction = new Action(Messages.get("MainWindow.fileSaveAction"), "Shortcut+S", FLOPPY_ALT, e -> fileSave(),
@@ -239,7 +249,7 @@ class MainWindow
 		Action insertUnorderedListAction = new Action(Messages.get("MainWindow.insertUnorderedListAction"), "Shortcut+U", LIST_UL,
 				e -> getActiveSmartEdit().insertUnorderedList(),
 				activeFileEditorIsNull);
-		Action insertOrderedListAction = new Action(Messages.get("MainWindow.insertOrderedListAction"), "Shortcut+Shift+O", LIST_OL,
+		Action insertOrderedListAction = new Action(Messages.get("MainWindow.insertOrderedListAction"), "Shortcut+Shift+U", LIST_OL,
 				e -> getActiveSmartEdit().surroundSelection("\n\n1. ", ""),
 				activeFileEditorIsNull);
 		Action insertBlockquoteAction = new Action(Messages.get("MainWindow.insertBlockquoteAction"), "Ctrl+Q", QUOTE_LEFT, // not Shortcut+Q because of conflict on Mac
@@ -284,6 +294,7 @@ class MainWindow
 		Menu fileMenu = ActionUtils.createMenu(Messages.get("MainWindow.fileMenu"),
 				fileNewAction,
 				fileOpenAction,
+				fileOpenProjectAction,
 				null,
 				fileCloseAction,
 				fileCloseAllAction,
@@ -356,6 +367,7 @@ class MainWindow
 		ToolBar toolBar = ActionUtils.createToolBar(
 				fileNewAction,
 				fileOpenAction,
+				fileOpenProjectAction,
 				fileSaveAction,
 				null,
 				editUndoAction,
@@ -505,6 +517,10 @@ class MainWindow
 
 	private void fileOpen() {
 		fileEditorTabPane.openEditor();
+	}
+
+	private void fileOpenProject() {
+		ProjectManager.INSTANCE.openProject(scene.getWindow());
 	}
 
 	private void fileClose() {
