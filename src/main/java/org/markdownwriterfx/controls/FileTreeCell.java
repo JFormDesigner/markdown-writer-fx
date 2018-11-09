@@ -30,6 +30,7 @@ package org.markdownwriterfx.controls;
 import java.io.File;
 import javafx.scene.Node;
 import javafx.scene.control.TreeCell;
+import javafx.scene.control.TreeItem;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.utils.FontAwesomeIconFactory;
 
@@ -41,6 +42,19 @@ import de.jensd.fx.glyphs.fontawesome.utils.FontAwesomeIconFactory;
 public class FileTreeCell
 	extends TreeCell<File>
 {
+	public FileTreeCell() {
+		// expand/collapse tree item with single click
+		setOnMouseReleased(event -> {
+			TreeItem<File> treeItem = getTreeItem();
+			if (treeItem != null &&
+				!treeItem.isLeaf() &&
+				(getDisclosureNode() == null || !getDisclosureNode().getBoundsInParent().contains(event.getX(), event.getY())))
+			{
+				treeItem.setExpanded(!treeItem.isExpanded());
+			}
+		});
+	}
+
 	@Override
 	protected void updateItem(File file, boolean empty) {
 		super.updateItem(file, empty);
