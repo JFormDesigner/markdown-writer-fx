@@ -28,12 +28,15 @@
 package org.markdownwriterfx.projects;
 
 import java.io.File;
+import java.util.List;
+import java.util.stream.Collectors;
 import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.StackPane;
 import org.markdownwriterfx.Messages;
 
@@ -52,10 +55,16 @@ class ProjectsComboBox
 	ProjectsComboBox() {
 		getStyleClass().add("projects-combo-box");
 		setVisibleRowCount(20);
+		setButtonCell(new ProjectButtonCell());
 		setCellFactory(listView -> new ProjectListCell());
 
 		// let this control grow horizontally
 		setMaxWidth(Double.MAX_VALUE);
+
+		// update tooltip
+		valueProperty().addListener((observer, oldProject, newProject) -> {
+			setTooltip((newProject != null) ? new Tooltip(newProject.getAbsolutePath()) : null);
+		});
 
 		// add items
 		ObservableList<File> projects = ProjectManager.INSTANCE.getProjects();
@@ -107,6 +116,57 @@ class ProjectsComboBox
 		}
 
 		super.hide();
+	}
+
+	//---- class ProjectButtonCell --------------------------------------------
+
+	private class ProjectButtonCell
+		extends ListCell<File>
+	{
+		@Override
+		protected void updateItem(File item, boolean empty) {
+			super.updateItem(item, empty);
+
+			setText((!empty && item != null) ? buildUniqueName(item) : null);
+		}
+
+		private String buildUniqueName(File item) {
+			String name = item.getName();
+
+			// find other projects with same name
+			List<File> projects = getItems().stream()
+				.filter(f -> !f.equals(item) && f.getName().equals(name))
+				.collect(Collectors.toList());
+			if (projects.isEmpty())
+				return name;
+
+			// there are more than one project with the same name
+			// --> go up folder hierarchy and find a unique name
+			File itemParent = item.getParentFile();
+			while (itemParent != null) {
+				// parent of projects
+				projects = projects.stream()
+					.map(f -> f.getParentFile())
+					.filter(f -> f != null)
+					.collect(Collectors.toList());
+
+				String n = itemParent.getName();
+				if (n.isEmpty())
+					break;
+
+				// find unique parent name
+				long equalCount = projects.stream()
+					.filter(f -> f.getName().equals(n))
+					.count();
+				if (equalCount == 0)
+					return name + " [" + itemParent.getName() + "]";
+
+				itemParent = itemParent.getParentFile();
+			}
+
+			// fallback: append path
+			return name + " - " + item.getParent();
+		}
 	}
 
 	//---- class ProjectListCell ----------------------------------------------
