@@ -31,8 +31,10 @@ import java.io.File;
 import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
+import javafx.scene.layout.StackPane;
 import org.markdownwriterfx.Messages;
 
 /**
@@ -44,6 +46,8 @@ class ProjectsComboBox
 	extends ComboBox<File>
 {
 	private static final File OPEN_FOLDER = new File("");
+
+	private boolean doNotHidePopupOnce;
 
 	ProjectsComboBox() {
 		getStyleClass().add("projects-combo-box");
@@ -65,6 +69,13 @@ class ProjectsComboBox
 		getSelectionModel().selectedItemProperty().addListener((observer, oldProject, newProject) -> {
 			if (newProject == OPEN_FOLDER) {
 				Platform.runLater(() -> {
+					// closing last active project automatically selects this item
+					// --> activate first project
+					if (oldProject != null && !getItems().contains(oldProject)) {
+						ProjectManager.INSTANCE.setActiveProject((getItems().size() > 1) ? getItems().get(1) : null);
+						return;
+					}
+
 					getSelectionModel().select(oldProject);
 					ProjectManager.INSTANCE.openProject(getScene().getWindow());
 				});
@@ -88,11 +99,33 @@ class ProjectsComboBox
 		});
 	}
 
+	@Override
+	public void hide() {
+		if (doNotHidePopupOnce) {
+			doNotHidePopupOnce = false;
+			return;
+		}
+
+		super.hide();
+	}
+
 	//---- class ProjectListCell ----------------------------------------------
 
 	private class ProjectListCell
 		extends ListCell<File>
 	{
+		private final StackPane closeButton = new StackPane();
+
+		ProjectListCell() {
+			closeButton.getStyleClass().add("close-project-button");
+			closeButton.setPrefSize(16, 16);
+			closeButton.setOnMousePressed( event -> {
+				event.consume();
+				doNotHidePopupOnce = true;
+				ProjectManager.INSTANCE.getProjects().remove(getItem());
+			});
+		}
+
 		@Override
 		protected void updateItem(File item, boolean empty) {
 			super.updateItem(item, empty);
@@ -104,12 +137,17 @@ class ProjectsComboBox
 				getStyleClass().remove("open-project");
 
 			String text = null;
+			Node graphic = null;
 			if (!empty && item != null) {
 				text = (item == OPEN_FOLDER)
 					? Messages.get("ProjectsComboBox.openProject")
 					: item.getAbsolutePath();
+
+				graphic = closeButton;
+				closeButton.setVisible(item != OPEN_FOLDER);
 			}
 			setText(text);
+			setGraphic(graphic);
 		}
 	}
 }
