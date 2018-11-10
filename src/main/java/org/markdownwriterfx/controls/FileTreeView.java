@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
@@ -53,7 +54,7 @@ public class FileTreeView
 		if (getRoot() == null)
 			return Collections.emptyList();
 
-		return findFiles(item -> item.isExpanded());
+		return items2files(findItems(item -> item.isExpanded()));
 	}
 
 	public void setExpandedDirectories(List<File> expandedDirectories) {
@@ -75,22 +76,28 @@ public class FileTreeView
 		});
 	}
 
-	private List<File> findFiles(Predicate<TreeItem<File>> predicate) {
+	public List<TreeItem<File>> findItems(Predicate<TreeItem<File>> predicate) {
 		if (getRoot() == null)
 			return Collections.emptyList();
 
-		ArrayList<File> files = new ArrayList<>();
-		findFilesRecur(predicate, getRoot(), files);
-		return files;
+		ArrayList<TreeItem<File>> items = new ArrayList<>();
+		findItemsRecur(predicate, getRoot(), items);
+		return items;
 	}
 
-	private void findFilesRecur(Predicate<TreeItem<File>> predicate, TreeItem<File> item, List<File> files) {
+	private void findItemsRecur(Predicate<TreeItem<File>> predicate, TreeItem<File> item, List<TreeItem<File>> items) {
 		if (predicate.test(item))
-			files.add(item.getValue());
+			items.add(item);
 
 		getLoadedChildren(item).forEach(child -> {
-			findFilesRecur(predicate, child, files);
+			findItemsRecur(predicate, child, items);
 		});
+	}
+
+	private List<File> items2files(List<TreeItem<File>> items) {
+		return items.stream()
+			.map(item -> item.getValue())
+			.collect(Collectors.toList());
 	}
 
 	private ObservableList<TreeItem<File>> getLoadedChildren(TreeItem<File> item) {

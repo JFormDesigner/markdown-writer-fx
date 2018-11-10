@@ -47,10 +47,17 @@ import org.markdownwriterfx.util.Utils;
 class ProjectFileTreeView
 	extends FileTreeView
 {
+	private static final String KEY_SELECTION = "selection";
 	private static final String KEY_EXPANDED = "expanded";
+
+	private boolean inSetRoot;
 
 	ProjectFileTreeView() {
 		setShowRoot(false);
+
+		getSelectionModel().selectedItemProperty().addListener((observer, oldSelectedItem, newSelectedItem) -> {
+			saveSelection();
+		});
 
 		projectChanged(ProjectManager.INSTANCE.getActiveProject());
 		ProjectManager.INSTANCE.activeProjectProperty().addListener((observer, oldProject, newProject) -> {
@@ -65,9 +72,16 @@ class ProjectFileTreeView
 		}
 
 		FileTreeItem newRoot = new FileTreeItem(activeProject);
-		setRoot(newRoot);
+
+		inSetRoot = true;
+		try {
+			setRoot(newRoot);
+		} finally {
+			inSetRoot = false;
+		}
 
 		loadExpanded();
+		loadSelection();
 
 		newRoot.addEventHandler(TreeItem.branchExpandedEvent(), event -> saveExpanded());
 		newRoot.addEventHandler(TreeItem.branchCollapsedEvent(), event -> saveExpanded());
@@ -100,5 +114,39 @@ class ProjectFileTreeView
 				.map(f -> projectPath.relativize(f.toPath()).toString())
 				.toArray(String[]::new));
 		});
+	}
+
+	private void loadSelection() {
+		Preferences projectState = getProjectState();
+		if (projectState == null)
+			return;
+
+		String path = projectState.get(KEY_SELECTION, null);
+		if (path != null) {
+			File f = new File(path);
+			List<TreeItem<File>> items = findItems(item -> item.getValue().equals(f));
+			if (!items.isEmpty())
+				getSelectionModel().select(items.get(0));
+		}
+	}
+
+	private void saveSelection() {
+		if (inSetRoot)
+			return;
+
+		Preferences projectState = getProjectState();
+		if (projectState == null)
+			return;
+
+		TreeItem<File> selectedItem = getSelectionModel().getSelectedItem();
+		String path = (selectedItem != null) ? selectedItem.getValue().getAbsolutePath() : null;
+		Utils.putPrefs(projectState, KEY_SELECTION, path, null);
+	}
+
+	private Preferences getProjectState() {
+		TreeItem<File> root = getRoot();
+		return (root != null)
+			? ProjectManager.INSTANCE.getProjectState(root.getValue())
+			: null;
 	}
 }
