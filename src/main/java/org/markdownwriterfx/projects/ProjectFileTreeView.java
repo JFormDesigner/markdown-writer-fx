@@ -28,8 +28,16 @@
 package org.markdownwriterfx.projects;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import javafx.application.Platform;
+import javafx.scene.control.TreeItem;
 import org.markdownwriterfx.controls.FileTreeItem;
 import org.markdownwriterfx.controls.FileTreeView;
+import org.markdownwriterfx.util.Utils;
 
 /**
  * A tree view of directories and files of a project.
@@ -39,6 +47,8 @@ import org.markdownwriterfx.controls.FileTreeView;
 class ProjectFileTreeView
 	extends FileTreeView
 {
+	private static final String KEY_EXPANDED = "expanded";
+
 	ProjectFileTreeView() {
 		setShowRoot(false);
 
@@ -49,6 +59,46 @@ class ProjectFileTreeView
 	}
 
 	private void projectChanged(File activeProject) {
-		setRoot((activeProject != null) ? new FileTreeItem(activeProject) : null);
+		if (activeProject == null) {
+			setRoot(null);
+			return;
+		}
+
+		FileTreeItem newRoot = new FileTreeItem(activeProject);
+		setRoot(newRoot);
+
+		loadExpanded();
+
+		newRoot.addEventHandler(TreeItem.branchExpandedEvent(), event -> saveExpanded());
+		newRoot.addEventHandler(TreeItem.branchCollapsedEvent(), event -> saveExpanded());
+	}
+
+	private void loadExpanded() {
+		File project = getRoot().getValue();
+		Preferences projectState = ProjectManager.INSTANCE.getProjectState(project);
+		if (projectState == null)
+			return;
+
+		String[] expanded = Utils.getPrefsStrings(projectState, KEY_EXPANDED);
+		List<File> expandedDirectories = Stream.of(expanded)
+			.map(relativePath -> new File(project, relativePath))
+			.collect(Collectors.toList());
+		setExpandedDirectories(expandedDirectories);
+	}
+
+	private void saveExpanded() {
+		Platform.runLater(() -> {
+			File project = getRoot().getValue();
+			Preferences projectState = ProjectManager.INSTANCE.getProjectState(project);
+			if (projectState == null)
+				return;
+
+			List<File> expandedDirectories = getExpandedDirectories();
+			Path projectPath = project.toPath();
+			Utils.putPrefsStrings(projectState, KEY_EXPANDED, expandedDirectories.stream()
+				.filter(f -> f != project)
+				.map(f -> projectPath.relativize(f.toPath()).toString())
+				.toArray(String[]::new));
+		});
 	}
 }

@@ -83,4 +83,8 @@ public class FileTreeItem
 		}
 		return super.getChildren();
 	}
+
+	public ObservableList<TreeItem<File>> getLoadedChildren() {
+		return super.getChildren();
+	}
 }

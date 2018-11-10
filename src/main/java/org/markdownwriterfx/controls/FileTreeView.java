@@ -28,6 +28,13 @@
 package org.markdownwriterfx.controls;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.function.Predicate;
+import javafx.collections.ObservableList;
+import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 
 /**
@@ -40,5 +47,55 @@ public class FileTreeView
 {
 	public FileTreeView() {
 		setCellFactory(treeView -> new FileTreeCell());
+	}
+
+	public List<File> getExpandedDirectories() {
+		if (getRoot() == null)
+			return Collections.emptyList();
+
+		return findFiles(item -> item.isExpanded());
+	}
+
+	public void setExpandedDirectories(List<File> expandedDirectories) {
+		if (getRoot() == null)
+			return;
+
+		HashSet<File> expandedDirectoriesSet = new HashSet<>(expandedDirectories);
+		expandDirectories(getRoot(), expandedDirectoriesSet);
+	}
+
+	private void expandDirectories(TreeItem<File> item, HashSet<File> expandedDirectoriesSet) {
+		getLoadedChildren(item).forEach(child -> {
+			if (!child.isLeaf()) {
+				if (expandedDirectoriesSet.contains(child.getValue()))
+					child.setExpanded(true);
+
+				expandDirectories(child, expandedDirectoriesSet);
+			}
+		});
+	}
+
+	private List<File> findFiles(Predicate<TreeItem<File>> predicate) {
+		if (getRoot() == null)
+			return Collections.emptyList();
+
+		ArrayList<File> files = new ArrayList<>();
+		findFilesRecur(predicate, getRoot(), files);
+		return files;
+	}
+
+	private void findFilesRecur(Predicate<TreeItem<File>> predicate, TreeItem<File> item, List<File> files) {
+		if (predicate.test(item))
+			files.add(item.getValue());
+
+		getLoadedChildren(item).forEach(child -> {
+			findFilesRecur(predicate, child, files);
+		});
+	}
+
+	private ObservableList<TreeItem<File>> getLoadedChildren(TreeItem<File> item) {
+		return (item instanceof FileTreeItem && !item.isExpanded())
+			? ((FileTreeItem)item).getLoadedChildren()
+			: item.getChildren();
 	}
 }
