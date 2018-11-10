@@ -28,6 +28,9 @@
 package org.markdownwriterfx.projects;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -49,19 +52,16 @@ public class ProjectManager
 {
 	public static final ProjectManager INSTANCE = new ProjectManager();
 
-	private static final String KEY_PROJECT = "project";
-	private static final String KEY_ACTIVE_PROJECT = "activeProject";
-	private static final String KEY_LAST_PROJECT_DIRECTORY = "lastProjectDirectory";
+	private static final String KEY_PROJECTS = "projects";
+	private static final String KEY_PATH = "path";
+	private static final String KEY_ACTIVE_PROJECT = "active";
+	private static final String KEY_LAST_PROJECT_DIRECTORY = "lastDirectory";
 
 	ProjectManager() {
-		Preferences state = MarkdownWriterFXApp.getState();
+		Preferences state = getProjectsState();
 
-		// load active and recent projects
-		String[] projectNames = Utils.getPrefsStrings(state, KEY_PROJECT);
-		String activeProjectName = state.get(KEY_ACTIVE_PROJECT, null);
-
-		for (String projectName : projectNames)
-			projects.add(new File(projectName));
+		// load recent projects
+		projects.addAll(getRecentProjects());
 
 		// save active project on change
 		activeProjectProperty().addListener((observer, oldProject, newProject) -> {
@@ -74,11 +74,21 @@ public class ProjectManager
 
 		// save recent projects on change
 		projects.addListener((ListChangeListener<File>) change -> {
-			Utils.putPrefsStrings(state, KEY_PROJECT,
-				projects.stream().map(f -> f.getAbsolutePath()).toArray(String[]::new));
+			while (change.next()) {
+				if (change.wasAdded()) {
+					for (File f : change.getAddedSubList()) {
+						getProjectState(f);
+					}
+				}
+				if (change.wasRemoved()) {
+					for (File f : change.getRemoved())
+						removeProjectState(f);
+				}
+			}
 		});
 
 		// initialize active project
+		String activeProjectName = state.get(KEY_ACTIVE_PROJECT, null);
 		if (activeProjectName != null)
 			setActiveProject(new File(activeProjectName));
 		if (getActiveProject() == null && !projects.isEmpty())
@@ -99,7 +109,7 @@ public class ProjectManager
 		DirectoryChooser fileChooser = new DirectoryChooser();
 		fileChooser.setTitle(Messages.get("ProjectManager.openChooser.title"));
 
-		Preferences state = MarkdownWriterFXApp.getState();
+		Preferences state = getProjectsState();
 		String lastProjectDirectory = state.get(KEY_LAST_PROJECT_DIRECTORY, null);
 		File file = new File((lastProjectDirectory != null) ? lastProjectDirectory : ".");
 		if (!file.isDirectory())
@@ -113,5 +123,85 @@ public class ProjectManager
 		state.put(KEY_LAST_PROJECT_DIRECTORY, selectedFile.getAbsolutePath());
 
 		setActiveProject(selectedFile);
+	}
+
+	public Preferences getActiveProjectState() {
+		return getProjectState(getActiveProject());
+	}
+
+	public Preferences getProjectState(File project) {
+		return getProjectState(project, true);
+	}
+
+	private Preferences getProjectState(File project, boolean create) {
+		Preferences state = getProjectsState();
+
+		try {
+			String[] childrenNames = state.childrenNames();
+			for (String childName : childrenNames) {
+				Preferences child = state.node(childName);
+				String path = child.get(KEY_PATH, null);
+				if (path != null && project.equals(new File(path)))
+					return child;
+			}
+
+			if (!create)
+				return null;
+
+			int lastID = 0;
+			for (String childName : childrenNames) {
+				try {
+					int childID = Integer.parseInt(childName);
+					if (childID > lastID)
+						lastID = childID;
+				} catch (NumberFormatException ex) {
+					// ignore
+				}
+			}
+
+			Preferences newNode = state.node(String.valueOf(lastID + 1));
+			newNode.put(KEY_PATH, project.getAbsolutePath());
+			return newNode;
+		} catch (BackingStoreException ex) {
+			// ignore
+			ex.printStackTrace();
+			return null;
+		}
+	}
+
+	private void removeProjectState(File project) {
+		Preferences projectState = getProjectState(project, false);
+		if (projectState != null) {
+			try {
+				projectState.removeNode();
+			} catch (BackingStoreException ex) {
+				// ignore
+				ex.printStackTrace();
+			}
+		}
+	}
+
+	private List<File> getRecentProjects() {
+		Preferences state = getProjectsState();
+		ArrayList<File> projects = new ArrayList<>();
+
+		try {
+			String[] childrenNames = state.childrenNames();
+			for (String childName : childrenNames) {
+				Preferences child = state.node(childName);
+				String path = child.get(KEY_PATH, null);
+				if (path != null)
+					projects.add(new File(path));
+			}
+		} catch (BackingStoreException ex) {
+			// ignore
+			ex.printStackTrace();
+		}
+
+		return projects;
+	}
+
+	private Preferences getProjectsState() {
+		return MarkdownWriterFXApp.getState().node(KEY_PROJECTS);
 	}
 }
