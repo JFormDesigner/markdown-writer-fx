@@ -60,6 +60,7 @@ class ProjectFileTreeView
 	private Timeline saveScrollStateTimeline;
 
 	ProjectFileTreeView() {
+		getStyleClass().add("project-tree-view");
 		setShowRoot(false);
 
 		getSelectionModel().selectedItemProperty().addListener((observer, oldSelectedItem, newSelectedItem) -> {
