@@ -33,8 +33,12 @@ import java.util.List;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.scene.control.ScrollBar;
 import javafx.scene.control.TreeItem;
+import javafx.util.Duration;
 import org.markdownwriterfx.controls.FileTreeItem;
 import org.markdownwriterfx.controls.FileTreeView;
 import org.markdownwriterfx.util.Utils;
@@ -47,16 +51,25 @@ import org.markdownwriterfx.util.Utils;
 class ProjectFileTreeView
 	extends FileTreeView
 {
-	private static final String KEY_SELECTION = "selection";
-	private static final String KEY_EXPANDED = "expanded";
+	private static final String KEY_SELECTION = "treeSelection";
+	private static final String KEY_EXPANDED = "treeExpanded";
+	private static final String KEY_VSCROLL = "treeVScroll";
 
 	private boolean inSetRoot;
+	private ScrollBar vScrollBar;
+	private Timeline saveScrollStateTimeline;
 
 	ProjectFileTreeView() {
 		setShowRoot(false);
 
 		getSelectionModel().selectedItemProperty().addListener((observer, oldSelectedItem, newSelectedItem) -> {
 			saveSelection();
+		});
+
+		Platform.runLater(() -> {
+			vScrollBar = Utils.findVScrollBar(this);
+			if (vScrollBar != null)
+				vScrollBar.valueProperty().addListener((ob, o, n) -> saveScrollState());
 		});
 
 		projectChanged(ProjectManager.INSTANCE.getActiveProject());
@@ -82,6 +95,7 @@ class ProjectFileTreeView
 
 		loadExpanded();
 		loadSelection();
+		loadScrollState();
 
 		newRoot.addEventHandler(TreeItem.branchExpandedEvent(), event -> saveExpanded());
 		newRoot.addEventHandler(TreeItem.branchCollapsedEvent(), event -> saveExpanded());
@@ -141,6 +155,48 @@ class ProjectFileTreeView
 		TreeItem<File> selectedItem = getSelectionModel().getSelectedItem();
 		String path = (selectedItem != null) ? selectedItem.getValue().getAbsolutePath() : null;
 		Utils.putPrefs(projectState, KEY_SELECTION, path, null);
+	}
+
+	private void loadScrollState() {
+		// slightly delay setting scrollbar value to give the VirtualFlow the chance
+		// to complete layout, which may change scrollbar value
+		Timeline timeline = new Timeline(
+			new KeyFrame(Duration.millis(100),
+			event -> loadScrollState2()));
+		timeline.play();
+	}
+
+	private void loadScrollState2() {
+		Preferences projectState = getProjectState();
+		if (projectState == null)
+			return;
+
+		if (vScrollBar != null)
+			vScrollBar.setValue(projectState.getDouble(KEY_VSCROLL, 0.0));
+	}
+
+	private void saveScrollState() {
+		if (inSetRoot)
+			return;
+
+		// scroll bar value changes very often when user drags scroll thumb
+		// --> use timeline to delay saving scroll state
+		if (saveScrollStateTimeline == null) {
+			saveScrollStateTimeline = new Timeline(
+				new KeyFrame(Duration.millis(500),
+				event -> saveScrollState2()));
+		}
+
+		saveScrollStateTimeline.playFromStart();
+	}
+
+	private void saveScrollState2() {
+		Preferences projectState = getProjectState();
+		if (projectState == null)
+			return;
+
+		if (vScrollBar != null)
+			Utils.putPrefsDouble(projectState, KEY_VSCROLL, vScrollBar.getValue(), 0.0);
 	}
 
 	private Preferences getProjectState() {

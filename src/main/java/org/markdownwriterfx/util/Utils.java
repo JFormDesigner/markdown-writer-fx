@@ -88,6 +88,13 @@ public class Utils
 			prefs.remove(key);
 	}
 
+	public static void putPrefsDouble(Preferences prefs, String key, double value, double def) {
+		if (value != def)
+			prefs.putDouble(key, value);
+		else
+			prefs.remove(key);
+	}
+
 	public static void putPrefsBoolean(Preferences prefs, String key, boolean value, boolean def) {
 		if (value != def)
 			prefs.putBoolean(key, value);
@@ -134,10 +141,18 @@ public class Utils
 	}
 
 	public static ScrollBar findVScrollBar(Node node) {
+		return findScrollBar(node, Orientation.VERTICAL);
+	}
+
+	public static ScrollBar findHScrollBar(Node node) {
+		return findScrollBar(node, Orientation.HORIZONTAL);
+	}
+
+	private static ScrollBar findScrollBar(Node node, Orientation orientation) {
 		Set<Node> scrollBars = node.lookupAll(".scroll-bar");
 		for (Node scrollBar : scrollBars) {
 			if (scrollBar instanceof ScrollBar &&
-				((ScrollBar)scrollBar).getOrientation() == Orientation.VERTICAL)
+				((ScrollBar)scrollBar).getOrientation() == orientation)
 			  return (ScrollBar) scrollBar;
 		}
 		return null;
