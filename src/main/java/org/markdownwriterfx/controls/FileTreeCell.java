@@ -64,10 +64,20 @@ public class FileTreeCell
 		if (!empty && file != null) {
 			text = file.getName();
 			graphic = FontAwesomeIconFactory.get().createIcon(getTreeItem().isLeaf()
-				? FontAwesomeIcon.FILE_ALT
+				? fileIcon(text)
 				: FontAwesomeIcon.FOLDER_ALT);
 		}
 		setText(text);
 		setGraphic(graphic);
+	}
+
+	private FontAwesomeIcon fileIcon(String name) {
+		int sepIndex = name.lastIndexOf('.');
+		if (sepIndex > 0) {
+			String ext = name.substring(sepIndex + 1).toLowerCase();
+			if (ext.equals("png") || ext.equals("gif") || ext.equals("jpg") || ext.equals("svg"))
+				return FontAwesomeIcon.FILE_IMAGE_ALT;
+		}
+		return FontAwesomeIcon.FILE_TEXT_ALT;
 	}
 }
