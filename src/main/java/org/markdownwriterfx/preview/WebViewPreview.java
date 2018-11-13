@@ -221,7 +221,7 @@ class WebViewPreview
 				if (!line.startsWith("{"))
 					continue;
 
-				line = line.replaceAll("(\\[.+),(.+\\])", "$1;$2");
+				line = line.replaceAll("\\[([^\\]]+)\\]", "[not supported]");
 				line = trimDelim(line, "{", "}");
 				for (String str : line.split(",")) {
 					String[] parts = str.split(":");

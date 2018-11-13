@@ -14,6 +14,7 @@ Markdown Writer FX Change Log
 - "Format All" and "Format Selection" commands added to "Edit" menu.
 - Configurable formatting wrap line length in Options dialog.
 - "Format on Save" checkbox added to Options dialog.
+- [Prism] syntax highlighter updated to version 1.15.0.
 
 
 ## 0.10
@@ -140,3 +141,4 @@ Markdown Writer FX Change Log
 [commonmark-java]: https://github.com/atlassian/commonmark-java
 [flexmark-java]: https://github.com/vsch/flexmark-java
 [pegdown]: https://github.com/sirthias/pegdown
+[Prism]: https://github.com/PrismJS/prism
