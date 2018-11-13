@@ -418,7 +418,8 @@ class MarkdownSyntaxHighlighter
 				index += length;
 			}
 		};
-		return SyntaxHighlighter.highlight(sequence.toString(), language, highlighter);
+		String text = sequence.baseSubSequence(sequence.getStartOffset(), sequence.getEndOffset()).toString();
+		return SyntaxHighlighter.highlight(text, language, highlighter);
 	}
 
 	private void setStyleClass(Node node, StyleClass styleClass) {
