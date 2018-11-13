@@ -28,6 +28,9 @@
 package org.markdownwriterfx.util;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javafx.css.PseudoClass;
@@ -138,6 +141,11 @@ public class Utils
 			prefs.put(key, value.name());
 		else
 			prefs.remove(key);
+	}
+
+	public static <T> void addSorted(List<T> list, T element, Comparator<T> c) {
+		int index = Collections.binarySearch(list, element, c);
+		list.add((index < 0) ? ((-index)-1) : index, element);
 	}
 
 	public static ScrollBar findVScrollBar(Node node) {

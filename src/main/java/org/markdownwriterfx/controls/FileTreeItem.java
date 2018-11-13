@@ -31,11 +31,11 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
+import org.markdownwriterfx.util.Utils;
 
 /**
  * The {@link TreeItem} type used with the {@link FileTreeView} control.
@@ -146,11 +146,8 @@ public class FileTreeItem
 			children.removeAll(removedFiles);
 
 		// add files
-		for (File file : addedFiles) {
-			FileTreeItem item = new FileTreeItem(file, filter);
-			int index = Collections.binarySearch(children, item, ITEM_COMPARATOR);
-			children.add((index < 0) ? ((-index)-1) : index, item);
-		}
+		for (File file : addedFiles)
+			Utils.addSorted(children, new FileTreeItem(file, filter), ITEM_COMPARATOR);
 
 		// refresh loaded children
 		for (TreeItem<File> item : children) {

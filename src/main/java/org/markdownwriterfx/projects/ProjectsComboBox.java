@@ -28,6 +28,7 @@
 package org.markdownwriterfx.projects;
 
 import java.io.File;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import javafx.application.Platform;
@@ -39,6 +40,7 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.StackPane;
 import org.markdownwriterfx.Messages;
+import org.markdownwriterfx.util.Utils;
 
 /**
  * A combo box that contains recently opened projects and allows switching active project.
@@ -49,6 +51,7 @@ class ProjectsComboBox
 	extends ComboBox<File>
 {
 	private static final File OPEN_FOLDER = new File("");
+	private static final Comparator<File> PROJECT_COMPARATOR = (f1, f2) -> f1.getPath().compareToIgnoreCase(f2.getPath());
 
 	private boolean doNotHidePopupOnce;
 
@@ -68,6 +71,7 @@ class ProjectsComboBox
 
 		// add items
 		ObservableList<File> projects = ProjectManager.INSTANCE.getProjects();
+		projects.sort(PROJECT_COMPARATOR);
 		getItems().add(OPEN_FOLDER);
 		getItems().addAll(projects);
 
@@ -95,8 +99,10 @@ class ProjectsComboBox
 		// listen to projects changes and update combo box
 		projects.addListener((ListChangeListener<File>) change -> {
 			while (change.next()) {
-				if (change.wasAdded())
-					getItems().addAll(change.getAddedSubList());
+				if (change.wasAdded()) {
+					for (File addedProject : change.getAddedSubList())
+						Utils.addSorted(getItems(), addedProject, PROJECT_COMPARATOR);
+				}
 				if (change.wasRemoved())
 					getItems().removeAll(change.getRemoved());
 			}
