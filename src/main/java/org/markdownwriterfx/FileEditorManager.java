@@ -25,36 +25,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.markdownwriterfx.projects;
+package org.markdownwriterfx;
 
-import javafx.scene.Node;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
-import org.markdownwriterfx.FileEditorManager;
+import java.io.File;
+import java.util.Collections;
 
 /**
- * The project pane.
- *
  * @author Karl Tauber
  */
-public class ProjectPane
+public class FileEditorManager
 {
-	private final VBox pane;
-	private final ProjectsComboBox projectsComboBox;
-	private final ProjectFileTreeView fileTreeView;
+	private final FileEditorTabPane fileEditorTabPane;
 
-	public ProjectPane(FileEditorManager fileEditorManager) {
-		projectsComboBox = new ProjectsComboBox();
-		fileTreeView = new ProjectFileTreeView(fileEditorManager);
-
-		pane = new VBox(projectsComboBox, fileTreeView);
-		pane.getStyleClass().add("project-pane");
-
-		VBox.setVgrow(projectsComboBox, Priority.NEVER);
-		VBox.setVgrow(fileTreeView, Priority.ALWAYS);
+	FileEditorManager(FileEditorTabPane fileEditorTabPane) {
+		this.fileEditorTabPane = fileEditorTabPane;
 	}
 
-	public Node getNode() {
-		return pane;
+	public void openEditor(File file) {
+		fileEditorTabPane.openEditors(Collections.singletonList(file), 0);
 	}
 }

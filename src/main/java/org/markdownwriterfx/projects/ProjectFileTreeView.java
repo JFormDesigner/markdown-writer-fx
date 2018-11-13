@@ -39,6 +39,7 @@ import javafx.application.Platform;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.TreeItem;
 import javafx.util.Duration;
+import org.markdownwriterfx.FileEditorManager;
 import org.markdownwriterfx.controls.FileTreeItem;
 import org.markdownwriterfx.controls.FileTreeView;
 import org.markdownwriterfx.util.Utils;
@@ -55,11 +56,15 @@ class ProjectFileTreeView
 	private static final String KEY_EXPANDED = "treeExpanded";
 	private static final String KEY_VSCROLL = "treeVScroll";
 
+	private final FileEditorManager fileEditorManager;
+
 	private boolean inSetRoot;
 	private ScrollBar vScrollBar;
 	private Timeline saveScrollStateTimeline;
 
-	ProjectFileTreeView() {
+	ProjectFileTreeView(FileEditorManager fileEditorManager) {
+		this.fileEditorManager = fileEditorManager;
+
 		getStyleClass().add("project-tree-view");
 		setShowRoot(false);
 
@@ -77,6 +82,12 @@ class ProjectFileTreeView
 		ProjectManager.activeProjectProperty().addListener((observer, oldProject, newProject) -> {
 			projectChanged(newProject);
 		});
+	}
+
+	@Override
+	public void edit(TreeItem<File> item) {
+		if (item != null && item.getValue().isFile())
+			fileEditorManager.openEditor(item.getValue());
 	}
 
 	private void projectChanged(File activeProject) {

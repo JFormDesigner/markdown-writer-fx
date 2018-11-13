@@ -88,13 +88,15 @@ class MainWindow
 	private final Scene scene;
 	private final ProjectPane projectPane;
 	private final FileEditorTabPane fileEditorTabPane;
+	private final FileEditorManager fileEditorManager;
 	private MenuBar menuBar;
 	private Node extensionsButton;
 	final BooleanProperty stageFocusedProperty = new SimpleBooleanProperty();
 
 	MainWindow() {
-		projectPane = new ProjectPane();
 		fileEditorTabPane = new FileEditorTabPane(this);
+		fileEditorManager = new FileEditorManager(fileEditorTabPane);
+		projectPane = new ProjectPane(fileEditorManager);
 
 		SplitPane splitPane = new SplitPane(projectPane.getNode(), fileEditorTabPane.getNode());
 		SplitPane.setResizableWithParent(projectPane.getNode(), false);
