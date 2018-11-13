@@ -50,14 +50,22 @@ import org.markdownwriterfx.util.Utils;
  */
 public class ProjectManager
 {
-	public static final ProjectManager INSTANCE = new ProjectManager();
-
 	private static final String KEY_PROJECTS = "projects";
 	private static final String KEY_PATH = "path";
 	private static final String KEY_ACTIVE_PROJECT = "active";
 	private static final String KEY_LAST_PROJECT_DIRECTORY = "lastDirectory";
 
-	ProjectManager() {
+	// 'activeProject' property
+	private static final ObjectProperty<File> activeProject = new SimpleObjectProperty<>();
+	public static File getActiveProject() { return activeProject.get(); }
+	public static void setActiveProject(File activeProject) { ProjectManager.activeProject.set(activeProject); }
+	public static ObjectProperty<File> activeProjectProperty() { return activeProject; }
+
+	// 'projects' property
+	private static final ObservableList<File> projects = FXCollections.observableArrayList();
+	static ObservableList<File> getProjects() { return projects; }
+
+	static {
 		Preferences state = getProjectsState();
 
 		// load recent projects
@@ -95,17 +103,7 @@ public class ProjectManager
 			setActiveProject(projects.get(0));
 	}
 
-	// 'activeProject' property
-	private final ObjectProperty<File> activeProject = new SimpleObjectProperty<>();
-	public File getActiveProject() { return activeProject.get(); }
-	public void setActiveProject(File activeProject) { this.activeProject.set(activeProject); }
-	public ObjectProperty<File> activeProjectProperty() { return activeProject; }
-
-	// 'projects' property
-	private final ObservableList<File> projects = FXCollections.observableArrayList();
-	ObservableList<File> getProjects() { return projects; }
-
-	public void openProject(Window ownerWindow) {
+	public static void openProject(Window ownerWindow) {
 		DirectoryChooser fileChooser = new DirectoryChooser();
 		fileChooser.setTitle(Messages.get("ProjectManager.openChooser.title"));
 
@@ -125,15 +123,15 @@ public class ProjectManager
 		setActiveProject(selectedFile);
 	}
 
-	public Preferences getActiveProjectState() {
+	public static Preferences getActiveProjectState() {
 		return getProjectState(getActiveProject());
 	}
 
-	public Preferences getProjectState(File project) {
+	public static Preferences getProjectState(File project) {
 		return getProjectState(project, true);
 	}
 
-	private Preferences getProjectState(File project, boolean create) {
+	private static Preferences getProjectState(File project, boolean create) {
 		Preferences state = getProjectsState();
 
 		try {
@@ -169,7 +167,7 @@ public class ProjectManager
 		}
 	}
 
-	private void removeProjectState(File project) {
+	private static void removeProjectState(File project) {
 		Preferences projectState = getProjectState(project, false);
 		if (projectState != null) {
 			try {
@@ -181,7 +179,7 @@ public class ProjectManager
 		}
 	}
 
-	private List<File> getRecentProjects() {
+	private static List<File> getRecentProjects() {
 		Preferences state = getProjectsState();
 		ArrayList<File> projects = new ArrayList<>();
 
@@ -201,7 +199,7 @@ public class ProjectManager
 		return projects;
 	}
 
-	private Preferences getProjectsState() {
+	private static Preferences getProjectsState() {
 		return MarkdownWriterFXApp.getState().node(KEY_PROJECTS);
 	}
 }

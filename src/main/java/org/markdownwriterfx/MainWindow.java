@@ -520,7 +520,7 @@ class MainWindow
 	}
 
 	private void fileOpenProject() {
-		ProjectManager.INSTANCE.openProject(scene.getWindow());
+		ProjectManager.openProject(scene.getWindow());
 	}
 
 	private void fileClose() {

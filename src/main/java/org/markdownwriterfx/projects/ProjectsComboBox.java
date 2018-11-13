@@ -70,13 +70,13 @@ class ProjectsComboBox
 		});
 
 		// add items
-		ObservableList<File> projects = ProjectManager.INSTANCE.getProjects();
+		ObservableList<File> projects = ProjectManager.getProjects();
 		projects.sort(PROJECT_COMPARATOR);
 		getItems().add(OPEN_FOLDER);
 		getItems().addAll(projects);
 
 		// set active project
-		setValue(ProjectManager.INSTANCE.getActiveProject());
+		setValue(ProjectManager.getActiveProject());
 
 		// listen to selection changes
 		getSelectionModel().selectedItemProperty().addListener((observer, oldProject, newProject) -> {
@@ -85,15 +85,15 @@ class ProjectsComboBox
 					// closing last active project automatically selects this item
 					// --> activate first project
 					if (oldProject != null && !getItems().contains(oldProject)) {
-						ProjectManager.INSTANCE.setActiveProject((getItems().size() > 1) ? getItems().get(1) : null);
+						ProjectManager.setActiveProject((getItems().size() > 1) ? getItems().get(1) : null);
 						return;
 					}
 
 					getSelectionModel().select(oldProject);
-					ProjectManager.INSTANCE.openProject(getScene().getWindow());
+					ProjectManager.openProject(getScene().getWindow());
 				});
 			} else
-				ProjectManager.INSTANCE.setActiveProject(newProject);
+				ProjectManager.setActiveProject(newProject);
 		});
 
 		// listen to projects changes and update combo box
@@ -109,7 +109,7 @@ class ProjectsComboBox
 		});
 
 		// listen to active project change and update combo box value
-		ProjectManager.INSTANCE.activeProjectProperty().addListener((observer, oldProject, newProject) -> {
+		ProjectManager.activeProjectProperty().addListener((observer, oldProject, newProject) -> {
 			setValue(newProject);
 		});
 	}
@@ -188,7 +188,7 @@ class ProjectsComboBox
 			closeButton.setOnMousePressed( event -> {
 				event.consume();
 				doNotHidePopupOnce = true;
-				ProjectManager.INSTANCE.getProjects().remove(getItem());
+				ProjectManager.getProjects().remove(getItem());
 			});
 		}
 

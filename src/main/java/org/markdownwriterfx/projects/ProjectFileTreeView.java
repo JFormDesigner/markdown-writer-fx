@@ -73,8 +73,8 @@ class ProjectFileTreeView
 				vScrollBar.valueProperty().addListener((ob, o, n) -> saveScrollState());
 		});
 
-		projectChanged(ProjectManager.INSTANCE.getActiveProject());
-		ProjectManager.INSTANCE.activeProjectProperty().addListener((observer, oldProject, newProject) -> {
+		projectChanged(ProjectManager.getActiveProject());
+		ProjectManager.activeProjectProperty().addListener((observer, oldProject, newProject) -> {
 			projectChanged(newProject);
 		});
 	}
@@ -104,7 +104,7 @@ class ProjectFileTreeView
 
 	private void loadExpanded() {
 		File project = getRoot().getValue();
-		Preferences projectState = ProjectManager.INSTANCE.getProjectState(project);
+		Preferences projectState = ProjectManager.getProjectState(project);
 		if (projectState == null)
 			return;
 
@@ -118,7 +118,7 @@ class ProjectFileTreeView
 	private void saveExpanded() {
 		Platform.runLater(() -> {
 			File project = getRoot().getValue();
-			Preferences projectState = ProjectManager.INSTANCE.getProjectState(project);
+			Preferences projectState = ProjectManager.getProjectState(project);
 			if (projectState == null)
 				return;
 
@@ -203,7 +203,7 @@ class ProjectFileTreeView
 	private Preferences getProjectState() {
 		TreeItem<File> root = getRoot();
 		return (root != null)
-			? ProjectManager.INSTANCE.getProjectState(root.getValue())
+			? ProjectManager.getProjectState(root.getValue())
 			: null;
 	}
 }
