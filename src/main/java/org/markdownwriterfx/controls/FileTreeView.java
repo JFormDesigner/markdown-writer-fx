@@ -34,6 +34,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
@@ -41,13 +44,32 @@ import javafx.scene.control.TreeView;
 /**
  * A tree view of directories and files.
  *
+ * Refreshes the file tree on window activation.
+ *
  * @author Karl Tauber
  */
 public class FileTreeView
 	extends TreeView<File>
 {
+	// need a hard reference to avoid GC
+	private final BooleanBinding windowFocusedProperty;
+
 	public FileTreeView() {
 		setCellFactory(treeView -> new FileTreeCell());
+
+		windowFocusedProperty = Bindings.selectBoolean(sceneProperty(), "window", "focused");
+		// use runLater() for adding listener to avoid unnecessary refresh after initial creation
+		Platform.runLater(() -> {
+			windowFocusedProperty.addListener((observer, oldFocused, newFocused) -> {
+				if (newFocused)
+					Platform.runLater(() -> refreshFiles());
+			});
+		});
+	}
+
+	public void refreshFiles() {
+		if (getRoot() instanceof FileTreeItem)
+			((FileTreeItem)getRoot()).refresh();
 	}
 
 	public List<File> getExpandedDirectories() {

@@ -30,22 +30,32 @@ package org.markdownwriterfx.controls;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
 
 /**
  * The {@link TreeItem} type used with the {@link FileTreeView} control.
  *
+ * Refreshes its children recursively when expanding this item.
+ *
  * @author Karl Tauber
  */
 public class FileTreeItem
 	extends TreeItem<File>
 {
+	private static final Comparator<File> FILE_COMPARATOR = (f1, f2) -> f1.getName().compareToIgnoreCase(f2.getName());
+	private static final Comparator<TreeItem<File>> ITEM_COMPARATOR = (i1, i2) -> FILE_COMPARATOR.compare(i1.getValue(), i2.getValue());
+
 	private final FilenameFilter filter;
 
 	private boolean leaf;
 	private boolean leafInitialized;
 	private boolean childrenInitialized;
+	private boolean expandedListenerAdded;
 
 	public FileTreeItem(File file) {
 		this(file, null);
@@ -61,6 +71,15 @@ public class FileTreeItem
 		if (!leafInitialized) {
 			leafInitialized = true;
 			leaf = getValue().isFile();
+
+			// add expanded listener only to non-leafs (to safe memory)
+			if (!leaf && !expandedListenerAdded) {
+				expandedListenerAdded = true;
+				expandedProperty().addListener((observable, oldExpanded, newExpanded) -> {
+					if (newExpanded)
+						refresh();
+				});
+			}
 		}
 		return leaf;
 	}
@@ -74,6 +93,7 @@ public class FileTreeItem
 			if (f.isDirectory()) {
 				File[] files = f.listFiles(filter);
 				if (files != null) {
+					Arrays.sort(files, FILE_COMPARATOR);
 					ArrayList<TreeItem<File>> children = new ArrayList<>();
 					for (File file : files)
 						children.add(new FileTreeItem(file, filter));
@@ -86,5 +106,56 @@ public class FileTreeItem
 
 	public ObservableList<TreeItem<File>> getLoadedChildren() {
 		return super.getChildren();
+	}
+
+	public void refresh() {
+		if (leafInitialized) {
+			// check whether file has changed from directory to normal file or vice versa
+			boolean oldLeaf = leaf;
+			leafInitialized = false;
+			boolean newLeaf = isLeaf();
+			if (newLeaf != oldLeaf) {
+				childrenInitialized = false;
+				super.getChildren().clear();
+				return;
+			}
+		}
+
+		if (!childrenInitialized || isLeaf())
+			return;
+
+		// get current files
+		ObservableList<TreeItem<File>> children = super.getChildren();
+		File f = getValue();
+		File[] newFiles = f.isDirectory() ? f.listFiles(filter) : null;
+		if (newFiles == null || newFiles.length == 0) {
+			children.clear();
+			return;
+		}
+
+		// determine added and removed files
+		HashSet<File> addedFiles = new HashSet<>(Arrays.asList(newFiles));
+		ArrayList<TreeItem<File>> removedFiles = new ArrayList<>();
+		for (TreeItem<File> item : children) {
+			if (!addedFiles.remove(item.getValue()))
+				removedFiles.add(item);
+		}
+
+		// remove files
+		if (!removedFiles.isEmpty())
+			children.removeAll(removedFiles);
+
+		// add files
+		for (File file : addedFiles) {
+			FileTreeItem item = new FileTreeItem(file, filter);
+			int index = Collections.binarySearch(children, item, ITEM_COMPARATOR);
+			children.add((index < 0) ? ((-index)-1) : index, item);
+		}
+
+		// refresh loaded children
+		for (TreeItem<File> item : children) {
+			if (item instanceof FileTreeItem)
+				((FileTreeItem)item).refresh();
+		}
 	}
 }
