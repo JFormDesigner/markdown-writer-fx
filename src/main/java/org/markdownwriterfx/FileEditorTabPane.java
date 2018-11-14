@@ -107,7 +107,8 @@ class FileEditorTabPane
 				if (c.wasAdded()) {
 					for (Tab tab : c.getAddedSubList())
 						((FileEditor)tab.getUserData()).modifiedProperty().addListener(modifiedListener);
-				} else if (c.wasRemoved()) {
+				}
+				if (c.wasRemoved()) {
 					for (Tab tab : c.getRemoved())
 						((FileEditor)tab.getUserData()).modifiedProperty().removeListener(modifiedListener);
 				}
