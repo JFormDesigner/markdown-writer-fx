@@ -40,6 +40,7 @@ import javafx.beans.binding.BooleanBinding;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+import javafx.scene.input.MouseButton;
 
 /**
  * A tree view of directories and files.
@@ -65,6 +66,9 @@ public class FileTreeView
 					Platform.runLater(() -> refreshFiles());
 			});
 		});
+	}
+
+	protected void handleClicks(TreeItem<File> item, MouseButton button, int clickCount) {
 	}
 
 	public void refreshFiles() {

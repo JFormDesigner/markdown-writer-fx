@@ -38,6 +38,7 @@ import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.TreeItem;
+import javafx.scene.input.MouseButton;
 import javafx.util.Duration;
 import org.markdownwriterfx.FileEditorManager;
 import org.markdownwriterfx.controls.FileTreeItem;
@@ -85,8 +86,8 @@ class ProjectFileTreeView
 	}
 
 	@Override
-	public void edit(TreeItem<File> item) {
-		if (item != null && item.getValue().isFile())
+	protected void handleClicks(TreeItem<File> item, MouseButton button, int clickCount) {
+		if (button == MouseButton.PRIMARY && clickCount == 2 && item != null && item.getValue().isFile())
 			fileEditorManager.openEditor(item.getValue());
 	}
 

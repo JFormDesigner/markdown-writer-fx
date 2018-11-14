@@ -52,6 +52,9 @@ public class FileTreeCell
 			{
 				treeItem.setExpanded(!treeItem.isExpanded());
 			}
+
+			if (getTreeView() instanceof FileTreeView)
+				((FileTreeView)getTreeView()).handleClicks(treeItem, event.getButton(), event.getClickCount());
 		});
 	}
 
