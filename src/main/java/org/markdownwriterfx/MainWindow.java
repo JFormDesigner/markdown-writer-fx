@@ -112,7 +112,7 @@ class MainWindow
 		scene.getStylesheets().add("org/markdownwriterfx/MarkdownWriter.css");
 		scene.windowProperty().addListener((observable, oldWindow, newWindow) -> {
 			newWindow.setOnCloseRequest(e -> {
-				if (!fileEditorTabPane.closeAllEditors())
+				if (!fileEditorTabPane.canCloseAllEditos())
 					e.consume();
 			});
 
@@ -522,7 +522,8 @@ class MainWindow
 	}
 
 	private void fileOpenProject() {
-		ProjectManager.openProject(scene.getWindow());
+		if (fileEditorManager.canOpenAnotherProject())
+			ProjectManager.openProject(scene.getWindow());
 	}
 
 	private void fileClose() {
@@ -530,7 +531,7 @@ class MainWindow
 	}
 
 	private void fileCloseAll() {
-		fileEditorTabPane.closeAllEditors();
+		fileEditorTabPane.closeAllEditors(true);
 	}
 
 	private void fileSave() {

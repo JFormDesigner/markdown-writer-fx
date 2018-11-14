@@ -39,6 +39,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.StackPane;
+import org.markdownwriterfx.FileEditorManager;
 import org.markdownwriterfx.Messages;
 import org.markdownwriterfx.util.Utils;
 
@@ -53,9 +54,10 @@ class ProjectsComboBox
 	private static final File OPEN_FOLDER = new File("");
 	private static final Comparator<File> PROJECT_COMPARATOR = (f1, f2) -> f1.getPath().compareToIgnoreCase(f2.getPath());
 
+	private boolean inSelectionChange;
 	private boolean doNotHidePopupOnce;
 
-	ProjectsComboBox() {
+	ProjectsComboBox(FileEditorManager fileEditorManager) {
 		getStyleClass().add("projects-combo-box");
 		setVisibleRowCount(20);
 		setButtonCell(new ProjectButtonCell());
@@ -80,20 +82,37 @@ class ProjectsComboBox
 
 		// listen to selection changes
 		getSelectionModel().selectedItemProperty().addListener((observer, oldProject, newProject) -> {
-			if (newProject == OPEN_FOLDER) {
-				Platform.runLater(() -> {
-					// closing last active project automatically selects this item
-					// --> activate first project
-					if (oldProject != null && !getItems().contains(oldProject)) {
-						ProjectManager.setActiveProject((getItems().size() > 1) ? getItems().get(1) : null);
-						return;
-					}
+			if (inSelectionChange)
+				return;
 
-					getSelectionModel().select(oldProject);
-					ProjectManager.openProject(getScene().getWindow());
-				});
-			} else
-				ProjectManager.setActiveProject(newProject);
+			if (newProject == ProjectManager.getActiveProject())
+				return;
+
+			Platform.runLater(() -> {
+				inSelectionChange = true;
+				try {
+					if (newProject == OPEN_FOLDER) {
+						// closing last active project automatically selects this item
+						// --> activate first project
+						if (oldProject != null && !getItems().contains(oldProject)) {
+							ProjectManager.setActiveProject((getItems().size() > 1) ? getItems().get(1) : null);
+							return;
+						}
+
+						getSelectionModel().select(oldProject);
+
+						if (fileEditorManager.canOpenAnotherProject())
+							ProjectManager.openProject(getScene().getWindow());
+					} else {
+						if (fileEditorManager.canOpenAnotherProject())
+							ProjectManager.setActiveProject(newProject);
+						else
+							getSelectionModel().select(oldProject);
+					}
+				} finally {
+					inSelectionChange = false;
+				}
+			});
 		});
 
 		// listen to projects changes and update combo box

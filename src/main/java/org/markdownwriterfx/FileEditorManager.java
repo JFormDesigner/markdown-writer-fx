@@ -29,6 +29,7 @@ package org.markdownwriterfx;
 
 import java.io.File;
 import java.util.Collections;
+import org.markdownwriterfx.projects.ProjectManager;
 
 /**
  * @author Karl Tauber
@@ -43,5 +44,12 @@ public class FileEditorManager
 
 	public void openEditor(File file) {
 		fileEditorTabPane.openEditors(Collections.singletonList(file), 0);
+	}
+
+	public boolean canOpenAnotherProject() {
+		if (ProjectManager.getActiveProject() == null)
+			return true; // keep open editors
+
+		return fileEditorTabPane.canCloseAllEditos();
 	}
 }

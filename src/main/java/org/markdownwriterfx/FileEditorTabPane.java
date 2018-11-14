@@ -55,6 +55,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import org.fxmisc.wellbehaved.event.Nodes;
 import org.markdownwriterfx.options.Options;
+import org.markdownwriterfx.projects.ProjectManager;
 import org.markdownwriterfx.util.PrefsBooleanProperty;
 import org.markdownwriterfx.util.Utils;
 
@@ -75,6 +76,8 @@ class FileEditorTabPane
 	final PrefsBooleanProperty markdownAstVisible = new PrefsBooleanProperty();
 	final PrefsBooleanProperty externalVisible = new PrefsBooleanProperty();
 
+	private boolean saveEditorsStateEnabled = true;
+
 	FileEditorTabPane(MainWindow mainWindow) {
 		this.mainWindow = mainWindow;
 
@@ -85,6 +88,7 @@ class FileEditorTabPane
 		// update activeFileEditor property
 		tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
 			activeFileEditor.set((newTab != null) ? (FileEditor) newTab.getUserData() : null);
+			saveStateActiveEditor();
 		});
 
 		// update anyFileEditorModified property
@@ -112,10 +116,24 @@ class FileEditorTabPane
 			// changes in the tabs may also change anyFileEditorModified property
 			// (e.g. closed modified file)
 			modifiedListener.changed(null, null, null);
+
+			// save state
+			saveStateOpenEditors();
 		});
 
 		// re-open files
 		restoreState();
+		restoreEditorsState();
+
+		// listen to active project
+		ProjectManager.activeProjectProperty().addListener((observer, oldProject, newProject) -> {
+			if (oldProject != null) {
+				runWithoutSavingEditorsState(() -> {
+					closeAllEditors(false);
+				});
+			}
+			restoreEditorsState();
+		});
 	}
 
 	Node getNode() {
@@ -164,28 +182,36 @@ class FileEditorTabPane
 		// close single unmodified "Untitled" tab
 		if (tabPane.getTabs().size() == 1) {
 			FileEditor fileEditor = (FileEditor) tabPane.getTabs().get(0).getUserData();
-			if (fileEditor.getPath() == null && !fileEditor.isModified())
-				closeEditor(fileEditor, false);
+			if (fileEditor.getPath() == null && !fileEditor.isModified()) {
+				runWithoutSavingEditorsState(() -> {
+					closeEditor(fileEditor, false);
+				});
+			}
 		}
 
 		FileEditor[] fileEditors = new FileEditor[files.size()];
-		for (int i = 0; i < files.size(); i++) {
-			Path path = files.get(i).toPath();
+		runWithoutSavingEditorsState(() -> {
+			for (int i = 0; i < files.size(); i++) {
+				Path path = files.get(i).toPath();
 
-			// check whether file is already opened
-			FileEditor fileEditor = findEditor(path);
-			if (fileEditor == null) {
-				fileEditor = createFileEditor(path);
+				// check whether file is already opened
+				FileEditor fileEditor = findEditor(path);
+				if (fileEditor == null) {
+					fileEditor = createFileEditor(path);
 
-				tabPane.getTabs().add(fileEditor.getTab());
+					tabPane.getTabs().add(fileEditor.getTab());
+				}
+
+				// select first file
+				if (i == activeIndex)
+					tabPane.getSelectionModel().select(fileEditor.getTab());
+
+				fileEditors[i] = fileEditor;
 			}
+		});
 
-			// select first file
-			if (i == activeIndex)
-				tabPane.getSelectionModel().select(fileEditor.getTab());
+		saveEditorsState();
 
-			fileEditors[i] = fileEditor;
-		}
 		return fileEditors;
 	}
 
@@ -255,27 +281,7 @@ class FileEditorTabPane
 		return saveEditor(fileEditor);
 	}
 
-	boolean closeEditor(FileEditor fileEditor, boolean save) {
-		if (fileEditor == null)
-			return true;
-
-		Tab tab = fileEditor.getTab();
-
-		if (save) {
-			Event event = new Event(tab,tab,Tab.TAB_CLOSE_REQUEST_EVENT);
-			Event.fireEvent(tab, event);
-			if (event.isConsumed())
-				return false;
-		}
-
-		tabPane.getTabs().remove(tab);
-		if (tab.getOnClosed() != null)
-			Event.fireEvent(tab, new Event(Tab.CLOSED_EVENT));
-
-		return true;
-	}
-
-	boolean closeAllEditors() {
+	boolean canCloseAllEditos() {
 		FileEditor[] allEditors = getAllEditors();
 		FileEditor activeEditor = activeFileEditor.get();
 
@@ -299,13 +305,44 @@ class FileEditorTabPane
 			}
 		}
 
-		// close all tabs
-		for (FileEditor fileEditor : allEditors) {
-			if (!closeEditor(fileEditor, false))
+		return true;
+	}
+
+	boolean closeEditor(FileEditor fileEditor, boolean save) {
+		if (fileEditor == null)
+			return true;
+
+		Tab tab = fileEditor.getTab();
+
+		if (save) {
+			Event event = new Event(tab,tab,Tab.TAB_CLOSE_REQUEST_EVENT);
+			Event.fireEvent(tab, event);
+			if (event.isConsumed())
 				return false;
 		}
 
-		saveState(allEditors, activeEditor);
+		runWithoutSavingEditorsState(() -> {
+			tabPane.getTabs().remove(tab);
+			if (tab.getOnClosed() != null)
+				Event.fireEvent(tab, new Event(Tab.CLOSED_EVENT));
+		});
+
+		saveEditorsState();
+
+		return true;
+	}
+
+	boolean closeAllEditors(boolean save) {
+		if (save && !canCloseAllEditos())
+			return false;
+
+		runWithoutSavingEditorsState(() -> {
+			// close all tabs
+			for (FileEditor fileEditor : getAllEditors())
+				closeEditor(fileEditor, false);
+		});
+
+		saveEditorsState();
 
 		return tabPane.getTabs().isEmpty();
 	}
@@ -355,9 +392,13 @@ class FileEditorTabPane
 		htmlSourceVisible.init(state, "htmlSourceVisible", false);
 		markdownAstVisible.init(state, "markdownAstVisible", false);
 		externalVisible.init(state, "externalVisible", false);
+	}
 
-		String[] fileNames = Utils.getPrefsStrings(state, "file");
-		String activeFileName = state.get("activeFile", null);
+	private void restoreEditorsState() {
+		Preferences projectState = getProjectState();
+
+		String[] fileNames = Utils.getPrefsStrings(projectState, "file");
+		String activeFileName = projectState.get("activeFile", null);
 
 		int activeIndex = 0;
 		ArrayList<File> files = new ArrayList<>(fileNames.length);
@@ -371,26 +412,80 @@ class FileEditorTabPane
 			}
 		}
 
+		// save opened editors state if there are already open editors,
+		// which may happen when no project is open but files are open,
+		// and then opening a project, which keeps already open files
+		boolean saveState = !tabPane.getTabs().isEmpty();
+
 		if (files.isEmpty()) {
-			newEditor();
+			if (ProjectManager.getActiveProject() == null)
+				newEditor();
+			if (saveState)
+				saveEditorsState();
 			return;
 		}
 
-		openEditors(files, activeIndex);
+		// temporary disable tab animation when restoring open editors
+		tabPane.setStyle("-fx-open-tab-animation: none; -fx-close-tab-animation: none;");
+		tabPane.applyCss();
+
+		// open editors
+		int activeIndex2 = activeIndex;
+		runWithoutSavingEditorsState(() -> {
+			openEditors(files, activeIndex2);
+		});
+
+		tabPane.setStyle("");
+
+		if (saveState)
+			saveEditorsState();
 	}
 
-	private void saveState(FileEditor[] allEditors, FileEditor activeEditor) {
+	private void runWithoutSavingEditorsState(Runnable runnable) {
+		boolean oldSaveEditorsStateEnabled = saveEditorsStateEnabled;
+		saveEditorsStateEnabled = false;
+		try {
+			runnable.run();
+		} finally {
+			saveEditorsStateEnabled = oldSaveEditorsStateEnabled;
+		}
+	}
+
+	private void saveEditorsState() {
+		saveStateOpenEditors();
+		saveStateActiveEditor();
+	}
+
+	private void saveStateOpenEditors() {
+		if (!saveEditorsStateEnabled)
+			return;
+
+		FileEditor[] allEditors = getAllEditors();
+
 		ArrayList<String> fileNames = new ArrayList<>(allEditors.length);
 		for (FileEditor fileEditor : allEditors) {
 			if (fileEditor.getPath() != null)
 				fileNames.add(fileEditor.getPath().toString());
 		}
 
-		Preferences state = MarkdownWriterFXApp.getState();
-		Utils.putPrefsStrings(state, "file", fileNames.toArray(new String[fileNames.size()]));
+		Utils.putPrefsStrings(getProjectState(), "file", fileNames.toArray(new String[fileNames.size()]));
+	}
+
+	private void saveStateActiveEditor() {
+		if (!saveEditorsStateEnabled)
+			return;
+
+		FileEditor activeEditor = activeFileEditor.get();
 		if (activeEditor != null && activeEditor.getPath() != null)
-			state.put("activeFile", activeEditor.getPath().toString());
+			getProjectState().put("activeFile", activeEditor.getPath().toString());
 		else
-			state.remove("activeFile");
+			getProjectState().remove("activeFile");
+	}
+
+	private Preferences getProjectState() {
+		Preferences projectState = ProjectManager.getActiveProjectState();
+		if (projectState == null)
+			projectState = MarkdownWriterFXApp.getState();
+		return projectState;
 	}
 }

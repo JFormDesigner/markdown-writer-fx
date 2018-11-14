@@ -124,7 +124,7 @@ public class ProjectManager
 	}
 
 	public static Preferences getActiveProjectState() {
-		return getProjectState(getActiveProject());
+		return (getActiveProject() != null) ? getProjectState(getActiveProject()) : null;
 	}
 
 	public static Preferences getProjectState(File project) {

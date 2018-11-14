@@ -44,7 +44,7 @@ public class ProjectPane
 	private final ProjectFileTreeView fileTreeView;
 
 	public ProjectPane(FileEditorManager fileEditorManager) {
-		projectsComboBox = new ProjectsComboBox();
+		projectsComboBox = new ProjectsComboBox(fileEditorManager);
 		fileTreeView = new ProjectFileTreeView(fileEditorManager);
 
 		pane = new VBox(projectsComboBox, fileTreeView);
