@@ -87,8 +87,12 @@ class ProjectFileTreeView
 
 	@Override
 	protected void handleClicks(TreeItem<File> item, MouseButton button, int clickCount) {
-		if (button == MouseButton.PRIMARY && clickCount == 2 && item != null && item.getValue().isFile())
-			fileEditorManager.openEditor(item.getValue());
+		if (button == MouseButton.PRIMARY && item != null && item.getValue().isFile()) {
+			if (clickCount == 1)
+				fileEditorManager.openPreviewEditor(item.getValue());
+			else if (clickCount == 2)
+				fileEditorManager.openEditor(item.getValue());
+		}
 	}
 
 	private void projectChanged(File activeProject) {

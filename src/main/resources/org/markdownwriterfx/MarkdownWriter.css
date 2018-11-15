@@ -138,6 +138,9 @@
 	-fx-background-radius: 0;
 	-fx-padding: 0.5em 0.25em 0.5em 1em;
 }
+.main .tab-pane > .tab-header-area > .headers-region > .tab.preview {
+	-fx-font-style: italic;
+}
 
 /* orange marker for selected/hover tab */
 .main .tab-pane > .tab-header-area > .headers-region > .tab:selected {

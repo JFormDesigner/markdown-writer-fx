@@ -46,6 +46,10 @@ public class FileEditorManager
 		fileEditorTabPane.openEditors(Collections.singletonList(file), 0);
 	}
 
+	public void openPreviewEditor(File file) {
+		fileEditorTabPane.openPreviewEditor(file);
+	}
+
 	public boolean canOpenAnotherProject() {
 		if (ProjectManager.getActiveProject() == null)
 			return true; // keep open editors
