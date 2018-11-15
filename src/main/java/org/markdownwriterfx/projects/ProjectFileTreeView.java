@@ -101,7 +101,7 @@ class ProjectFileTreeView
 			return;
 		}
 
-		FileTreeItem newRoot = new FileTreeItem(activeProject);
+		FileTreeItem newRoot = new FileTreeItem(activeProject, this::acceptFile);
 
 		inSetRoot = true;
 		try {
@@ -116,6 +116,11 @@ class ProjectFileTreeView
 
 		newRoot.addEventHandler(TreeItem.branchExpandedEvent(), event -> saveExpanded());
 		newRoot.addEventHandler(TreeItem.branchCollapsedEvent(), event -> saveExpanded());
+	}
+
+	private boolean acceptFile(File dir, String name) {
+		return !name.startsWith(".") ||
+			!(name.equals(".git") || name.equals(".hg") || name.equals(".svn") || name.equals(".DS_Store"));
 	}
 
 	private void loadExpanded() {
