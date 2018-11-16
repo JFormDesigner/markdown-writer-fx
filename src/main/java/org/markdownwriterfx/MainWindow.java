@@ -29,6 +29,7 @@ package org.markdownwriterfx;
 
 import java.text.MessageFormat;
 import java.util.function.Function;
+import java.util.prefs.Preferences;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
@@ -98,9 +99,27 @@ class MainWindow
 		fileEditorManager = new FileEditorManager(fileEditorTabPane);
 		projectPane = new ProjectPane(fileEditorManager);
 
-		SplitPane splitPane = new SplitPane(projectPane.getNode(), fileEditorTabPane.getNode());
+		Preferences state = MarkdownWriterFXApp.getState();
+		double dividerPosition = state.getDouble("projectPaneDividerPosition", 0.2);
+
+		SplitPane splitPane = new SplitPane(projectPane.getNode(), fileEditorTabPane.getNode()) {
+			private int layoutCount;
+
+			@Override
+			protected void layoutChildren() {
+				super.layoutChildren();
+				if (layoutCount < 2) {
+					layoutCount++;
+					setDividerPosition(0, dividerPosition);
+					super.layoutChildren();
+				}
+			}
+		};
 		SplitPane.setResizableWithParent(projectPane.getNode(), false);
-		splitPane.setDividerPosition(0, 0.2);
+		splitPane.setDividerPosition(0, dividerPosition);
+		splitPane.getDividers().get(0).positionProperty().addListener((ob, o, n) -> {
+			Utils.putPrefsDouble(state, "projectPaneDividerPosition", n.doubleValue(), 0.2);
+		});
 
 		BorderPane borderPane = new BorderPane();
 		borderPane.getStyleClass().add("main");
