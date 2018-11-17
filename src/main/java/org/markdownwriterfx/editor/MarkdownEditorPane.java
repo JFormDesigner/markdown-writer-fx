@@ -31,7 +31,7 @@ import static javafx.scene.input.KeyCode.*;
 import static javafx.scene.input.KeyCombination.*;
 import static org.fxmisc.wellbehaved.event.EventPattern.keyPressed;
 import static org.fxmisc.wellbehaved.event.InputMap.*;
-
+import java.io.File;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
@@ -51,11 +51,16 @@ import javafx.beans.value.ObservableValue;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.IndexRange;
 import javafx.scene.input.ContextMenuEvent;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.input.TransferMode;
 import com.vladsch.flexmark.ast.Node;
 import com.vladsch.flexmark.parser.Parser;
 import org.fxmisc.flowless.VirtualizedScrollPane;
+import org.fxmisc.richtext.Caret.CaretVisibility;
+import org.fxmisc.richtext.CaretNode;
 import org.fxmisc.richtext.CharacterHit;
 import org.fxmisc.undo.UndoManager;
 import org.fxmisc.wellbehaved.event.Nodes;
@@ -80,6 +85,7 @@ public class MarkdownEditorPane
 	private LineNumberGutterFactory lineNumberGutterFactory;
 	private WhitespaceOverlayFactory whitespaceOverlayFactory;
 	private ContextMenu contextMenu;
+	private CaretNode dragCaret;
 	private final SmartEdit smartEdit;
 
 	private final FindReplacePane findReplacePane;
@@ -102,6 +108,10 @@ public class MarkdownEditorPane
 
 		textArea.addEventHandler(ContextMenuEvent.CONTEXT_MENU_REQUESTED, this::showContextMenu);
 		textArea.addEventHandler(MouseEvent.MOUSE_PRESSED, this::hideContextMenu);
+		textArea.setOnDragEntered(this::onDragEntered);
+		textArea.setOnDragExited(this::onDragExited);
+		textArea.setOnDragOver(this::onDragOver);
+		textArea.setOnDragDropped(this::onDragDropped);
 
 		smartEdit = new SmartEdit(this, textArea);
 
@@ -433,6 +443,58 @@ public class MarkdownEditorPane
 			findReplacePane.findPrevious();
 	}
 
-	//---- class MyStyleClassedTextArea ---------------------------------------
+	//---- drag & drop --------------------------------------------------------
 
+	private void onDragEntered(DragEvent event) {
+		// create drag caret
+		if (dragCaret == null) {
+			dragCaret = new CaretNode("mwfx-drag-caret", textArea);
+			dragCaret.getStyleClass().add("drag-caret");
+			textArea.addCaret(dragCaret);
+		}
+
+		// show drag caret
+        dragCaret.setShowCaret(CaretVisibility.ON);
+	}
+
+	private void onDragExited(DragEvent event) {
+		// hide drag caret
+		dragCaret.setShowCaret(CaretVisibility.OFF);
+	}
+
+	private void onDragOver(DragEvent event) {
+		// check whether we can accept a drop
+		Dragboard db = event.getDragboard();
+		if (db.hasString() || db.hasFiles())
+			event.acceptTransferModes(TransferMode.COPY);
+
+		// move drag caret to mouse location
+		if (event.isAccepted()) {
+			CharacterHit hit = textArea.hit(event.getX(), event.getY());
+			dragCaret.moveTo(hit.getInsertionIndex());
+		}
+
+		event.consume();
+	}
+
+	private void onDragDropped(DragEvent event) {
+		Dragboard db = event.getDragboard();
+		if (db.hasFiles()) {
+			// drop files (e.g. from project file tree)
+			List<File> files = db.getFiles();
+			if (!files.isEmpty())
+				smartEdit.insertLinkOrImage(dragCaret.getPosition(), files.get(0).toPath());
+		} else if (db.hasString()) {
+			// drop text
+			String newText = db.getString();
+			int insertPosition = dragCaret.getPosition();
+			SmartEdit.insertText(textArea, insertPosition, newText);
+			SmartEdit.selectRange(textArea, insertPosition, insertPosition + newText.length());
+		}
+
+		textArea.requestFocus();
+
+		event.setDropCompleted(true);
+		event.consume();
+	}
 }

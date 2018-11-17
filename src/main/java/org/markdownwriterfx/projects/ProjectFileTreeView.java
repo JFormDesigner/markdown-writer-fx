@@ -29,6 +29,7 @@ package org.markdownwriterfx.projects;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
@@ -37,10 +38,17 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.scene.control.ScrollBar;
+import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.DataFormat;
+import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseButton;
+import javafx.scene.input.TransferMode;
 import javafx.util.Duration;
 import org.markdownwriterfx.FileEditorManager;
+import org.markdownwriterfx.controls.FileTreeCell;
 import org.markdownwriterfx.controls.FileTreeItem;
 import org.markdownwriterfx.controls.FileTreeView;
 import org.markdownwriterfx.util.Utils;
@@ -69,6 +77,8 @@ class ProjectFileTreeView
 		getStyleClass().add("project-tree-view");
 		setShowRoot(false);
 
+		setCellFactory(this::createCell);
+
 		getSelectionModel().selectedItemProperty().addListener((observer, oldSelectedItem, newSelectedItem) -> {
 			saveSelection();
 		});
@@ -83,6 +93,22 @@ class ProjectFileTreeView
 		ProjectManager.activeProjectProperty().addListener((observer, oldProject, newProject) -> {
 			projectChanged(newProject);
 		});
+	}
+
+	private TreeCell<File> createCell(TreeView<File> treeView) {
+		FileTreeCell treeCell = new FileTreeCell();
+		treeCell.setOnDragDetected(event -> {
+			TreeItem<File> draggedItem = treeCell.getTreeItem();
+			Dragboard db = treeCell.startDragAndDrop(TransferMode.COPY);
+
+			ClipboardContent content = new ClipboardContent();
+			content.putString(draggedItem.getValue().getAbsolutePath());
+			content.put(DataFormat.FILES, Collections.singletonList(draggedItem.getValue()));
+			db.setContent(content);
+
+			event.consume();
+		});
+		return treeCell;
 	}
 
 	@Override
