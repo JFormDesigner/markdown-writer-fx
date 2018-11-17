@@ -245,7 +245,7 @@ class FileEditor
 
 	void load() {
 		Path path = this.path.get();
-		if (path == null)
+		if (path == null || markdownEditorPane == null)
 			return;
 
 		lastModified = path.toFile().lastModified();

@@ -43,11 +43,11 @@ public class FileEditorManager
 	}
 
 	public void openEditor(File file) {
-		fileEditorTabPane.openEditors(Collections.singletonList(file), 0);
+		fileEditorTabPane.openEditors(Collections.singletonList(file), 0, -1);
 	}
 
 	public void openPreviewEditor(File file) {
-		fileEditorTabPane.openPreviewEditor(file);
+		fileEditorTabPane.openEditors(Collections.singletonList(file), 0, 0);
 	}
 
 	public boolean canOpenAnotherProject() {

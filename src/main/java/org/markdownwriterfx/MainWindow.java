@@ -165,7 +165,7 @@ class MainWindow
 		scene.setOnDragDropped(e -> {
 			boolean success = false;
 			if (e.getDragboard().hasFiles()) {
-				fileEditorTabPane.openEditors(e.getDragboard().getFiles(), 0);
+				fileEditorTabPane.openEditors(e.getDragboard().getFiles(), 0, -1);
 				success = true;
 			}
 			e.setDropCompleted(success);
