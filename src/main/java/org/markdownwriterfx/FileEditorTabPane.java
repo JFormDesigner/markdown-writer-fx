@@ -437,16 +437,16 @@ class FileEditorTabPane
 			new ExtensionFilter(Messages.get("FileEditorTabPane.chooser.markdownFilesFilter"), extensions),
 			new ExtensionFilter(Messages.get("FileEditorTabPane.chooser.allFilesFilter"), "*.*"));
 
-		String lastDirectory = MarkdownWriterFXApp.getState().get("lastDirectory", null);
-		File file = new File((lastDirectory != null) ? lastDirectory : ".");
-		if (!file.isDirectory())
-			file = new File(".");
-		fileChooser.setInitialDirectory(file);
+		String lastDirectory = getProjectState().get("lastDirectory", null);
+		File initialDirectory = (lastDirectory != null) ? new File(lastDirectory) : ProjectManager.getActiveProject();
+		if (initialDirectory == null || !initialDirectory.isDirectory())
+			initialDirectory = new File(".");
+		fileChooser.setInitialDirectory(initialDirectory);
 		return fileChooser;
 	}
 
 	private void saveLastDirectory(File file) {
-		MarkdownWriterFXApp.getState().put("lastDirectory", file.getParent());
+		getProjectState().put("lastDirectory", file.getParent());
 	}
 
 	private void restoreState() {
