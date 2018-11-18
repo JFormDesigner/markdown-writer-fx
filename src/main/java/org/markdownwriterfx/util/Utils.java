@@ -148,6 +148,15 @@ public class Utils
 		list.add((index < 0) ? ((-index)-1) : index, element);
 	}
 
+	public static boolean isImage(String filename) {
+		int sepIndex = filename.lastIndexOf('.');
+		if (sepIndex < 0 || (filename.length() - sepIndex - 1) != 3)
+			return false;
+
+		String ext = filename.substring(sepIndex + 1).toLowerCase();
+		return ext.equals("png") || ext.equals("gif") || ext.equals("jpg") || ext.equals("svg");
+	}
+
 	public static ScrollBar findVScrollBar(Node node) {
 		return findScrollBar(node, Orientation.VERTICAL);
 	}

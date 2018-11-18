@@ -31,6 +31,7 @@ import java.io.File;
 import javafx.scene.Node;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
+import org.markdownwriterfx.util.Utils;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.utils.FontAwesomeIconFactory;
 
@@ -75,12 +76,6 @@ public class FileTreeCell
 	}
 
 	private FontAwesomeIcon fileIcon(String name) {
-		int sepIndex = name.lastIndexOf('.');
-		if (sepIndex > 0) {
-			String ext = name.substring(sepIndex + 1).toLowerCase();
-			if (ext.equals("png") || ext.equals("gif") || ext.equals("jpg") || ext.equals("svg"))
-				return FontAwesomeIcon.FILE_IMAGE_ALT;
-		}
-		return FontAwesomeIcon.FILE_TEXT_ALT;
+		return Utils.isImage(name) ? FontAwesomeIcon.FILE_IMAGE_ALT : FontAwesomeIcon.FILE_TEXT_ALT;
 	}
 }

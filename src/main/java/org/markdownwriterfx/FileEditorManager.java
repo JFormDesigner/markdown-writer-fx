@@ -30,6 +30,7 @@ package org.markdownwriterfx;
 import java.io.File;
 import java.util.Collections;
 import org.markdownwriterfx.projects.ProjectManager;
+import org.markdownwriterfx.util.Utils;
 
 /**
  * @author Karl Tauber
@@ -47,6 +48,9 @@ public class FileEditorManager
 	}
 
 	public void openPreviewEditor(File file) {
+		if (Utils.isImage(file.getName()))
+			return;
+
 		fileEditorTabPane.openEditors(Collections.singletonList(file), 0, 0);
 	}
 

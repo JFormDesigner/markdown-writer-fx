@@ -788,15 +788,7 @@ public class SmartEdit
 
 		String newText = path.getName(path.getNameCount() - 1).toString();
 
-		boolean isImage = false;
-		int sepIndex = newText.lastIndexOf('.');
-		if (sepIndex > 0) {
-			String ext = newText.substring(sepIndex + 1).toLowerCase();
-			if (ext.equals("png") || ext.equals("gif") || ext.equals("jpg") || ext.equals("svg"))
-				isImage = true;
-		}
-
-		String linkOrImage = (isImage ? "!" : "")
+		String linkOrImage = (Utils.isImage(path.toString()) ? "!" : "")
 			+ "[" + newText.replace("[", "\\[").replace("]", "\\]")
 			+ "](" + newUrl.replace("(", "\\(").replace(")", "\\)").replace(" ", "%20") + ")";
 
