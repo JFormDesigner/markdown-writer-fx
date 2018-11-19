@@ -292,7 +292,7 @@ class MarkdownSyntaxHighlighter
 
 	private void setParagraphStyle(int start, int end, Collection<String> ps) {
 		for (int i = start; i < end; i++) {
-			Paragraph<Collection<String>, String, Collection<String>> paragraph = textArea.getParagraph(i);
+			Paragraph<?,?,?> paragraph = textArea.getParagraph(i);
 			if (ps != paragraph.getParagraphStyle())
 				setParagraphStyle(paragraph, i, ps);
 		}

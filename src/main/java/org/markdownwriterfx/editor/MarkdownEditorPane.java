@@ -304,6 +304,7 @@ public class MarkdownEditorPane
 			newText = "";
 
 		Node astRoot = parseMarkdown(newText);
+		EmbeddedImage.replaceImageSegments(textArea, astRoot, getParentPath());
 		applyHighlighting(astRoot);
 
 		markdownText.set(newText);
