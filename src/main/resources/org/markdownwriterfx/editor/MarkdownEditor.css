@@ -29,6 +29,14 @@
 	-mwfx-inline-background-color: #f6f6f6;
 }
 
+.markdown-editor:disabled,
+.markdown-editor:disabled .paragraph-text {
+    -fx-background-color: -fx-background;
+}
+.markdown-editor:disabled .paragraph-text .text {
+	-fx-fill: #c62828;
+}
+
 /* editor padding */
 /* disabled because this may cause layout/painting issues
    (e.g. enter "a\nb\nc" into new document, move caret to first character,

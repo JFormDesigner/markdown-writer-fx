@@ -204,6 +204,14 @@ public class MarkdownEditorPane
 		return borderPane;
 	}
 
+	public boolean isReadOnly() {
+		return textArea.isDisable();
+	}
+
+	public void setReadOnly(boolean readOnly) {
+		textArea.setDisable(readOnly);
+	}
+
 	public UndoManager<?> getUndoManager() {
 		return textArea.getUndoManager();
 	}
@@ -291,6 +299,9 @@ public class MarkdownEditorPane
 			findReplacePane.textChanged();
 			findReplacePane.addListener(findHitsChangeListener);
 		}
+
+		if (isReadOnly())
+			newText = "";
 
 		Node astRoot = parseMarkdown(newText);
 		applyHighlighting(astRoot);
