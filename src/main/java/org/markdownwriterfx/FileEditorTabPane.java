@@ -168,8 +168,6 @@ class FileEditorTabPane
 
 		// turn preview editor into normal editor if it is modified
 		fileEditor.modifiedProperty().addListener((observable, oldModified, newModified) -> {
-			if(newModified)
-				System.out.println("MOD "+path);
 			if (newModified && !inReloadPreviewEditor) {
 				setPreviewEditor(fileEditor, false);
 				getProjectState().remove("previewFile");
