@@ -3,6 +3,16 @@ Markdown Writer FX Change Log
 
 ## Unreleased
 
+- Project Manager:
+  - open any folder as project
+  - project pane on left side of main window shows file tree of current project
+  - combo box at top of project pane allows quick switching between projects
+  - single-click on file in project tree opens file in preview mode (indicated
+    by italic font in tab title), which will be replaced when opening another
+    file in preview mode
+  - double-click opens file in regular mode
+  - drag-and-drop image/markdown file from project tree to markdown editor
+    inserts a markdown link to that image/markdown file
 - Smarter "Insert > Bold/Italic/Strikethrough/Inline Code": if selection is
   empty, then the word at the caret will be used as selection.
 - Move selected lines down (with `Alt+Down`) no longer eats empty lines.
