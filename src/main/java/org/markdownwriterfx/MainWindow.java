@@ -29,6 +29,7 @@ package org.markdownwriterfx;
 
 import java.text.MessageFormat;
 import java.util.function.Function;
+import java.util.prefs.Preferences;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
@@ -48,6 +49,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.Separator;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.ToolBar;
@@ -70,6 +72,8 @@ import org.markdownwriterfx.options.Options;
 import org.markdownwriterfx.options.Options.RendererType;
 import org.markdownwriterfx.options.OptionsDialog;
 import org.markdownwriterfx.preview.MarkdownPreviewPane;
+import org.markdownwriterfx.projects.ProjectManager;
+import org.markdownwriterfx.projects.ProjectPane;
 import org.markdownwriterfx.util.Action;
 import org.markdownwriterfx.util.ActionUtils;
 import org.markdownwriterfx.util.Utils;
@@ -83,25 +87,51 @@ import static de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon.*;
 class MainWindow
 {
 	private final Scene scene;
+	private final ProjectPane projectPane;
 	private final FileEditorTabPane fileEditorTabPane;
+	private final FileEditorManager fileEditorManager;
 	private MenuBar menuBar;
 	private Node extensionsButton;
 	final BooleanProperty stageFocusedProperty = new SimpleBooleanProperty();
 
 	MainWindow() {
 		fileEditorTabPane = new FileEditorTabPane(this);
+		fileEditorManager = new FileEditorManager(fileEditorTabPane);
+		projectPane = new ProjectPane(fileEditorManager);
+
+		Preferences state = MarkdownWriterFXApp.getState();
+		double dividerPosition = state.getDouble("projectPaneDividerPosition", 0.2);
+
+		SplitPane splitPane = new SplitPane(projectPane.getNode(), fileEditorTabPane.getNode()) {
+			private int layoutCount;
+
+			@Override
+			protected void layoutChildren() {
+				super.layoutChildren();
+				if (layoutCount < 2) {
+					layoutCount++;
+					setDividerPosition(0, dividerPosition);
+					super.layoutChildren();
+				}
+			}
+		};
+		SplitPane.setResizableWithParent(projectPane.getNode(), false);
+		splitPane.setDividerPosition(0, dividerPosition);
+		splitPane.getDividers().get(0).positionProperty().addListener((ob, o, n) -> {
+			Utils.putPrefsDouble(state, "projectPaneDividerPosition", n.doubleValue(), 0.2);
+		});
 
 		BorderPane borderPane = new BorderPane();
 		borderPane.getStyleClass().add("main");
 		borderPane.setPrefSize(800, 800);
 		borderPane.setTop(createMenuBarAndToolBar());
-		borderPane.setCenter(fileEditorTabPane.getNode());
+		borderPane.setCenter(splitPane);
 
 		scene = new Scene(borderPane);
 		scene.getStylesheets().add("org/markdownwriterfx/MarkdownWriter.css");
 		scene.windowProperty().addListener((observable, oldWindow, newWindow) -> {
 			newWindow.setOnCloseRequest(e -> {
-				if (!fileEditorTabPane.closeAllEditors())
+				if (!fileEditorTabPane.canCloseAllEditos())
 					e.consume();
 			});
 
@@ -135,7 +165,7 @@ class MainWindow
 		scene.setOnDragDropped(e -> {
 			boolean success = false;
 			if (e.getDragboard().hasFiles()) {
-				fileEditorTabPane.openEditors(e.getDragboard().getFiles(), 0);
+				fileEditorTabPane.openEditors(e.getDragboard().getFiles(), 0, -1);
 				success = true;
 			}
 			e.setDropCompleted(success);
@@ -155,6 +185,7 @@ class MainWindow
 		// File actions
 		Action fileNewAction = new Action(Messages.get("MainWindow.fileNewAction"), "Shortcut+N", FILE_ALT, e -> fileNew());
 		Action fileOpenAction = new Action(Messages.get("MainWindow.fileOpenAction"), "Shortcut+O", FOLDER_OPEN_ALT, e -> fileOpen());
+		Action fileOpenProjectAction = new Action(Messages.get("MainWindow.fileOpenProjectAction"), "Shortcut+Shift+O", FOLDER_OPEN, e -> fileOpenProject());
 		Action fileCloseAction = new Action(Messages.get("MainWindow.fileCloseAction"), "Shortcut+W", null, e -> fileClose(), activeFileEditorIsNull);
 		Action fileCloseAllAction = new Action(Messages.get("MainWindow.fileCloseAllAction"), null, null, e -> fileCloseAll(), activeFileEditorIsNull);
 		Action fileSaveAction = new Action(Messages.get("MainWindow.fileSaveAction"), "Shortcut+S", FLOPPY_ALT, e -> fileSave(),
@@ -239,7 +270,7 @@ class MainWindow
 		Action insertUnorderedListAction = new Action(Messages.get("MainWindow.insertUnorderedListAction"), "Shortcut+U", LIST_UL,
 				e -> getActiveSmartEdit().insertUnorderedList(),
 				activeFileEditorIsNull);
-		Action insertOrderedListAction = new Action(Messages.get("MainWindow.insertOrderedListAction"), "Shortcut+Shift+O", LIST_OL,
+		Action insertOrderedListAction = new Action(Messages.get("MainWindow.insertOrderedListAction"), "Shortcut+Shift+U", LIST_OL,
 				e -> getActiveSmartEdit().surroundSelection("\n\n1. ", ""),
 				activeFileEditorIsNull);
 		Action insertBlockquoteAction = new Action(Messages.get("MainWindow.insertBlockquoteAction"), "Ctrl+Q", QUOTE_LEFT, // not Shortcut+Q because of conflict on Mac
@@ -284,6 +315,7 @@ class MainWindow
 		Menu fileMenu = ActionUtils.createMenu(Messages.get("MainWindow.fileMenu"),
 				fileNewAction,
 				fileOpenAction,
+				fileOpenProjectAction,
 				null,
 				fileCloseAction,
 				fileCloseAllAction,
@@ -356,6 +388,7 @@ class MainWindow
 		ToolBar toolBar = ActionUtils.createToolBar(
 				fileNewAction,
 				fileOpenAction,
+				fileOpenProjectAction,
 				fileSaveAction,
 				null,
 				editUndoAction,
@@ -507,12 +540,17 @@ class MainWindow
 		fileEditorTabPane.openEditor();
 	}
 
+	private void fileOpenProject() {
+		if (fileEditorManager.canOpenAnotherProject())
+			ProjectManager.openProject(scene.getWindow());
+	}
+
 	private void fileClose() {
 		fileEditorTabPane.closeEditor(fileEditorTabPane.getActiveFileEditor(), true);
 	}
 
 	private void fileCloseAll() {
-		fileEditorTabPane.closeAllEditors();
+		fileEditorTabPane.closeAllEditors(true);
 	}
 
 	private void fileSave() {

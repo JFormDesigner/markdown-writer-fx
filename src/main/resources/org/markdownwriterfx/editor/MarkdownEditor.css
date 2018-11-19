@@ -49,6 +49,11 @@
     -fx-background-color: #f2f9fc;
 }
 
+.markdown-editor .drag-caret {
+    -rtfx-blink-rate: indefinite;
+    -fx-stroke-width: 2.0;
+}
+
 
 /*---- gutter ----*/
 

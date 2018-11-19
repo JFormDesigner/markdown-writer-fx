@@ -32,7 +32,7 @@ import static javafx.scene.input.KeyCombination.*;
 import static org.fxmisc.wellbehaved.event.EventPattern.keyPressed;
 import static org.fxmisc.wellbehaved.event.InputMap.consume;
 import static org.fxmisc.wellbehaved.event.InputMap.sequence;
-
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -767,6 +767,35 @@ public class SmartEdit
 		});
 	}
 
+	public void insertLinkOrImage(int position, Path path) {
+		int end = position;
+
+		LinkNode linkNode = findNodeAt(position, (s, e, n) -> n instanceof LinkNode);
+		if (linkNode != null && position > linkNode.getStartOffset()) {
+			// if dropping on an existing link or image, then replace it
+			position = linkNode.getStartOffset();
+			end = linkNode.getEndOffset();
+		}
+
+		Path basePath = editor.getParentPath();
+		String newUrl;
+		try {
+			newUrl = (basePath != null) ? basePath.relativize(path).toString() : path.toString();
+		} catch (IllegalArgumentException ex) {
+			newUrl = path.toString();
+		}
+		newUrl = newUrl.replace('\\', '/');
+
+		String newText = path.getName(path.getNameCount() - 1).toString();
+
+		String linkOrImage = (Utils.isImage(path.toString()) ? "!" : "")
+			+ "[" + newText.replace("[", "\\[").replace("]", "\\]")
+			+ "](" + newUrl.replace("(", "\\(").replace(")", "\\)").replace(" ", "%20") + ")";
+
+		replaceText(textArea, position, end, linkOrImage);
+		selectRange(textArea, position, position + linkOrImage.length());
+	}
+
 	//---- heading ------------------------------------------------------------
 
 	public void insertHeading(int level, String hint) {
@@ -997,7 +1026,6 @@ public class SmartEdit
 	/**
 	 * Find first node that is at the given offset and match a predicate.
 	 */
-	@SuppressWarnings("unused")
 	private <T> T findNodeAt(int offset, FindNodePredicate predicate) {
 		List<T> nodes = findNodes(offset, offset, predicate, false, false);
 		return nodes.size() > 0 ? nodes.get(0) : null;

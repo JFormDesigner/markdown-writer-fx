@@ -55,6 +55,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import org.fxmisc.wellbehaved.event.Nodes;
 import org.markdownwriterfx.options.Options;
+import org.markdownwriterfx.projects.ProjectManager;
 import org.markdownwriterfx.util.PrefsBooleanProperty;
 import org.markdownwriterfx.util.Utils;
 
@@ -75,6 +76,9 @@ class FileEditorTabPane
 	final PrefsBooleanProperty markdownAstVisible = new PrefsBooleanProperty();
 	final PrefsBooleanProperty externalVisible = new PrefsBooleanProperty();
 
+	private boolean saveEditorsStateEnabled = true;
+	private boolean inReloadPreviewEditor;
+
 	FileEditorTabPane(MainWindow mainWindow) {
 		this.mainWindow = mainWindow;
 
@@ -85,6 +89,7 @@ class FileEditorTabPane
 		// update activeFileEditor property
 		tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
 			activeFileEditor.set((newTab != null) ? (FileEditor) newTab.getUserData() : null);
+			saveStateActiveEditor();
 		});
 
 		// update anyFileEditorModified property
@@ -103,7 +108,8 @@ class FileEditorTabPane
 				if (c.wasAdded()) {
 					for (Tab tab : c.getAddedSubList())
 						((FileEditor)tab.getUserData()).modifiedProperty().addListener(modifiedListener);
-				} else if (c.wasRemoved()) {
+				}
+				if (c.wasRemoved()) {
 					for (Tab tab : c.getRemoved())
 						((FileEditor)tab.getUserData()).modifiedProperty().removeListener(modifiedListener);
 				}
@@ -112,10 +118,24 @@ class FileEditorTabPane
 			// changes in the tabs may also change anyFileEditorModified property
 			// (e.g. closed modified file)
 			modifiedListener.changed(null, null, null);
+
+			// save state
+			saveStateOpenEditors();
 		});
 
 		// re-open files
 		restoreState();
+		restoreEditorsState();
+
+		// listen to active project
+		ProjectManager.activeProjectProperty().addListener((observer, oldProject, newProject) -> {
+			if (oldProject != null) {
+				runWithoutSavingEditorsState(() -> {
+					closeAllEditors(false);
+				});
+			}
+			restoreEditorsState();
+		});
 	}
 
 	Node getNode() {
@@ -142,6 +162,23 @@ class FileEditorTabPane
 		return fileEditor;
 	}
 
+	private FileEditor createFilePreviewEditor(Path path) {
+		FileEditor fileEditor = createFileEditor(path);
+		setPreviewEditor(fileEditor, true);
+
+		// turn preview editor into normal editor if it is modified
+		fileEditor.modifiedProperty().addListener((observable, oldModified, newModified) -> {
+			if(newModified)
+				System.out.println("MOD "+path);
+			if (newModified && !inReloadPreviewEditor) {
+				setPreviewEditor(fileEditor, false);
+				getProjectState().remove("previewFile");
+			}
+		});
+
+		return fileEditor;
+	}
+
 	FileEditor newEditor() {
 		FileEditor fileEditor = createFileEditor(null);
 		Tab tab = fileEditor.getTab();
@@ -157,36 +194,68 @@ class FileEditorTabPane
 			return null;
 
 		saveLastDirectory(selectedFiles.get(0));
-		return openEditors(selectedFiles, 0);
+		return openEditors(selectedFiles, 0, -1);
 	}
 
-	FileEditor[] openEditors(List<File> files, int activeIndex) {
+	FileEditor[] openEditors(List<File> files, int activeIndex, int previewIndex) {
 		// close single unmodified "Untitled" tab
-		if (tabPane.getTabs().size() == 1) {
-			FileEditor fileEditor = (FileEditor) tabPane.getTabs().get(0).getUserData();
-			if (fileEditor.getPath() == null && !fileEditor.isModified())
-				closeEditor(fileEditor, false);
-		}
+		closeSingleUntitledEditor();
 
 		FileEditor[] fileEditors = new FileEditor[files.size()];
-		for (int i = 0; i < files.size(); i++) {
-			Path path = files.get(i).toPath();
+		runWithoutSavingEditorsState(() -> {
+			for (int i = 0; i < files.size(); i++) {
+				Path path = files.get(i).toPath();
 
-			// check whether file is already opened
-			FileEditor fileEditor = findEditor(path);
-			if (fileEditor == null) {
-				fileEditor = createFileEditor(path);
+				// check whether file is already opened
+				FileEditor fileEditor = findEditor(path);
+				if (fileEditor == null) {
+					if (i == previewIndex) {
+						// check whether there is already a preview editor
+						fileEditor = findPreviewEditor();
+						if (fileEditor != null) {
+							// replace existing preview editor
+							inReloadPreviewEditor = true;
+							try {
+								fileEditor.setPath(path);
+								fileEditor.load();
+							} finally {
+								inReloadPreviewEditor = false;
+							}
+						} else {
+							// create new preview editor
+							fileEditor = createFilePreviewEditor(path);
+							tabPane.getTabs().add(fileEditor.getTab());
+						}
+					} else {
+						// create new editor
+						fileEditor = createFileEditor(path);
+						tabPane.getTabs().add(fileEditor.getTab());
+					}
+				} else
+					setPreviewEditor(fileEditor, false);
 
-				tabPane.getTabs().add(fileEditor.getTab());
+				// select first file
+				if (i == activeIndex)
+					tabPane.getSelectionModel().select(fileEditor.getTab());
+
+				fileEditors[i] = fileEditor;
 			}
+		});
 
-			// select first file
-			if (i == activeIndex)
-				tabPane.getSelectionModel().select(fileEditor.getTab());
+		saveEditorsState();
 
-			fileEditors[i] = fileEditor;
-		}
 		return fileEditors;
+	}
+
+	private void closeSingleUntitledEditor() {
+		if (tabPane.getTabs().size() == 1) {
+			FileEditor fileEditor = (FileEditor) tabPane.getTabs().get(0).getUserData();
+			if (fileEditor.getPath() == null && !fileEditor.isModified()) {
+				runWithoutSavingEditorsState(() -> {
+					closeEditor(fileEditor, false);
+				});
+			}
+		}
 	}
 
 	boolean saveEditor(FileEditor fileEditor) {
@@ -255,27 +324,7 @@ class FileEditorTabPane
 		return saveEditor(fileEditor);
 	}
 
-	boolean closeEditor(FileEditor fileEditor, boolean save) {
-		if (fileEditor == null)
-			return true;
-
-		Tab tab = fileEditor.getTab();
-
-		if (save) {
-			Event event = new Event(tab,tab,Tab.TAB_CLOSE_REQUEST_EVENT);
-			Event.fireEvent(tab, event);
-			if (event.isConsumed())
-				return false;
-		}
-
-		tabPane.getTabs().remove(tab);
-		if (tab.getOnClosed() != null)
-			Event.fireEvent(tab, new Event(Tab.CLOSED_EVENT));
-
-		return true;
-	}
-
-	boolean closeAllEditors() {
+	boolean canCloseAllEditos() {
 		FileEditor[] allEditors = getAllEditors();
 		FileEditor activeEditor = activeFileEditor.get();
 
@@ -299,13 +348,44 @@ class FileEditorTabPane
 			}
 		}
 
-		// close all tabs
-		for (FileEditor fileEditor : allEditors) {
-			if (!closeEditor(fileEditor, false))
+		return true;
+	}
+
+	boolean closeEditor(FileEditor fileEditor, boolean save) {
+		if (fileEditor == null)
+			return true;
+
+		Tab tab = fileEditor.getTab();
+
+		if (save) {
+			Event event = new Event(tab,tab,Tab.TAB_CLOSE_REQUEST_EVENT);
+			Event.fireEvent(tab, event);
+			if (event.isConsumed())
 				return false;
 		}
 
-		saveState(allEditors, activeEditor);
+		runWithoutSavingEditorsState(() -> {
+			tabPane.getTabs().remove(tab);
+			if (tab.getOnClosed() != null)
+				Event.fireEvent(tab, new Event(Tab.CLOSED_EVENT));
+		});
+
+		saveEditorsState();
+
+		return true;
+	}
+
+	boolean closeAllEditors(boolean save) {
+		if (save && !canCloseAllEditos())
+			return false;
+
+		runWithoutSavingEditorsState(() -> {
+			// close all tabs
+			for (FileEditor fileEditor : getAllEditors())
+				closeEditor(fileEditor, false);
+		});
+
+		saveEditorsState();
 
 		return tabPane.getTabs().isEmpty();
 	}
@@ -327,6 +407,27 @@ class FileEditorTabPane
 		return null;
 	}
 
+	private FileEditor findPreviewEditor() {
+		for (Tab tab : tabPane.getTabs()) {
+			if (isPreviewEditor((FileEditor) tab.getUserData()))
+				return (FileEditor) tab.getUserData();
+		}
+		return null;
+	}
+
+	private boolean isPreviewEditor(FileEditor fileEditor) {
+		return fileEditor.getTab().getStyleClass().contains("preview");
+	}
+
+	private void setPreviewEditor(FileEditor fileEditor, boolean preview) {
+		ObservableList<String> styleClasses = fileEditor.getTab().getStyleClass();
+		if (preview) {
+			if (!styleClasses.contains("preview"))
+				styleClasses.add("preview");
+		} else
+			styleClasses.remove("preview");
+	}
+
 	private FileChooser createFileChooser(String title) {
 		String[] extensions = Options.getMarkdownFileExtensions().trim().split("\\s*,\\s*");
 
@@ -336,16 +437,16 @@ class FileEditorTabPane
 			new ExtensionFilter(Messages.get("FileEditorTabPane.chooser.markdownFilesFilter"), extensions),
 			new ExtensionFilter(Messages.get("FileEditorTabPane.chooser.allFilesFilter"), "*.*"));
 
-		String lastDirectory = MarkdownWriterFXApp.getState().get("lastDirectory", null);
-		File file = new File((lastDirectory != null) ? lastDirectory : ".");
-		if (!file.isDirectory())
-			file = new File(".");
-		fileChooser.setInitialDirectory(file);
+		String lastDirectory = getProjectState().get("lastDirectory", null);
+		File initialDirectory = (lastDirectory != null) ? new File(lastDirectory) : ProjectManager.getActiveProject();
+		if (initialDirectory == null || !initialDirectory.isDirectory())
+			initialDirectory = new File(".");
+		fileChooser.setInitialDirectory(initialDirectory);
 		return fileChooser;
 	}
 
 	private void saveLastDirectory(File file) {
-		MarkdownWriterFXApp.getState().put("lastDirectory", file.getParent());
+		getProjectState().put("lastDirectory", file.getParent());
 	}
 
 	private void restoreState() {
@@ -355,42 +456,104 @@ class FileEditorTabPane
 		htmlSourceVisible.init(state, "htmlSourceVisible", false);
 		markdownAstVisible.init(state, "markdownAstVisible", false);
 		externalVisible.init(state, "externalVisible", false);
+	}
 
-		String[] fileNames = Utils.getPrefsStrings(state, "file");
-		String activeFileName = state.get("activeFile", null);
+	private void restoreEditorsState() {
+		Preferences projectState = getProjectState();
 
-		int activeIndex = 0;
+		String[] fileNames = Utils.getPrefsStrings(projectState, "file");
+		String previewFileName = projectState.get("previewFile", null);
+		String activeFileName = projectState.get("activeFile", null);
+
 		ArrayList<File> files = new ArrayList<>(fileNames.length);
 		for (String fileName : fileNames) {
 			File file = new File(fileName);
-			if (file.exists()) {
+			if (file.exists())
 				files.add(file);
-
-				if (fileName.equals(activeFileName))
-					activeIndex = files.size() - 1;
-			}
 		}
 
+		// save opened editors state if there are already open editors,
+		// which may happen when no project is open but files are open,
+		// and then opening a project, which keeps already open files
+		boolean saveState = !tabPane.getTabs().isEmpty();
+
 		if (files.isEmpty()) {
-			newEditor();
+			if (ProjectManager.getActiveProject() == null)
+				newEditor();
+			if (saveState)
+				saveEditorsState();
 			return;
 		}
 
-		openEditors(files, activeIndex);
+		int activeIndex = (activeFileName != null) ? Math.max(files.indexOf(new File(activeFileName)), 0) : 0;
+		int previewIndex = (previewFileName != null) ? files.indexOf(new File(previewFileName)) : -1;
+
+		// temporary disable tab animation when restoring open editors
+		tabPane.setStyle("-fx-open-tab-animation: none; -fx-close-tab-animation: none;");
+		tabPane.applyCss();
+
+		// open editors
+		runWithoutSavingEditorsState(() -> {
+			openEditors(files, activeIndex, previewIndex);
+		});
+
+		tabPane.setStyle("");
+
+		if (saveState)
+			saveEditorsState();
 	}
 
-	private void saveState(FileEditor[] allEditors, FileEditor activeEditor) {
+	private void runWithoutSavingEditorsState(Runnable runnable) {
+		boolean oldSaveEditorsStateEnabled = saveEditorsStateEnabled;
+		saveEditorsStateEnabled = false;
+		try {
+			runnable.run();
+		} finally {
+			saveEditorsStateEnabled = oldSaveEditorsStateEnabled;
+		}
+	}
+
+	private void saveEditorsState() {
+		saveStateOpenEditors();
+		saveStateActiveEditor();
+	}
+
+	private void saveStateOpenEditors() {
+		if (!saveEditorsStateEnabled)
+			return;
+
+		FileEditor[] allEditors = getAllEditors();
+
 		ArrayList<String> fileNames = new ArrayList<>(allEditors.length);
+		String previewFileName = null;
 		for (FileEditor fileEditor : allEditors) {
-			if (fileEditor.getPath() != null)
+			if (fileEditor.getPath() != null) {
 				fileNames.add(fileEditor.getPath().toString());
+				if (isPreviewEditor(fileEditor))
+					previewFileName = fileEditor.getPath().toString();
+			}
 		}
 
-		Preferences state = MarkdownWriterFXApp.getState();
-		Utils.putPrefsStrings(state, "file", fileNames.toArray(new String[fileNames.size()]));
+		Preferences projectState = getProjectState();
+		Utils.putPrefsStrings(projectState, "file", fileNames.toArray(new String[fileNames.size()]));
+		Utils.putPrefs(projectState, "previewFile", previewFileName, null);
+	}
+
+	private void saveStateActiveEditor() {
+		if (!saveEditorsStateEnabled)
+			return;
+
+		FileEditor activeEditor = activeFileEditor.get();
 		if (activeEditor != null && activeEditor.getPath() != null)
-			state.put("activeFile", activeEditor.getPath().toString());
+			getProjectState().put("activeFile", activeEditor.getPath().toString());
 		else
-			state.remove("activeFile");
+			getProjectState().remove("activeFile");
+	}
+
+	private Preferences getProjectState() {
+		Preferences projectState = ProjectManager.getActiveProjectState();
+		if (projectState == null)
+			projectState = MarkdownWriterFXApp.getState();
+		return projectState;
 	}
 }

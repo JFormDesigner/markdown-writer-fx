@@ -82,7 +82,7 @@ class FileEditor
 		tab.setUserData(this);
 
 		this.path.addListener((observable, oldPath, newPath) -> updateTab());
-		this.modified.addListener((observable, oldPath, newPath) -> updateTab());
+		modified.addListener((observable, oldModified, newModified) -> updateTab());
 		updateTab();
 
 		@SuppressWarnings("rawtypes")
@@ -245,7 +245,7 @@ class FileEditor
 
 	void load() {
 		Path path = this.path.get();
-		if (path == null)
+		if (path == null || markdownEditorPane == null)
 			return;
 
 		lastModified = path.toFile().lastModified();
