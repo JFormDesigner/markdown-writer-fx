@@ -40,7 +40,6 @@ import static org.fxmisc.wellbehaved.event.InputMap.consume;
 import static org.fxmisc.wellbehaved.event.InputMap.sequence;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -271,7 +270,7 @@ class FindReplacePane
 		final String replace = replaceField.getText();
 		Pattern regexReplacePattern = regexReplacePattern();
 
-		MultiChangeBuilder<Collection<String>, String, Collection<String>> multiChange = textArea.createMultiChange(hits.size());
+		MultiChangeBuilder<?, ?, ?> multiChange = textArea.createMultiChange(hits.size());
 		for (Range hit : hits) {
 			String replace2 = replace;
 			if (regexReplacePattern != null) {

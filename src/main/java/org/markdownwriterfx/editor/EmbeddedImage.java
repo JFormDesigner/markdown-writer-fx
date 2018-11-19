@@ -30,7 +30,6 @@ package org.markdownwriterfx.editor;
 import java.lang.ref.SoftReference;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,7 +43,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Polyline;
 import org.fxmisc.richtext.model.Paragraph;
 import org.fxmisc.richtext.model.ReadOnlyStyledDocument;
-import org.fxmisc.richtext.model.StyledText;
 import org.reactfx.util.Either;
 import com.vladsch.flexmark.ast.NodeVisitor;
 
@@ -61,13 +59,11 @@ class EmbeddedImage
 	final Path basePath;
 	final com.vladsch.flexmark.ast.Image node;
 	final String text;
-	final Collection<String> style;
 
-	EmbeddedImage(Path basePath, com.vladsch.flexmark.ast.Image node, String text, Collection<String> style) {
+	EmbeddedImage(Path basePath, com.vladsch.flexmark.ast.Image node, String text) {
 		this.basePath = basePath;
 		this.node = node;
 		this.text = text;
-		this.style = style;
 	}
 
 	Node createNode() {
@@ -112,7 +108,7 @@ class EmbeddedImage
 			image = imageRef.get();
 		if (image == null) {
 			image = new Image(imageUrl);
-			imageCache.put(imageUrl, new SoftReference<Image>(image));
+			imageCache.put(imageUrl, new SoftReference<>(image));
 		}
 		return image;
 	}
@@ -145,7 +141,7 @@ class EmbeddedImage
 					int end = start + 1;
 
 					EmbeddedImage embeddedImage = new EmbeddedImage(basePath,
-							imageNode, textArea.getText(start, end), null);
+							imageNode, textArea.getText(start, end));
 					addedImages.add(embeddedImage);
 
 					textArea.replace(start, end, ReadOnlyStyledDocument.fromSegment(
@@ -162,12 +158,12 @@ class EmbeddedImage
 		// remove obsolete EmbeddedImage objects
 		HashMap<Integer, String> removedImages = new HashMap<>();
 		int index = 0;
-		for (Paragraph<Collection<String>, Either<StyledText<Collection<String>>, EmbeddedImage>, Collection<String>> par : textArea.getDocument().getParagraphs()) {
-			for (Either<StyledText<Collection<String>>, EmbeddedImage> seg : par.getSegments()) {
+		for (Paragraph<?, Either<String, EmbeddedImage>, ?> par : textArea.getDocument().getParagraphs()) {
+			for (Either<String, EmbeddedImage> seg : par.getSegments()) {
 				if (seg.isRight() && !addedImages.contains(seg.getRight()))
 					removedImages.put(index, seg.getRight().text);
 
-				index += seg.isLeft() ? seg.getLeft().getText().length() : seg.getRight().text.length();
+				index += seg.isLeft() ? seg.getLeft().length() : seg.getRight().text.length();
 			}
 			index++;
 		}

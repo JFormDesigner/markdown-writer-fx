@@ -34,7 +34,6 @@ import static org.fxmisc.wellbehaved.event.InputMap.consume;
 import static org.fxmisc.wellbehaved.event.InputMap.sequence;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -889,7 +888,7 @@ public class SmartEdit
 	/**
 	 * Central method to commit multi-change in editor that prevents undo merging.
 	 */
-	static void commitMultiChange(MarkdownTextArea textArea, MultiChangeBuilder<Collection<String>, String, Collection<String>> multiChange) {
+	static void commitMultiChange(MarkdownTextArea textArea, MultiChangeBuilder<?, ?, ?> multiChange) {
 		runInPreventUndoMerge(textArea, () -> {
 			// commit multi-change
 			multiChange.commit();

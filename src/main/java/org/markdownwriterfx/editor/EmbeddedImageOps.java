@@ -27,18 +27,17 @@
 
 package org.markdownwriterfx.editor;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Optional;
-import org.fxmisc.richtext.model.SegmentOps;
+import org.fxmisc.richtext.model.NodeSegmentOpsBase;
 
 /**
  * @author Karl Tauber
  */
-class EmbeddedImageOps
-	implements SegmentOps<EmbeddedImage, Collection<String>>
+class EmbeddedImageOps<S>
+	extends NodeSegmentOpsBase<EmbeddedImage, S>
 {
-	private final EmbeddedImage emptySeg = new EmbeddedImage(null, null, "", null);
+	EmbeddedImageOps() {
+		super(new EmbeddedImage(null, null, ""));
+	}
 
 	@Override
 	public int length(EmbeddedImage seg) {
@@ -46,42 +45,26 @@ class EmbeddedImageOps
 	}
 
 	@Override
-	public char charAt(EmbeddedImage seg, int index) {
-		return (seg == emptySeg) ? '\0' : seg.text.charAt(index);
+	public char realCharAt(EmbeddedImage seg, int index) {
+		return seg.text.charAt(index);
 	}
 
 	@Override
-	public String getText(EmbeddedImage seg) {
+	public String realGetText(EmbeddedImage seg) {
 		return seg.text;
 	}
 
 	@Override
-	public EmbeddedImage subSequence(EmbeddedImage seg, int start, int end) {
-		return (seg == emptySeg) ? emptySeg : new EmbeddedImage(seg.basePath, seg.node, seg.text.substring(start, end), seg.style);
+	public EmbeddedImage realSubSequence(EmbeddedImage seg, int start, int end) {
+		return (start == 0 && end == seg.text.length())
+			? seg
+			: new EmbeddedImage(seg.basePath, seg.node, seg.text.substring(start, end));
 	}
 
 	@Override
-	public EmbeddedImage subSequence(EmbeddedImage seg, int start) {
-		return (seg == emptySeg) ? emptySeg : new EmbeddedImage(seg.basePath, seg.node, seg.text.substring(start), seg.style);
-	}
-
-	@Override
-	public Collection<String> getStyle(EmbeddedImage seg) {
-		return (seg.style != null) ? seg.style : Collections.emptyList();
-	}
-
-	@Override
-	public EmbeddedImage setStyle(EmbeddedImage seg, Collection<String> style) {
-		return (seg == emptySeg) ? emptySeg : new EmbeddedImage(seg.basePath, seg.node, seg.text, style);
-	}
-
-	@Override
-	public Optional<EmbeddedImage> join(EmbeddedImage currentSeg, EmbeddedImage nextSeg) {
-		return Optional.empty();
-	}
-
-	@Override
-	public EmbeddedImage createEmpty() {
-		return emptySeg;
+	public EmbeddedImage realSubSequence(EmbeddedImage seg, int start) {
+		return (start == 0)
+			? seg
+			: new EmbeddedImage(seg.basePath, seg.node, seg.text.substring(start));
 	}
 }

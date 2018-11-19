@@ -29,6 +29,7 @@ package org.markdownwriterfx.editor;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import javafx.scene.Node;
 import javafx.scene.control.IndexRange;
@@ -36,7 +37,7 @@ import org.fxmisc.richtext.GenericStyledArea;
 import org.fxmisc.richtext.StyledTextArea;
 import org.fxmisc.richtext.TextExt;
 import org.fxmisc.richtext.model.SegmentOps;
-import org.fxmisc.richtext.model.StyledText;
+import org.fxmisc.richtext.model.StyledSegment;
 import org.reactfx.util.Either;
 
 /**
@@ -45,28 +46,26 @@ import org.reactfx.util.Either;
  * @author Karl Tauber
  */
 class MarkdownTextArea
-	extends GenericStyledArea<Collection<String>, Either<StyledText<Collection<String>>, EmbeddedImage>, Collection<String>>
+	extends GenericStyledArea<Collection<String>, Either<String, EmbeddedImage>, Collection<String>>
 {
 	public MarkdownTextArea() {
 		super(
 			/* initialParagraphStyle */ Collections.<String>emptyList(),
 			/* applyParagraphStyle */ (paragraph, styleClasses) -> paragraph.getStyleClass().addAll(styleClasses),
 			/* initialTextStyle */ Collections.<String>emptyList(),
-			/* textOps */ StyledText.<Collection<String>>textOps()._or(new EmbeddedImageOps()),
+			/* textOps */ SegmentOps.<Collection<String>>styledTextOps()._or(new EmbeddedImageOps<Collection<String>>(), (s1, s2) -> Optional.empty()),
 			/* preserveStyle */ false,
-			/* nodeFactory */ seg -> createNode(seg, StyledText.textOps(),
+			/* nodeFactory */ seg -> createNode(seg,
 				(text, styleClasses) -> text.getStyleClass().addAll(styleClasses))
 			);
 	}
 
-	private static Node createNode(Either<StyledText<Collection<String>>, EmbeddedImage> seg,
-			SegmentOps<StyledText<Collection<String>>, Collection<String>> textSegOps,
+	private static Node createNode(StyledSegment<Either<String, EmbeddedImage>, Collection<String>> seg,
 			BiConsumer<? super TextExt, Collection<String>> applyStyle)
 	{
-		return seg.isLeft()
-			? StyledTextArea.createStyledTextNode(seg.getLeft(), textSegOps, applyStyle)
-			: seg.getRight().createNode();
-
+		return seg.getSegment().unify(
+				text -> StyledTextArea.createStyledTextNode(text, seg.getStyle(), applyStyle),
+				EmbeddedImage::createNode);
 	}
 
 	@Override

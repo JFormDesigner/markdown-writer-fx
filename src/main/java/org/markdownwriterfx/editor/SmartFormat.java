@@ -29,7 +29,6 @@ package org.markdownwriterfx.editor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.ServiceLoader;
@@ -88,7 +87,7 @@ class SmartFormat
 			return;
 
 		// replace text of formatted paragraphs
-		MultiChangeBuilder<Collection<String>, String, Collection<String>> multiChange = textArea.createMultiChange(formattedParagraphs.size());
+		MultiChangeBuilder<?, ?, ?> multiChange = textArea.createMultiChange(formattedParagraphs.size());
 		for (Pair<Block, String> pair : formattedParagraphs) {
 			Block paragraph = pair.getFirst();
 			String newText = pair.getSecond();

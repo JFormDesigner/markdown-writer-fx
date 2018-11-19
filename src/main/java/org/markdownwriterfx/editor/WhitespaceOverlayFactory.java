@@ -38,7 +38,6 @@ import javafx.scene.text.Text;
 import org.fxmisc.richtext.model.Paragraph;
 import org.markdownwriterfx.editor.ParagraphOverlayGraphicFactory.OverlayFactory;
 import org.markdownwriterfx.util.Range;
-import org.reactfx.util.Either;
 
 /**
  * Shows whitespace characters.
@@ -54,7 +53,7 @@ class WhitespaceOverlayFactory
 
 	@Override
 	public List<Node> createOverlayNodes(int paragraphIndex) {
-		Paragraph<Collection<String>, Either<StyledText<Collection<String>>, EmbeddedImage>, Collection<String>> par = getTextArea().getParagraph(paragraphIndex);
+		Paragraph<?, ?, Collection<String>> par = getTextArea().getParagraph(paragraphIndex);
 
 		ArrayList<Node> nodes = new ArrayList<>();
 		String text = par.getText();
