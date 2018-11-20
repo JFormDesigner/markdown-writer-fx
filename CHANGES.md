@@ -13,6 +13,12 @@ Markdown Writer FX Change Log
   - double-click opens file in regular mode
   - drag-and-drop image/markdown file from project tree to markdown editor
     inserts a markdown link to that image/markdown file
+- (experimental) Embedded images in markdown editor:
+  - the leading '!' character of the markdown image description is replaced with
+    the image
+  - enable/disable in Options dialog (default is disabled)
+  - works only for local images
+  - embedded images are scaled down to maximum size of 200x200 pixels
 - Smarter "Insert > Bold/Italic/Strikethrough/Inline Code": if selection is
   empty, then the word at the caret will be used as selection.
 - Move selected lines down (with `Alt+Down`) no longer eats empty lines.
