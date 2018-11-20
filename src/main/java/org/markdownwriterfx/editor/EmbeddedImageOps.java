@@ -27,13 +27,14 @@
 
 package org.markdownwriterfx.editor;
 
-import org.fxmisc.richtext.model.NodeSegmentOpsBase;
+import java.util.Optional;
+import org.fxmisc.richtext.model.SegmentOpsBase;
 
 /**
  * @author Karl Tauber
  */
 class EmbeddedImageOps<S>
-	extends NodeSegmentOpsBase<EmbeddedImage, S>
+	extends SegmentOpsBase<EmbeddedImage, S>
 {
 	EmbeddedImageOps() {
 		super(new EmbeddedImage(null, null, ""));
@@ -62,9 +63,7 @@ class EmbeddedImageOps<S>
 	}
 
 	@Override
-	public EmbeddedImage realSubSequence(EmbeddedImage seg, int start) {
-		return (start == 0)
-			? seg
-			: new EmbeddedImage(seg.basePath, seg.node, seg.text.substring(start));
+	public Optional<EmbeddedImage> joinSeg(EmbeddedImage currentSeg, EmbeddedImage nextSeg) {
+		return Optional.empty();
 	}
 }
