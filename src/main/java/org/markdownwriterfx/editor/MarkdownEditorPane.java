@@ -167,6 +167,8 @@ public class MarkdownEditorPane
 				updateShowLineNo();
 			else if (e == Options.showWhitespaceProperty())
 				updateShowWhitespace();
+			else if (e == Options.showImagesEmbeddedProperty())
+				updateShowImagesEmbedded();
 			else if (e == Options.markdownRendererProperty() || e == Options.markdownExtensionsProperty()) {
 				// re-process markdown if markdown extensions option changes
 				parser = null;
@@ -180,6 +182,7 @@ public class MarkdownEditorPane
 		Options.markdownExtensionsProperty().addListener(weakOptionsListener);
 		Options.showLineNoProperty().addListener(weakOptionsListener);
 		Options.showWhitespaceProperty().addListener(weakOptionsListener);
+		Options.showImagesEmbeddedProperty().addListener(weakOptionsListener);
 
 		// workaround a problem with wrong selection after undo:
 		//   after undo the selection is 0-0, anchor is 0, but caret position is correct
@@ -304,7 +307,10 @@ public class MarkdownEditorPane
 			newText = "";
 
 		Node astRoot = parseMarkdown(newText);
-		EmbeddedImage.replaceImageSegments(textArea, astRoot, getParentPath());
+
+		if (Options.isShowImagesEmbedded())
+			EmbeddedImage.replaceImageSegments(textArea, astRoot, getParentPath());
+
 		applyHighlighting(astRoot);
 
 		markdownText.set(newText);
@@ -370,6 +376,13 @@ public class MarkdownEditorPane
 			overlayGraphicFactory.removeOverlayFactory(whitespaceOverlayFactory);
 			whitespaceOverlayFactory = null;
 		}
+	}
+
+	private void updateShowImagesEmbedded() {
+		if (Options.isShowImagesEmbedded())
+			EmbeddedImage.replaceImageSegments(textArea, getMarkdownAST(), getParentPath());
+		else
+			EmbeddedImage.removeAllImageSegments(textArea);
 	}
 
 	public void undo() {

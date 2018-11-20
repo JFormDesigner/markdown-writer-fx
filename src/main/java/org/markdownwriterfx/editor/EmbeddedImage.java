@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.function.Predicate;
 import javafx.scene.Node;
 import javafx.scene.control.IndexRange;
 import javafx.scene.image.Image;
@@ -156,11 +157,23 @@ class EmbeddedImage
 		visitor.visit(astRoot);
 
 		// remove obsolete EmbeddedImage objects
+		removeImageSegments(textArea, image -> !addedImages.contains(image));
+
+		// restore selection
+		if (!selection.equals(textArea.getSelection()))
+			textArea.selectRange(selection.getStart(), selection.getEnd());
+	}
+
+	static void removeAllImageSegments(MarkdownTextArea textArea) {
+		removeImageSegments(textArea, image -> true);
+	}
+
+	private static void removeImageSegments(MarkdownTextArea textArea, Predicate<EmbeddedImage> filter) {
 		HashMap<Integer, String> removedImages = new HashMap<>();
 		int index = 0;
 		for (Paragraph<?, Either<String, EmbeddedImage>, ?> par : textArea.getDocument().getParagraphs()) {
 			for (Either<String, EmbeddedImage> seg : par.getSegments()) {
-				if (seg.isRight() && !addedImages.contains(seg.getRight()))
+				if (seg.isRight() && filter.test(seg.getRight()))
 					removedImages.put(index, seg.getRight().text);
 
 				index += seg.isLeft() ? seg.getLeft().length() : seg.getRight().text.length();
@@ -172,9 +185,5 @@ class EmbeddedImage
 			String text = e.getValue();
 			textArea.replaceText(start, start + text.length(), text);
 		}
-
-		// restore selection
-		if (!selection.equals(textArea.getSelection()))
-			textArea.selectRange(selection.getStart(), selection.getEnd());
 	}
 }

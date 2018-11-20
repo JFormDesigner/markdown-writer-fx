@@ -72,6 +72,7 @@ public class Options
 		markdownRenderer.init(options, "markdownRenderer", RendererType.CommonMark);
 		showLineNo.init(options, "showLineNo", false);
 		showWhitespace.init(options, "showWhitespace", false);
+		showImagesEmbedded.init(options, "showImagesEmbedded", false);
 
 		emphasisMarker.init(options, "emphasisMarker", "_");
 		strongEmphasisMarker.init(options, "strongEmphasisMarker", "**");
@@ -150,6 +151,12 @@ public class Options
 	public static boolean isShowWhitespace() { return showWhitespace.get(); }
 	public static void setShowWhitespace(boolean showWhitespace) { Options.showWhitespace.set(showWhitespace); }
 	public static BooleanProperty showWhitespaceProperty() { return showWhitespace; }
+
+	// 'showImagesEmbedded' property
+	private static final PrefsBooleanProperty showImagesEmbedded = new PrefsBooleanProperty();
+	public static boolean isShowImagesEmbedded() { return showImagesEmbedded.get(); }
+	public static void setShowImagesEmbedded(boolean showImagesEmbedded) { Options.showImagesEmbedded.set(showImagesEmbedded); }
+	public static BooleanProperty showImagesEmbeddedProperty() { return showImagesEmbedded; }
 
 	// 'emphasisMarker' property
 	private static final PrefsStringProperty emphasisMarker = new PrefsStringProperty();
