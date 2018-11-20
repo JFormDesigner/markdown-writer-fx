@@ -40,7 +40,7 @@ dependencies {
 	compile( "org.apache.commons:commons-lang3:3.7" )
 	compile( "org.languagetool:language-en:4.3" )
 
-	val flexmarkVersion = "0.32.20"
+	val flexmarkVersion = "0.34.53"
 	compile( "com.vladsch.flexmark:flexmark:${flexmarkVersion}" )
 	compile( "com.vladsch.flexmark:flexmark-ext-abbreviation:${flexmarkVersion}" )
 	compile( "com.vladsch.flexmark:flexmark-ext-anchorlink:${flexmarkVersion}" )
@@ -49,8 +49,8 @@ dependencies {
 	compile( "com.vladsch.flexmark:flexmark-ext-definition:${flexmarkVersion}" )
 	compile( "com.vladsch.flexmark:flexmark-ext-footnotes:${flexmarkVersion}" )
 	compile( "com.vladsch.flexmark:flexmark-ext-gfm-strikethrough:${flexmarkVersion}" )
-	compile( "com.vladsch.flexmark:flexmark-ext-gfm-tables:${flexmarkVersion}" )
 	compile( "com.vladsch.flexmark:flexmark-ext-gfm-tasklist:${flexmarkVersion}" )
+	compile( "com.vladsch.flexmark:flexmark-ext-tables:${flexmarkVersion}" )
 	compile( "com.vladsch.flexmark:flexmark-ext-toc:${flexmarkVersion}" )
 	compile( "com.vladsch.flexmark:flexmark-ext-wikilink:${flexmarkVersion}" )
 	compile( "com.vladsch.flexmark:flexmark-ext-yaml-front-matter:${flexmarkVersion}" )

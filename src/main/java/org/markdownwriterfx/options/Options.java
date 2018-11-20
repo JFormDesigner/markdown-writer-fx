@@ -61,6 +61,8 @@ public class Options
 	public static final int MAX_FONT_SIZE = 36;
 	public static final String DEF_MARKDOWN_FILE_EXTENSIONS = "*.md,*.markdown,*.txt";
 	public enum RendererType { CommonMark, FlexMark };
+	public static final int DEF_WRAP_LINE_LENGTH = 80;
+	public static final int MIN_WRAP_LINE_LENGTH = 10;
 
 	public static void load(Preferences options) {
 		fontFamily.init(options, "fontFamily", null, value -> safeFontFamily(value));
@@ -72,10 +74,14 @@ public class Options
 		markdownRenderer.init(options, "markdownRenderer", RendererType.CommonMark);
 		showLineNo.init(options, "showLineNo", false);
 		showWhitespace.init(options, "showWhitespace", false);
+		showImagesEmbedded.init(options, "showImagesEmbedded", false);
 
 		emphasisMarker.init(options, "emphasisMarker", "_");
 		strongEmphasisMarker.init(options, "strongEmphasisMarker", "**");
 		bulletListMarker.init(options, "bulletListMarker", "-");
+
+		wrapLineLength.init(options, "wrapLineLength", DEF_WRAP_LINE_LENGTH);
+		formatOnSave.init(options, "formatOnSave", false);
 
 		spellChecker.init(options, "spellChecker", true);
 		grammarChecker.init(options, "grammarChecker", true);
@@ -154,6 +160,12 @@ public class Options
 	public static void setShowWhitespace(boolean showWhitespace) { Options.showWhitespace.set(showWhitespace); }
 	public static BooleanProperty showWhitespaceProperty() { return showWhitespace; }
 
+	// 'showImagesEmbedded' property
+	private static final PrefsBooleanProperty showImagesEmbedded = new PrefsBooleanProperty();
+	public static boolean isShowImagesEmbedded() { return showImagesEmbedded.get(); }
+	public static void setShowImagesEmbedded(boolean showImagesEmbedded) { Options.showImagesEmbedded.set(showImagesEmbedded); }
+	public static BooleanProperty showImagesEmbeddedProperty() { return showImagesEmbedded; }
+
 	// 'emphasisMarker' property
 	private static final PrefsStringProperty emphasisMarker = new PrefsStringProperty();
 	public static String getEmphasisMarker() { return emphasisMarker.get(); }
@@ -171,6 +183,18 @@ public class Options
 	public static String getBulletListMarker() { return bulletListMarker.get(); }
 	public static void setBulletListMarker(String bulletListMarker) { Options.bulletListMarker.set(bulletListMarker); }
 	public static StringProperty bulletListMarkerProperty() { return bulletListMarker; }
+
+	// 'wrapLineLength' property
+	private static final PrefsIntegerProperty wrapLineLength = new PrefsIntegerProperty();
+	public static int getWrapLineLength() { return wrapLineLength.get(); }
+	public static void setWrapLineLength(int wrapLineLength) { Options.wrapLineLength.set(Math.max(wrapLineLength, MIN_WRAP_LINE_LENGTH)); }
+	public static IntegerProperty wrapLineLengthProperty() { return wrapLineLength; }
+
+	// 'formatOnSave' property
+	private static final PrefsBooleanProperty formatOnSave = new PrefsBooleanProperty();
+	public static boolean isFormatOnSave() { return formatOnSave.get(); }
+	public static void setFormatOnSave(boolean formatOnSave) { Options.formatOnSave.set(formatOnSave); }
+	public static BooleanProperty formatOnSaveProperty() { return formatOnSave; }
 
 	// 'spellChecker' property
 	private static final PrefsBooleanProperty spellChecker = new PrefsBooleanProperty();

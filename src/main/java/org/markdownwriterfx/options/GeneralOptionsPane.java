@@ -132,6 +132,7 @@ class GeneralOptionsPane
 		fontSizeField.getValueFactory().setValue(Options.getFontSize());
 		showLineNoCheckBox.setSelected(Options.isShowLineNo());
 		showWhitespaceCheckBox.setSelected(Options.isShowWhitespace());
+		showImagesEmbeddedCheckBox.setSelected(Options.isShowImagesEmbedded());
 
 		// file settings
 		lineSeparatorField.setValue(new Item<>(Options.getLineSeparator(), Options.getLineSeparator()));
@@ -145,6 +146,7 @@ class GeneralOptionsPane
 		Options.setFontSize(fontSizeField.getValue());
 		Options.setShowLineNo(showLineNoCheckBox.isSelected());
 		Options.setShowWhitespace(showWhitespaceCheckBox.isSelected());
+		Options.setShowImagesEmbedded(showImagesEmbeddedCheckBox.isSelected());
 
 		// file settings
 		Options.setLineSeparator(lineSeparatorField.getValue().value);
@@ -163,6 +165,7 @@ class GeneralOptionsPane
 		fontSizeField = new Spinner<>();
 		showLineNoCheckBox = new CheckBox();
 		showWhitespaceCheckBox = new CheckBox();
+		showImagesEmbeddedCheckBox = new CheckBox();
 		fileSettingsLabel = new Label();
 		Label lineSeparatorLabel = new Label();
 		lineSeparatorField = new ComboBox<>();
@@ -173,8 +176,22 @@ class GeneralOptionsPane
 		markdownFileExtensionsField = new TextField();
 
 		//======== this ========
-		setCols("[indent,fill]0[fill][fill][grow,fill]");
-		setRows("[][][][][]para[][][][]para");
+		setCols(
+			"[indent,fill]0" +
+			"[fill]" +
+			"[fill]" +
+			"[grow,fill]");
+		setRows(
+			"[]" +
+			"[]" +
+			"[]" +
+			"[]" +
+			"[]" +
+			"[]para" +
+			"[]" +
+			"[]" +
+			"[]" +
+			"[]para");
 
 		//---- editorSettingsLabel ----
 		editorSettingsLabel.setText(Messages.get("GeneralOptionsPane.editorSettingsLabel.text"));
@@ -197,40 +214,44 @@ class GeneralOptionsPane
 
 		//---- showLineNoCheckBox ----
 		showLineNoCheckBox.setText(Messages.get("GeneralOptionsPane.showLineNoCheckBox.text"));
-		add(showLineNoCheckBox, "cell 1 3 3 1");
+		add(showLineNoCheckBox, "cell 1 3 3 1,alignx left,growx 0");
 
 		//---- showWhitespaceCheckBox ----
 		showWhitespaceCheckBox.setText(Messages.get("GeneralOptionsPane.showWhitespaceCheckBox.text"));
 		add(showWhitespaceCheckBox, "cell 1 4 3 1,alignx left,growx 0");
 
+		//---- showImagesEmbeddedCheckBox ----
+		showImagesEmbeddedCheckBox.setText(Messages.get("GeneralOptionsPane.showImagesEmbeddedCheckBox.text"));
+		add(showImagesEmbeddedCheckBox, "cell 1 5 3 1,alignx left,growx 0");
+
 		//---- fileSettingsLabel ----
 		fileSettingsLabel.setText(Messages.get("GeneralOptionsPane.fileSettingsLabel.text"));
-		add(fileSettingsLabel, "cell 0 5 2 1");
+		add(fileSettingsLabel, "cell 0 6 2 1");
 
 		//---- lineSeparatorLabel ----
 		lineSeparatorLabel.setText(Messages.get("GeneralOptionsPane.lineSeparatorLabel.text"));
 		lineSeparatorLabel.setMnemonicParsing(true);
-		add(lineSeparatorLabel, "cell 1 6");
-		add(lineSeparatorField, "cell 2 6");
+		add(lineSeparatorLabel, "cell 1 7");
+		add(lineSeparatorField, "cell 2 7");
 
 		//---- lineSeparatorLabel2 ----
 		lineSeparatorLabel2.setText(Messages.get("GeneralOptionsPane.lineSeparatorLabel2.text"));
-		add(lineSeparatorLabel2, "cell 3 6");
+		add(lineSeparatorLabel2, "cell 3 7");
 
 		//---- encodingLabel ----
 		encodingLabel.setText(Messages.get("GeneralOptionsPane.encodingLabel.text"));
 		encodingLabel.setMnemonicParsing(true);
-		add(encodingLabel, "cell 1 7");
+		add(encodingLabel, "cell 1 8");
 
 		//---- encodingField ----
 		encodingField.setVisibleRowCount(20);
-		add(encodingField, "cell 2 7");
+		add(encodingField, "cell 2 8");
 
 		//---- markdownFileExtensionsLabel ----
 		markdownFileExtensionsLabel.setText(Messages.get("GeneralOptionsPane.markdownFileExtensionsLabel.text"));
 		markdownFileExtensionsLabel.setMnemonicParsing(true);
-		add(markdownFileExtensionsLabel, "cell 1 8");
-		add(markdownFileExtensionsField, "cell 2 8 2 1");
+		add(markdownFileExtensionsLabel, "cell 1 9");
+		add(markdownFileExtensionsField, "cell 2 9 2 1");
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 
 		// TODO set this in JFormDesigner as soon as it supports labelFor
@@ -249,6 +270,7 @@ class GeneralOptionsPane
 	private Spinner<Integer> fontSizeField;
 	private CheckBox showLineNoCheckBox;
 	private CheckBox showWhitespaceCheckBox;
+	private CheckBox showImagesEmbeddedCheckBox;
 	private Label fileSettingsLabel;
 	private ComboBox<Item<String>> lineSeparatorField;
 	private ComboBox<Item<String>> encodingField;

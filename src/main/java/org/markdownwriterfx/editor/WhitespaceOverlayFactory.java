@@ -53,7 +53,7 @@ class WhitespaceOverlayFactory
 
 	@Override
 	public List<Node> createOverlayNodes(int paragraphIndex) {
-		Paragraph<Collection<String>, String, Collection<String>> par = getTextArea().getParagraph(paragraphIndex);
+		Paragraph<?, ?, Collection<String>> par = getTextArea().getParagraph(paragraphIndex);
 
 		ArrayList<Node> nodes = new ArrayList<>();
 		String text = par.getText();

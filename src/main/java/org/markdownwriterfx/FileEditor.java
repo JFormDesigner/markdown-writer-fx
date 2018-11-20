@@ -64,6 +64,8 @@ import org.markdownwriterfx.preview.MarkdownPreviewPane.Type;
  */
 class FileEditor
 {
+	private static final long MAX_FILE_SIZE = 500_000;
+
 	private final MainWindow mainWindow;
 	private final FileEditorTabPane fileEditorTabPane;
 	private final Tab tab = new Tab();
@@ -82,7 +84,7 @@ class FileEditor
 		tab.setUserData(this);
 
 		this.path.addListener((observable, oldPath, newPath) -> updateTab());
-		this.modified.addListener((observable, oldPath, newPath) -> updateTab());
+		modified.addListener((observable, oldModified, newModified) -> updateTab());
 		updateTab();
 
 		@SuppressWarnings("rawtypes")
@@ -254,27 +256,45 @@ class FileEditor
 		markdownEditorPane.setVisible(false);
 	}
 
-	private void load() {
+	void load() {
 		Path path = this.path.get();
-		if (path == null)
+		if (path == null || markdownEditorPane == null)
 			return;
 
 		lastModified = path.toFile().lastModified();
 
 		try {
-			byte[] bytes = Files.readAllBytes(path);
-
 			String markdown = null;
-			if (Options.getEncoding() != null) {
-				try {
-					markdown = new String(bytes, Options.getEncoding());
-				} catch (UnsupportedEncodingException ex) {
-					// fallback
-					markdown = new String(bytes);
-				}
-			} else
-				markdown = new String(bytes);
+			boolean readOnly = false;
 
+			long fileSize = Files.size(path);
+
+			if (fileSize > MAX_FILE_SIZE) {
+				markdown = Messages.get("FileEditor.tooLarge", fileSize, MAX_FILE_SIZE);
+				readOnly = true;
+			} else {
+				// load file
+				byte[] bytes = Files.readAllBytes(path);
+
+				// decode file
+				if (Options.getEncoding() != null) {
+					try {
+						markdown = new String(bytes, Options.getEncoding());
+					} catch (UnsupportedEncodingException ex) {
+						// fallback
+						markdown = new String(bytes);
+					}
+				} else
+					markdown = new String(bytes);
+
+				// check whether this is a binary file
+				if (markdown.indexOf(0) >= 0) {
+					markdown = Messages.get("FileEditor.binary", fileSize);
+					readOnly = true;
+				}
+			}
+
+			markdownEditorPane.setReadOnly(readOnly);
 			markdownEditorPane.setMarkdown(markdown);
 			markdownEditorPane.getUndoManager().mark();
 		} catch (IOException ex) {
@@ -286,6 +306,9 @@ class FileEditor
 	}
 
 	boolean save() {
+		if (Options.isFormatOnSave())
+			markdownEditorPane.getSmartEdit().format(false);
+
 		String markdown = markdownEditorPane.getMarkdown();
 
 		byte[] bytes;

@@ -32,9 +32,8 @@ import static javafx.scene.input.KeyCombination.*;
 import static org.fxmisc.wellbehaved.event.EventPattern.keyPressed;
 import static org.fxmisc.wellbehaved.event.InputMap.consume;
 import static org.fxmisc.wellbehaved.event.InputMap.sequence;
-
+import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -534,6 +533,10 @@ public class SmartEdit
 	}
 
 	public void surroundSelection(String leading, String trailing, String hint) {
+		surroundSelection(leading, trailing, hint, false);
+	}
+
+	public void surroundSelection(String leading, String trailing, String hint, boolean selectWordIfEmpty) {
 		// Note: not using textArea.insertText() to insert leading and trailing
 		//       because this would add two changes to undo history
 
@@ -541,7 +544,24 @@ public class SmartEdit
 		int start = selection.getStart();
 		int end = selection.getEnd();
 
-		String selectedText = textArea.getSelectedText();
+		if (selectWordIfEmpty && start == end) {
+			// add letters or digits before selection
+			for (int i = start - 1; i >= 0; i--) {
+				if (!Character.isLetterOrDigit(textArea.getText(i, i + 1).charAt(0)))
+					break;
+				start--;
+			}
+
+			// add letters or digits after selection
+			int textLength = textArea.getLength();
+			for (int i = end; i < textLength; i++) {
+				if (!Character.isLetterOrDigit(textArea.getText(i, i + 1).charAt(0)))
+					break;
+				end++;
+			}
+		}
+
+		String selectedText = textArea.getText(start, end);
 
 		// remove leading and trailing whitespaces from selected text
 		String trimmedSelectedText = selectedText.trim();
@@ -640,7 +660,7 @@ public class SmartEdit
 		if (codeNode != null)
 			surroundSelectionAndReplaceMarker(openCloseMarker, openCloseMarker, hint, codeNode, "<code>", "</code>");
 		else
-			surroundSelection(openCloseMarker, openCloseMarker, hint);
+			surroundSelection(openCloseMarker, openCloseMarker, hint, true);
 	}
 
 	//---- delimited inlines --------------------------------------------------
@@ -746,6 +766,35 @@ public class SmartEdit
 		});
 	}
 
+	public void insertLinkOrImage(int position, Path path) {
+		int end = position;
+
+		LinkNode linkNode = findNodeAt(position, (s, e, n) -> n instanceof LinkNode);
+		if (linkNode != null && position > linkNode.getStartOffset()) {
+			// if dropping on an existing link or image, then replace it
+			position = linkNode.getStartOffset();
+			end = linkNode.getEndOffset();
+		}
+
+		Path basePath = editor.getParentPath();
+		String newUrl;
+		try {
+			newUrl = (basePath != null) ? basePath.relativize(path).toString() : path.toString();
+		} catch (IllegalArgumentException ex) {
+			newUrl = path.toString();
+		}
+		newUrl = newUrl.replace('\\', '/');
+
+		String newText = path.getName(path.getNameCount() - 1).toString();
+
+		String linkOrImage = (Utils.isImage(path.toString()) ? "!" : "")
+			+ "[" + newText.replace("[", "\\[").replace("]", "\\]")
+			+ "](" + newUrl.replace("(", "\\(").replace(")", "\\)").replace(" ", "%20") + ")";
+
+		replaceText(textArea, position, end, linkOrImage);
+		selectRange(textArea, position, position + linkOrImage.length());
+	}
+
 	//---- heading ------------------------------------------------------------
 
 	public void insertHeading(int level, String hint) {
@@ -814,6 +863,12 @@ public class SmartEdit
 		surroundSelection("\n\n" + Options.getBulletListMarker() + " ", "");
 	}
 
+	//---- format -------------------------------------------------------------
+
+	public void format(boolean formatSelectionOnly) {
+		smartFormat.format(formatSelectionOnly);
+	}
+
 	//---- text modification --------------------------------------------------
 
 	/**
@@ -833,7 +888,7 @@ public class SmartEdit
 	/**
 	 * Central method to commit multi-change in editor that prevents undo merging.
 	 */
-	static void commitMultiChange(MarkdownTextArea textArea, MultiChangeBuilder<Collection<String>, String, Collection<String>> multiChange) {
+	static void commitMultiChange(MarkdownTextArea textArea, MultiChangeBuilder<?, ?, ?> multiChange) {
 		runInPreventUndoMerge(textArea, () -> {
 			// commit multi-change
 			multiChange.commit();
@@ -970,7 +1025,6 @@ public class SmartEdit
 	/**
 	 * Find first node that is at the given offset and match a predicate.
 	 */
-	@SuppressWarnings("unused")
 	private <T> T findNodeAt(int offset, FindNodePredicate predicate) {
 		List<T> nodes = findNodes(offset, offset, predicate, false, false);
 		return nodes.size() > 0 ? nodes.get(0) : null;

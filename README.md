@@ -16,20 +16,12 @@ Features
   * Syntax highlighting in editor
   * Keyboard shortcuts to insert Markdown (Bold, Italic, Code, Links, Images, Header, Lists, ...)
   * Auto-indent lists
-  * search and replace
+  * Search and replace
+  * Project manager
   * HTML preview
   * HTML source preview
   * Markdown AST view
   * Multi-platform: Windows, Mac, Linux, ...
-
-TODO
-----
-
-  * auto-complete
-  * more options
-  * directory tree view
-  * spell checker
-  * TBD
 
 Requirements
 ------------

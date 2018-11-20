@@ -63,6 +63,57 @@
 }
 
 
+/*---- projects combo box ----*/
+
+.main .projects-combo-box {
+	-fx-background-color: transparent;
+}
+.main .projects-combo-box:hover {
+	-fx-background-color: -fx-shadow-highlight-color;
+}
+
+.main .projects-combo-box > .cell {
+	/* give projects combo box same height as tabs */
+	-fx-padding: 0.625em 0 0.625em 0.75em;
+}
+
+/* use light hover background color in popup list */
+.main .projects-combo-box .combo-box-popup > .list-view .list-cell:filled:hover {
+    -fx-background-color: -fx-selection-bar-non-focused;
+    -fx-text-fill: -fx-text-base-color;
+}
+
+/* border below "open folder" item */
+.main .projects-combo-box .list-cell {
+	/* necessary on all cells for correct resizing of ListView when adding items */
+	-fx-border-width: 0 0 1 0;
+}
+.main .projects-combo-box .list-cell.open-project {
+	-fx-border-color: -fx-outer-border;
+}
+
+/* close project button */
+.main .projects-combo-box .close-project-button {
+    -fx-background-color: transparent;
+    -fx-shape: "M 0,0 H1 L 4,3 7,0 H8 V1 L 5,4 8,7 V8 H7 L 4,5 1,8 H0 V7 L 3,4 0,1 Z";
+    -fx-scale-shape: false;
+    -fx-effect: dropshadow(two-pass-box , rgba(255, 255, 255, 0.4), 1, 0.0 , 0, 1);
+}
+.main .projects-combo-box .list-cell:hover .close-project-button {
+    -fx-background-color: -fx-mark-color;
+}
+.main .projects-combo-box .list-cell:hover .close-project-button:hover {
+    -fx-background-color: red;
+}
+
+
+/*---- project tree view ----*/
+
+.main .project-tree-view {
+    -fx-padding: 1 0 0 0;
+}
+
+
 /*---- main tab pane ----*/
 
 .main .tab-pane {
@@ -86,6 +137,9 @@
 	-fx-background-insets: 0 1 1 0;
 	-fx-background-radius: 0;
 	-fx-padding: 0.5em 0.25em 0.5em 1em;
+}
+.main .tab-pane > .tab-header-area > .headers-region > .tab.preview {
+	-fx-font-style: italic;
 }
 
 /* orange marker for selected/hover tab */

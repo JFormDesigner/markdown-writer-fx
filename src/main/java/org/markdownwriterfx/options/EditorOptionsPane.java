@@ -27,10 +27,13 @@
 
 package org.markdownwriterfx.options;
 
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.text.Font;
 import org.markdownwriterfx.Messages;
+import org.markdownwriterfx.controls.IntSpinner;
 import org.tbee.javafx.scene.layout.fxml.MigPane;
 
 /**
@@ -46,10 +49,13 @@ class EditorOptionsPane
 
 		Font titleFont = Font.font(16);
 		markersTitle.setFont(titleFont);
+		formatTitle.setFont(titleFont);
 
 		strongEmphasisMarkerField.getItems().addAll("**", "__");
 		emphasisMarkerField.getItems().addAll("*", "_");
 		bulletListMarkerField.getItems().addAll("-", "+", "*");
+
+		wrapLineLengthField.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(Options.MIN_WRAP_LINE_LENGTH, Integer.MAX_VALUE));
 	}
 
 	void load() {
@@ -57,6 +63,10 @@ class EditorOptionsPane
 		strongEmphasisMarkerField.getSelectionModel().select(Options.getStrongEmphasisMarker());
 		emphasisMarkerField.getSelectionModel().select(Options.getEmphasisMarker());
 		bulletListMarkerField.getSelectionModel().select(Options.getBulletListMarker());
+
+		// format
+		wrapLineLengthField.getValueFactory().setValue(Options.getWrapLineLength());
+		formatOnSaveCheckBox.setSelected(Options.isFormatOnSave());
 	}
 
 	void save() {
@@ -64,6 +74,10 @@ class EditorOptionsPane
 		Options.setStrongEmphasisMarker(strongEmphasisMarkerField.getSelectionModel().getSelectedItem());
 		Options.setEmphasisMarker(emphasisMarkerField.getSelectionModel().getSelectedItem());
 		Options.setBulletListMarker(bulletListMarkerField.getSelectionModel().getSelectedItem());
+
+		// format
+		Options.setWrapLineLength(wrapLineLengthField.getValue());
+		Options.setFormatOnSave(formatOnSaveCheckBox.isSelected());
 	}
 
 	private void initComponents() {
@@ -75,11 +89,27 @@ class EditorOptionsPane
 		emphasisMarkerField = new ChoiceBox<>();
 		Label bulletListMarkerLabel = new Label();
 		bulletListMarkerField = new ChoiceBox<>();
+		formatTitle = new Label();
+		wrapLineLengthLabel = new Label();
+		wrapLineLengthField = new IntSpinner();
+		Label wrapLineLengthLabel2 = new Label();
+		formatOnSaveCheckBox = new CheckBox();
 
 		//======== this ========
 		setLayout("hidemode 3");
-		setCols("[indent,fill]0[fill][fill]");
-		setRows("[][][][]");
+		setCols(
+			"[indent,fill]0" +
+			"[fill]" +
+			"[fill]" +
+			"[fill]");
+		setRows(
+			"[]" +
+			"[]" +
+			"[]" +
+			"[]para" +
+			"[]" +
+			"[]" +
+			"[]");
 
 		//---- markersTitle ----
 		markersTitle.setText(Messages.get("EditorOptionsPane.markersTitle.text"));
@@ -102,12 +132,31 @@ class EditorOptionsPane
 		bulletListMarkerLabel.setMnemonicParsing(true);
 		add(bulletListMarkerLabel, "cell 1 3");
 		add(bulletListMarkerField, "cell 2 3");
+
+		//---- formatTitle ----
+		formatTitle.setText(Messages.get("EditorOptionsPane.formatTitle.text"));
+		add(formatTitle, "cell 0 4 2 1");
+
+		//---- wrapLineLengthLabel ----
+		wrapLineLengthLabel.setText(Messages.get("EditorOptionsPane.wrapLineLengthLabel.text"));
+		wrapLineLengthLabel.setMnemonicParsing(true);
+		add(wrapLineLengthLabel, "cell 1 5");
+		add(wrapLineLengthField, "cell 2 5");
+
+		//---- wrapLineLengthLabel2 ----
+		wrapLineLengthLabel2.setText(Messages.get("EditorOptionsPane.wrapLineLengthLabel2.text"));
+		add(wrapLineLengthLabel2, "cell 3 5");
+
+		//---- formatOnSaveCheckBox ----
+		formatOnSaveCheckBox.setText(Messages.get("EditorOptionsPane.formatOnSaveCheckBox.text"));
+		add(formatOnSaveCheckBox, "cell 1 6 2 1,alignx left,growx 0");
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 
 		// TODO set this in JFormDesigner as soon as it supports labelFor
 		strongEmphasisMarkerLabel.setLabelFor(strongEmphasisMarkerField);
 		emphasisMarkerLabel.setLabelFor(emphasisMarkerField);
 		bulletListMarkerLabel.setLabelFor(bulletListMarkerField);
+		wrapLineLengthLabel.setLabelFor(wrapLineLengthField);
 	}
 
 	// JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
@@ -115,5 +164,9 @@ class EditorOptionsPane
 	private ChoiceBox<String> strongEmphasisMarkerField;
 	private ChoiceBox<String> emphasisMarkerField;
 	private ChoiceBox<String> bulletListMarkerField;
+	private Label formatTitle;
+	private Label wrapLineLengthLabel;
+	private IntSpinner wrapLineLengthField;
+	private CheckBox formatOnSaveCheckBox;
 	// JFormDesigner - End of variables declaration  //GEN-END:variables
 }

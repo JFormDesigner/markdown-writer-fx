@@ -59,7 +59,7 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.text.TextFlow;
 import org.apache.commons.lang3.StringUtils;
-import org.fxmisc.richtext.StyleClassedTextArea;
+import org.fxmisc.richtext.GenericStyledArea;
 import org.fxmisc.richtext.model.PlainTextChange;
 import org.fxmisc.wellbehaved.event.Nodes;
 import org.languagetool.markup.AnnotatedText;
@@ -97,7 +97,7 @@ import com.vladsch.flexmark.ast.Text;
 public class SpellChecker
 {
 	private final MarkdownEditorPane editor;
-	private final StyleClassedTextArea textArea;
+	private final GenericStyledArea<?, ?, ?> textArea;
 	private final ParagraphOverlayGraphicFactory overlayGraphicFactory;
 	private int checkRequestID;
 	private ContextMenu quickFixMenu;
@@ -116,7 +116,7 @@ public class SpellChecker
 
 	private static final ServiceLoader<SpellCheckerAddon> addons = ServiceLoader.load(SpellCheckerAddon.class);
 
-	public SpellChecker(MarkdownEditorPane editor, StyleClassedTextArea textArea,
+	public SpellChecker(MarkdownEditorPane editor, GenericStyledArea<?, ?, ?> textArea,
 		ParagraphOverlayGraphicFactory overlayGraphicFactory)
 	{
 		this.editor = editor;

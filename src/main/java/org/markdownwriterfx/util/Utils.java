@@ -28,6 +28,9 @@
 package org.markdownwriterfx.util;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javafx.css.PseudoClass;
@@ -88,6 +91,13 @@ public class Utils
 			prefs.remove(key);
 	}
 
+	public static void putPrefsDouble(Preferences prefs, String key, double value, double def) {
+		if (value != def)
+			prefs.putDouble(key, value);
+		else
+			prefs.remove(key);
+	}
+
 	public static void putPrefsBoolean(Preferences prefs, String key, boolean value, boolean def) {
 		if (value != def)
 			prefs.putBoolean(key, value);
@@ -133,11 +143,33 @@ public class Utils
 			prefs.remove(key);
 	}
 
+	public static <T> void addSorted(List<T> list, T element, Comparator<T> c) {
+		int index = Collections.binarySearch(list, element, c);
+		list.add((index < 0) ? ((-index)-1) : index, element);
+	}
+
+	public static boolean isImage(String filename) {
+		int sepIndex = filename.lastIndexOf('.');
+		if (sepIndex < 0 || (filename.length() - sepIndex - 1) != 3)
+			return false;
+
+		String ext = filename.substring(sepIndex + 1).toLowerCase();
+		return ext.equals("png") || ext.equals("gif") || ext.equals("jpg") || ext.equals("svg");
+	}
+
 	public static ScrollBar findVScrollBar(Node node) {
+		return findScrollBar(node, Orientation.VERTICAL);
+	}
+
+	public static ScrollBar findHScrollBar(Node node) {
+		return findScrollBar(node, Orientation.HORIZONTAL);
+	}
+
+	private static ScrollBar findScrollBar(Node node, Orientation orientation) {
 		Set<Node> scrollBars = node.lookupAll(".scroll-bar");
 		for (Node scrollBar : scrollBars) {
 			if (scrollBar instanceof ScrollBar &&
-				((ScrollBar)scrollBar).getOrientation() == Orientation.VERTICAL)
+				((ScrollBar)scrollBar).getOrientation() == orientation)
 			  return (ScrollBar) scrollBar;
 		}
 		return null;

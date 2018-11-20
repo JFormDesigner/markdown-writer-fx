@@ -40,12 +40,12 @@ import com.vladsch.flexmark.ext.abbreviation.Abbreviation;
 import com.vladsch.flexmark.ext.abbreviation.AbbreviationBlock;
 import com.vladsch.flexmark.ext.aside.AsideBlock;
 import com.vladsch.flexmark.ext.gfm.strikethrough.Strikethrough;
-import com.vladsch.flexmark.ext.gfm.tables.TableBlock;
-import com.vladsch.flexmark.ext.gfm.tables.TableBody;
-import com.vladsch.flexmark.ext.gfm.tables.TableCell;
-import com.vladsch.flexmark.ext.gfm.tables.TableHead;
-import com.vladsch.flexmark.ext.gfm.tables.TableRow;
 import com.vladsch.flexmark.ext.gfm.tasklist.TaskListItem;
+import com.vladsch.flexmark.ext.tables.TableBlock;
+import com.vladsch.flexmark.ext.tables.TableBody;
+import com.vladsch.flexmark.ext.tables.TableCell;
+import com.vladsch.flexmark.ext.tables.TableHead;
+import com.vladsch.flexmark.ext.tables.TableRow;
 import com.vladsch.flexmark.ext.wikilink.WikiLink;
 import com.vladsch.flexmark.util.sequence.BasedSequence;
 import org.fxmisc.richtext.model.Paragraph;
@@ -292,7 +292,7 @@ class MarkdownSyntaxHighlighter
 
 	private void setParagraphStyle(int start, int end, Collection<String> ps) {
 		for (int i = start; i < end; i++) {
-			Paragraph<Collection<String>, String, Collection<String>> paragraph = textArea.getParagraph(i);
+			Paragraph<?,?,?> paragraph = textArea.getParagraph(i);
 			if (ps != paragraph.getParagraphStyle())
 				setParagraphStyle(paragraph, i, ps);
 		}
@@ -418,7 +418,8 @@ class MarkdownSyntaxHighlighter
 				index += length;
 			}
 		};
-		return SyntaxHighlighter.highlight(sequence.toString(), language, highlighter);
+		String text = sequence.baseSubSequence(sequence.getStartOffset(), sequence.getEndOffset()).toString();
+		return SyntaxHighlighter.highlight(text, language, highlighter);
 	}
 
 	private void setStyleClass(Node node, StyleClass styleClass) {

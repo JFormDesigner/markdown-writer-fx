@@ -39,7 +39,7 @@ import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
 import javafx.scene.shape.PathElement;
-import org.fxmisc.richtext.StyleClassedTextArea;
+import org.fxmisc.richtext.GenericStyledArea;
 import org.markdownwriterfx.editor.ParagraphOverlayGraphicFactory.OverlayFactory;
 import org.markdownwriterfx.util.Range;
 
@@ -64,7 +64,7 @@ class SpellCheckerOverlayFactory
 		if (spellProblems == null || spellProblems.isEmpty())
 			return Collections.emptyList();
 
-		StyleClassedTextArea textArea = getTextArea();
+		GenericStyledArea<?, ?, ?> textArea = getTextArea();
 		int parStart = textArea.position(paragraphIndex, 0).toOffset();
 		int parLength = textArea.getParagraph(paragraphIndex).length() + 1;
 		int parEnd = parStart + parLength;
