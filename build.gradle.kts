@@ -39,7 +39,7 @@ dependencies {
 	compile( "org.fxmisc.cssfx:cssfx:1.0.0" )
 	compile( "org.apache.commons:commons-lang3:3.7" )
 
-	val flexmarkVersion = "0.32.20"
+	val flexmarkVersion = "0.34.53"
 	compile( "com.vladsch.flexmark:flexmark:${flexmarkVersion}" )
 	compile( "com.vladsch.flexmark:flexmark-ext-abbreviation:${flexmarkVersion}" )
 	compile( "com.vladsch.flexmark:flexmark-ext-anchorlink:${flexmarkVersion}" )
