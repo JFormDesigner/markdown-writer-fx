@@ -43,8 +43,8 @@ public class FlexMarkExtensionsTest
 		com.vladsch.flexmark.ext.definition.DefinitionExtension.create();
 		com.vladsch.flexmark.ext.footnotes.FootnoteExtension.create();
 		com.vladsch.flexmark.ext.gfm.strikethrough.StrikethroughExtension.create();
-		com.vladsch.flexmark.ext.gfm.tables.TablesExtension.create();
 		com.vladsch.flexmark.ext.gfm.tasklist.TaskListExtension.create();
+		com.vladsch.flexmark.ext.tables.TablesExtension.create();
 		com.vladsch.flexmark.ext.toc.TocExtension.create();
 		com.vladsch.flexmark.ext.wikilink.WikiLinkExtension.create();
 		com.vladsch.flexmark.ext.yaml.front.matter.YamlFrontMatterExtension.create();
