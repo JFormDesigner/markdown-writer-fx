@@ -94,8 +94,6 @@ class SmartFormat
 
 			int startOffset = paragraph.getStartOffset();
 			int endOffset = paragraph.getEndOffset();
-			if (paragraph.getChars().endsWith("\n"))
-				endOffset--;
 
 			multiChange.replaceText(startOffset, endOffset, newText);
 		}
@@ -117,6 +115,11 @@ class SmartFormat
 					String newText = (node instanceof Paragraph)
 						? formatParagraph((Paragraph) node, wrapLength)
 						: formatHtmlBlock((HtmlBlock) node, wrapLength);
+
+					// append trailing line separator (if necessary)
+					if (node.getChars().endsWith("\n"))
+						newText += "\n";
+
 					if (!node.getChars().equals(newText, false))
 						formattedParagraphs.add(new Pair<>((Block) node, newText));
 				} else
