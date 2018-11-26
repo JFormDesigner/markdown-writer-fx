@@ -1,7 +1,7 @@
 Markdown Writer FX Change Log
 =============================
 
-## Unreleased
+## 0.11
 
 - Project Manager:
   - open any folder as project

@@ -1,7 +1,7 @@
 import org.gradle.plugins.ide.eclipse.model.AbstractClasspathEntry
 import org.gradle.plugins.ide.eclipse.model.AccessRule
 
-version = "0.10"
+version = "0.11"
 
 // check required Java version
 if( JavaVersion.current() < JavaVersion.VERSION_1_8 || JavaVersion.current() > JavaVersion.VERSION_1_10 )
