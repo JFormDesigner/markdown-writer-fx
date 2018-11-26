@@ -32,7 +32,7 @@ dependencies {
 	compile( "org.fxmisc.richtext:richtextfx:0.9.2" )
 	compile( "com.miglayout:miglayout-javafx:5.2" )
 
-	val fontawesomefxVersion = if( javaCompatibility >= JavaVersion.VERSION_1_9 ) "4.7.0-9" else "4.7.0-5"
+	val fontawesomefxVersion = if( javaCompatibility >= JavaVersion.VERSION_1_9 ) "4.7.0-9.1.2" else "4.7.0-5"
 	val controlsfxVersion = if( javaCompatibility >= JavaVersion.VERSION_1_9 ) "9.0.0" else "8.40.14"
 	compile( "de.jensd:fontawesomefx-fontawesome:${fontawesomefxVersion}" )
 	if( javaCompatibility == JavaVersion.VERSION_1_8 ) {
