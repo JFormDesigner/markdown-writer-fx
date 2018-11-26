@@ -35,6 +35,13 @@ dependencies {
 	val fontawesomefxVersion = if( javaCompatibility >= JavaVersion.VERSION_1_9 ) "4.7.0-9" else "4.7.0-5"
 	val controlsfxVersion = if( javaCompatibility >= JavaVersion.VERSION_1_9 ) "9.0.0" else "8.40.14"
 	compile( "de.jensd:fontawesomefx-fontawesome:${fontawesomefxVersion}" )
+	if( javaCompatibility == JavaVersion.VERSION_1_8 ) {
+		// required since Gradle 5.0 because fontawesomefx-fontawesome-4.7.0-5.pom uses
+		// scope "runtime" for its "fontawesomefx-commons" dependency
+		// (fontawesomefx-fontawesome-4.7.0-9.pom uses scope "compile")
+		// https://docs.gradle.org/5.0/userguide/upgrading_version_4.html#rel5.0:pom_compile_runtime_separation
+		compile( "de.jensd:fontawesomefx-commons:8.15" )
+	}
 	compile( "org.controlsfx:controlsfx:${controlsfxVersion}" )
 	compile( "org.fxmisc.cssfx:cssfx:1.0.0" )
 	compile( "org.apache.commons:commons-lang3:3.7" )
@@ -79,7 +86,7 @@ val jar: Jar by tasks
 jar.manifest {
 	attributes( mapOf(
 		"Main-Class" to "org.markdownwriterfx.MarkdownWriterFXApp",
-		"Class-Path" to configurations.compile.map { it.getName() }.joinToString( " " ),
+		"Class-Path" to configurations.compile.get().map { it.getName() }.joinToString( " " ),
 		"Implementation-Version" to version ) )
 }
 
