@@ -4,8 +4,8 @@ import org.gradle.plugins.ide.eclipse.model.AccessRule
 version = "0.11"
 
 // check required Java version
-if( JavaVersion.current() < JavaVersion.VERSION_1_8 || JavaVersion.current() > JavaVersion.VERSION_1_10 )
-	throw RuntimeException( "Java 8, 9 or 10 required (running ${System.getProperty( "java.version" )})" )
+if( JavaVersion.current() < JavaVersion.VERSION_1_8 || JavaVersion.current() > JavaVersion.VERSION_11 )
+	throw RuntimeException( "Java 8, 9, 10 or 11 required (running ${System.getProperty( "java.version" )})" )
 
 // use Java version that currently runs Gradle for source/target compatibility
 val javaCompatibility = JavaVersion.current()
@@ -69,6 +69,17 @@ dependencies {
 	compile( "com.atlassian.commonmark:commonmark-ext-heading-anchor:${commonmarkVersion}" )
 	compile( "com.atlassian.commonmark:commonmark-ext-ins:${commonmarkVersion}" )
 	compile( "com.atlassian.commonmark:commonmark-ext-yaml-front-matter:${commonmarkVersion}" )
+
+	if( javaCompatibility >= JavaVersion.VERSION_11 ) {
+		val javafxVersion = "11.0.1"
+		val osName = System.getProperty( "os.name" ).toLowerCase()
+		val platform = if( osName.startsWith( "windows" ) ) "win" else if( osName.startsWith( "mac" ) ) "mac" else "linux"
+
+		compile( "org.openjfx:javafx-base:${javafxVersion}:${platform}" )
+		compile( "org.openjfx:javafx-controls:${javafxVersion}:${platform}" )
+		compile( "org.openjfx:javafx-graphics:${javafxVersion}:${platform}" )
+		compile( "org.openjfx:javafx-web:${javafxVersion}:${platform}" )
+	}
 
 	testCompile( "junit:junit:4.12" )
 }
