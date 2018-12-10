@@ -90,6 +90,7 @@ public class Options
 
 		wrapLineLength.init(options, "wrapLineLength", DEF_WRAP_LINE_LENGTH);
 		formatOnSave.init(options, "formatOnSave", false);
+		formatOnlyModifiedParagraphs.init(options, "formatOnlyModifiedParagraphs", false);
 
 		// listen to active project
 		ProjectManager.activeProjectProperty().addListener((observer, oldProject, newProject) -> {
@@ -120,6 +121,7 @@ public class Options
 
 		wrapLineLength.setPreferences(options);
 		formatOnSave.setPreferences(options);
+		formatOnlyModifiedParagraphs.setPreferences(options);
 	}
 
 	private static Preferences getProjectOptions(File project) {
@@ -247,4 +249,10 @@ public class Options
 	public static boolean isFormatOnSave() { return formatOnSave.get(); }
 	public static void setFormatOnSave(boolean formatOnSave) { Options.formatOnSave.set(formatOnSave); }
 	public static BooleanProperty formatOnSaveProperty() { return formatOnSave; }
+
+	// 'formatOnlyModifiedParagraphs' property
+	private static final PrefsBooleanProperty formatOnlyModifiedParagraphs = new PrefsBooleanProperty();
+	public static boolean isFormatOnlyModifiedParagraphs() { return formatOnlyModifiedParagraphs.get(); }
+	public static void setFormatOnlyModifiedParagraphs(boolean formatOnlyModifiedParagraphs) { Options.formatOnlyModifiedParagraphs.set(formatOnlyModifiedParagraphs); }
+	public static BooleanProperty formatOnlyModifiedParagraphsProperty() { return formatOnlyModifiedParagraphs; }
 }

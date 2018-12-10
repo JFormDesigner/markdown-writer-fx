@@ -271,18 +271,7 @@ class FileEditor
 				readOnly = true;
 			} else {
 				// load file
-				byte[] bytes = Files.readAllBytes(path);
-
-				// decode file
-				if (Options.getEncoding() != null) {
-					try {
-						markdown = new String(bytes, Options.getEncoding());
-					} catch (UnsupportedEncodingException ex) {
-						// fallback
-						markdown = new String(bytes);
-					}
-				} else
-					markdown = new String(bytes);
+				markdown = load(path);
 
 				// check whether this is a binary file
 				if (markdown.indexOf(0) >= 0) {
@@ -302,9 +291,37 @@ class FileEditor
 		}
 	}
 
+	private String load(Path path) throws IOException {
+		String markdown;
+		byte[] bytes = Files.readAllBytes(path);
+
+		// decode file
+		if (Options.getEncoding() != null) {
+			try {
+				markdown = new String(bytes, Options.getEncoding());
+			} catch (UnsupportedEncodingException ex) {
+				// fallback
+				markdown = new String(bytes);
+			}
+		} else
+			markdown = new String(bytes);
+
+		return markdown;
+	}
+
 	boolean save() {
-		if (Options.isFormatOnSave())
-			markdownEditorPane.getSmartEdit().format(false);
+		if (Options.isFormatOnSave()) {
+			String oldMarkdown = null;
+			if (Options.isFormatOnlyModifiedParagraphs()) {
+				try {
+					oldMarkdown = load(path.get());
+				} catch (IOException e) {
+					// ignore
+				}
+			}
+
+			markdownEditorPane.getSmartEdit().format(false, oldMarkdown);
+		}
 
 		String markdown = markdownEditorPane.getMarkdown();
 

@@ -229,10 +229,10 @@ class MainWindow
 				activeFileEditorIsNull);
 
 		Action editFormatAllAction = new Action(Messages.get("MainWindow.editFormatAll"), "Shortcut+Shift+F", null,
-				e -> getActiveSmartEdit().format(false),
+				e -> getActiveSmartEdit().format(false, null),
 				activeFileEditorIsNull);
 		Action editFormatSelectionAction = new Action(Messages.get("MainWindow.editFormatSelection"), "Shortcut+Shift+Alt+F", null,
-				e -> getActiveSmartEdit().format(true),
+				e -> getActiveSmartEdit().format(true, null),
 				activeFileEditorIsNull);
 
 		// View actions

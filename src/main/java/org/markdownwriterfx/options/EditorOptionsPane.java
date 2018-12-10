@@ -56,6 +56,7 @@ class EditorOptionsPane
 		bulletListMarkerField.getItems().addAll("-", "+", "*");
 
 		wrapLineLengthField.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(Options.MIN_WRAP_LINE_LENGTH, Integer.MAX_VALUE));
+		formatOnlyModifiedParagraphsCheckBox.disableProperty().bind(formatOnSaveCheckBox.selectedProperty().not());
 	}
 
 	void load() {
@@ -67,6 +68,7 @@ class EditorOptionsPane
 		// format
 		wrapLineLengthField.getValueFactory().setValue(Options.getWrapLineLength());
 		formatOnSaveCheckBox.setSelected(Options.isFormatOnSave());
+		formatOnlyModifiedParagraphsCheckBox.setSelected(Options.isFormatOnlyModifiedParagraphs());
 	}
 
 	void save() {
@@ -78,6 +80,7 @@ class EditorOptionsPane
 		// format
 		Options.setWrapLineLength(wrapLineLengthField.getValue());
 		Options.setFormatOnSave(formatOnSaveCheckBox.isSelected());
+		Options.setFormatOnlyModifiedParagraphs(formatOnlyModifiedParagraphsCheckBox.isSelected());
 	}
 
 	private void initComponents() {
@@ -94,6 +97,7 @@ class EditorOptionsPane
 		wrapLineLengthField = new IntSpinner();
 		Label wrapLineLengthLabel2 = new Label();
 		formatOnSaveCheckBox = new CheckBox();
+		formatOnlyModifiedParagraphsCheckBox = new CheckBox();
 
 		//======== this ========
 		setLayout("hidemode 3");
@@ -107,6 +111,7 @@ class EditorOptionsPane
 			"[]" +
 			"[]" +
 			"[]para" +
+			"[]" +
 			"[]" +
 			"[]" +
 			"[]");
@@ -150,6 +155,10 @@ class EditorOptionsPane
 		//---- formatOnSaveCheckBox ----
 		formatOnSaveCheckBox.setText(Messages.get("EditorOptionsPane.formatOnSaveCheckBox.text"));
 		add(formatOnSaveCheckBox, "cell 1 6 2 1,alignx left,growx 0");
+
+		//---- formatOnlyModifiedParagraphsCheckBox ----
+		formatOnlyModifiedParagraphsCheckBox.setText(Messages.get("EditorOptionsPane.formatOnlyModifiedParagraphsCheckBox.text"));
+		add(formatOnlyModifiedParagraphsCheckBox, "cell 1 7 2 1,alignx left,growx 0");
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 
 		// TODO set this in JFormDesigner as soon as it supports labelFor
@@ -168,5 +177,6 @@ class EditorOptionsPane
 	private Label wrapLineLengthLabel;
 	private IntSpinner wrapLineLengthField;
 	private CheckBox formatOnSaveCheckBox;
+	private CheckBox formatOnlyModifiedParagraphsCheckBox;
 	// JFormDesigner - End of variables declaration  //GEN-END:variables
 }

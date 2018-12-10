@@ -326,7 +326,7 @@ public class MarkdownEditorPane
 		applyHighlighting(markdownAST.get());
 	}
 
-	private Node parseMarkdown(String text) {
+	Node parseMarkdown(String text) {
 		if (parser == null) {
 			parser = Parser.builder()
 				.extensions(MarkdownExtensions.getFlexmarkExtensions(Options.getMarkdownRenderer()))

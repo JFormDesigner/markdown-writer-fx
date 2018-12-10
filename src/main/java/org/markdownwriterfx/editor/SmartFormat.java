@@ -30,6 +30,7 @@ package org.markdownwriterfx.editor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ServiceLoader;
 import javafx.scene.control.IndexRange;
@@ -49,6 +50,7 @@ import com.vladsch.flexmark.ast.Paragraph;
 import com.vladsch.flexmark.ast.SoftLineBreak;
 import com.vladsch.flexmark.ast.Text;
 import com.vladsch.flexmark.util.Pair;
+import com.vladsch.flexmark.util.sequence.BasedSequence;
 import static org.markdownwriterfx.addons.SmartFormatAddon.*;
 
 /**
@@ -69,20 +71,36 @@ class SmartFormat
 	}
 
 	void format(KeyEvent e) {
-		format(e.isAltDown());
+		format(e.isAltDown(), null);
 	}
 
-	void format(boolean formatSelectionOnly) {
+	void format(boolean formatSelectionOnly, String oldMarkdown) {
 		Node markdownAST = editor.getMarkdownAST();
 		if (markdownAST == null)
 			return;
+
+		// find paragraphs in old markdown
+		HashSet<BasedSequence> oldParagraphs = new HashSet<>();
+		if (oldMarkdown != null) {
+			Node oldMarkdownAST = editor.parseMarkdown(oldMarkdown);
+			NodeVisitor visitor = new NodeVisitor(Collections.emptyList()) {
+				@Override
+				public void visit(Node node) {
+					if (node instanceof Paragraph || node instanceof HtmlBlock) {
+						oldParagraphs.add(node.getChars());
+					} else
+						visitChildren(node);
+				}
+			};
+			visitor.visit(oldMarkdownAST);
+		}
 
 		IndexRange selectedLinesRange = formatSelectionOnly ? editor.getSmartEdit().getSelectedLinesRange(false) : null;
 		IndexRange selection = textArea.getSelection();
 		int wrapLength = Options.getWrapLineLength();
 
 		// find and format paragraphs
-		List<Pair<Block, String>> formattedParagraphs = formatParagraphs(markdownAST, wrapLength, selectedLinesRange);
+		List<Pair<Block, String>> formattedParagraphs = formatParagraphs(markdownAST, wrapLength, selectedLinesRange, oldParagraphs);
 		if (formattedParagraphs.isEmpty())
 			return;
 
@@ -103,7 +121,7 @@ class SmartFormat
 		SmartEdit.selectRange(textArea, Math.min(selection.getStart(), textArea.getLength()), Math.min(selection.getEnd(), textArea.getLength()));
 	}
 
-	/*private*/ List<Pair<Block, String>> formatParagraphs(Node markdownAST, int wrapLength, IndexRange selection) {
+	/*private*/ List<Pair<Block, String>> formatParagraphs(Node markdownAST, int wrapLength, IndexRange selection, HashSet<BasedSequence> oldParagraphs) {
 		ArrayList<Pair<Block, String>> formattedParagraphs = new ArrayList<>();
 		NodeVisitor visitor = new NodeVisitor(Collections.emptyList()) {
 			@Override
@@ -111,6 +129,9 @@ class SmartFormat
 				if (node instanceof Paragraph || node instanceof HtmlBlock) {
 					if (selection != null && !isNodeSelected(node, selection))
 						return;
+
+					if (oldParagraphs != null && oldParagraphs.contains(node.getChars()))
+						return; // ignore unmodified paragraphs
 
 					String newText = (node instanceof Paragraph)
 						? formatParagraph((Paragraph) node, wrapLength)

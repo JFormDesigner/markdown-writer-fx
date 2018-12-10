@@ -146,7 +146,7 @@ public class TestSmartFormat
 
 		// format
 		List<Pair<Block, String>> formattedParagraphs = new SmartFormat(null, null)
-			.formatParagraphs(document, wrapLength, null);
+			.formatParagraphs(document, wrapLength, null, null);
 
 		// build result
 		StringBuilder output = new StringBuilder(input);

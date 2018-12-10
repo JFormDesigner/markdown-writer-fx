@@ -4,3 +4,4 @@ options:
    lineSeparator: "\n"
    encoding: UTF-8
    formatOnSave: true
+   formatOnlyModifiedParagraphs: true
