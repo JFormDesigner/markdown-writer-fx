@@ -38,6 +38,9 @@ import javafx.beans.property.SimpleObjectProperty;
 public class PrefsStringsProperty
 	extends SimpleObjectProperty<String[]>
 {
+	private Preferences prefs;
+	private String key;
+
 	public PrefsStringsProperty() {
 	}
 
@@ -46,9 +49,17 @@ public class PrefsStringsProperty
 	}
 
 	public void init(Preferences prefs, String key) {
-		set(Utils.getPrefsStrings(prefs, key));
+		this.key = key;
+
+		setPreferences(prefs);
 		addListener((ob, o, n) -> {
-			Utils.putPrefsStrings(prefs, key, get());
+			Utils.putPrefsStrings(this.prefs, this.key, get());
 		});
+	}
+
+	public void setPreferences(Preferences prefs) {
+		this.prefs = prefs;
+
+		set(Utils.getPrefsStrings(prefs, key));
 	}
 }

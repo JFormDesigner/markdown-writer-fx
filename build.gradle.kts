@@ -1,11 +1,11 @@
 import org.gradle.plugins.ide.eclipse.model.AbstractClasspathEntry
 import org.gradle.plugins.ide.eclipse.model.AccessRule
 
-version = "0.10"
+version = "0.11"
 
 // check required Java version
-if( JavaVersion.current() < JavaVersion.VERSION_1_8 || JavaVersion.current() > JavaVersion.VERSION_1_10 )
-	throw RuntimeException( "Java 8, 9 or 10 required (running ${System.getProperty( "java.version" )})" )
+if( JavaVersion.current() < JavaVersion.VERSION_1_8 || JavaVersion.current() > JavaVersion.VERSION_11 )
+	throw RuntimeException( "Java 8, 9, 10 or 11 required (running ${System.getProperty( "java.version" )})" )
 
 // use Java version that currently runs Gradle for source/target compatibility
 val javaCompatibility = JavaVersion.current()
@@ -29,15 +29,23 @@ repositories {
 }
 
 dependencies {
-	compile( "org.fxmisc.richtext:richtextfx:0.9.1" )
+	compile( "org.fxmisc.richtext:richtextfx:0.9.2" )
 	compile( "com.miglayout:miglayout-javafx:5.2" )
 
-	val fontawesomefxVersion = if( javaCompatibility >= JavaVersion.VERSION_1_9 ) "4.7.0-9" else "4.7.0-5"
+	val fontawesomefxVersion = if( javaCompatibility >= JavaVersion.VERSION_1_9 ) "4.7.0-9.1.2" else "4.7.0-5"
 	val controlsfxVersion = if( javaCompatibility >= JavaVersion.VERSION_1_9 ) "9.0.0" else "8.40.14"
 	compile( "de.jensd:fontawesomefx-fontawesome:${fontawesomefxVersion}" )
+	if( javaCompatibility == JavaVersion.VERSION_1_8 ) {
+		// required since Gradle 5.0 because fontawesomefx-fontawesome-4.7.0-5.pom uses
+		// scope "runtime" for its "fontawesomefx-commons" dependency
+		// (fontawesomefx-fontawesome-4.7.0-9.pom uses scope "compile")
+		// https://docs.gradle.org/5.0/userguide/upgrading_version_4.html#rel5.0:pom_compile_runtime_separation
+		compile( "de.jensd:fontawesomefx-commons:8.15" )
+	}
 	compile( "org.controlsfx:controlsfx:${controlsfxVersion}" )
 	compile( "org.fxmisc.cssfx:cssfx:1.0.0" )
 	compile( "org.apache.commons:commons-lang3:3.7" )
+	compile( "com.esotericsoftware.yamlbeans:yamlbeans:1.13" )
 	compile( "org.languagetool:language-en:4.3" )
 
 	val flexmarkVersion = "0.34.53"
@@ -64,6 +72,17 @@ dependencies {
 	compile( "com.atlassian.commonmark:commonmark-ext-ins:${commonmarkVersion}" )
 	compile( "com.atlassian.commonmark:commonmark-ext-yaml-front-matter:${commonmarkVersion}" )
 
+	if( javaCompatibility >= JavaVersion.VERSION_11 ) {
+		val javafxVersion = "11.0.1"
+		val osName = System.getProperty( "os.name" ).toLowerCase()
+		val platform = if( osName.startsWith( "windows" ) ) "win" else if( osName.startsWith( "mac" ) ) "mac" else "linux"
+
+		compile( "org.openjfx:javafx-base:${javafxVersion}:${platform}" )
+		compile( "org.openjfx:javafx-controls:${javafxVersion}:${platform}" )
+		compile( "org.openjfx:javafx-graphics:${javafxVersion}:${platform}" )
+		compile( "org.openjfx:javafx-web:${javafxVersion}:${platform}" )
+	}
+
 	testCompile( "junit:junit:4.12" )
 }
 
@@ -80,7 +99,7 @@ val jar: Jar by tasks
 jar.manifest {
 	attributes( mapOf(
 		"Main-Class" to "org.markdownwriterfx.MarkdownWriterFXApp",
-		"Class-Path" to configurations.compile.map { it.getName() }.joinToString( " " ),
+		"Class-Path" to configurations.compile.get().map { it.getName() }.joinToString( " " ),
 		"Implementation-Version" to version ) )
 }
 

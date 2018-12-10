@@ -39,6 +39,11 @@ import javafx.beans.property.SimpleStringProperty;
 public class PrefsStringProperty
 	extends SimpleStringProperty
 {
+	private Preferences prefs;
+	private String key;
+	private String def;
+	private Function<String, String> loadConverter;
+
 	public PrefsStringProperty() {
 	}
 
@@ -51,9 +56,19 @@ public class PrefsStringProperty
 	}
 
 	public void init(Preferences prefs, String key, String def, Function<String, String> loadConverter) {
-		set(loadConverter.apply(prefs.get(key, def)));
+		this.key = key;
+		this.def = def;
+		this.loadConverter = loadConverter;
+
+		setPreferences(prefs);
 		addListener((ob, o, n) -> {
-			Utils.putPrefs(prefs, key, get(), def);
+			Utils.putPrefs(this.prefs, this.key, get(), this.def);
 		});
+	}
+
+	public void setPreferences(Preferences prefs) {
+		this.prefs = prefs;
+
+		set(loadConverter.apply(prefs.get(key, def)));
 	}
 }

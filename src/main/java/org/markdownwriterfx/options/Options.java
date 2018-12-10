@@ -27,6 +27,7 @@
 
 package org.markdownwriterfx.options;
 
+import java.io.File;
 import java.util.List;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
@@ -36,6 +37,8 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.text.Font;
+import org.markdownwriterfx.projects.ProjectManager;
+import org.markdownwriterfx.projects.ProjectSettings;
 import org.markdownwriterfx.util.PrefsBooleanProperty;
 import org.markdownwriterfx.util.PrefsEnumProperty;
 import org.markdownwriterfx.util.PrefsIntegerProperty;
@@ -64,7 +67,14 @@ public class Options
 	public static final int DEF_WRAP_LINE_LENGTH = 80;
 	public static final int MIN_WRAP_LINE_LENGTH = 10;
 
-	public static void load(Preferences options) {
+	private static Preferences globalOptions;
+	private static Preferences options;
+
+	public static void load(Preferences globalOptions) {
+		Options.globalOptions = globalOptions;
+
+		options = getProjectOptions(ProjectManager.getActiveProject());
+
 		fontFamily.init(options, "fontFamily", null, value -> safeFontFamily(value));
 		fontSize.init(options, "fontSize", DEF_FONT_SIZE);
 		lineSeparator.init(options, "lineSeparator", null);
@@ -82,12 +92,64 @@ public class Options
 
 		wrapLineLength.init(options, "wrapLineLength", DEF_WRAP_LINE_LENGTH);
 		formatOnSave.init(options, "formatOnSave", false);
+		formatOnlyModifiedParagraphs.init(options, "formatOnlyModifiedParagraphs", false);
 
 		spellChecker.init(options, "spellChecker", true);
 		grammarChecker.init(options, "grammarChecker", true);
 		language.init(options, "language", null);
 		userDictionary.init(options, "userDictionary", null);
 		disabledRules.init(options, "disabledRules");
+
+		// listen to active project
+		ProjectManager.activeProjectProperty().addListener((observer, oldProject, newProject) -> {
+			set(getProjectOptions(newProject));
+		});
+	}
+
+	private static void set(Preferences options) {
+		if (Options.options == options)
+			return;
+
+		Options.options = options;
+
+		fontFamily.setPreferences(options);
+		fontSize.setPreferences(options);
+		lineSeparator.setPreferences(options);
+		encoding.setPreferences(options);
+		markdownFileExtensions.setPreferences(options);
+		markdownExtensions.setPreferences(options);
+		markdownRenderer.setPreferences(options);
+		showLineNo.setPreferences(options);
+		showWhitespace.setPreferences(options);
+		showImagesEmbedded.setPreferences(options);
+
+		emphasisMarker.setPreferences(options);
+		strongEmphasisMarker.setPreferences(options);
+		bulletListMarker.setPreferences(options);
+
+		wrapLineLength.setPreferences(options);
+		formatOnSave.setPreferences(options);
+		formatOnlyModifiedParagraphs.setPreferences(options);
+	}
+
+	private static Preferences getProjectOptions(File project) {
+		if (project != null) {
+			Preferences projectOptions = ProjectSettings.get(project).getOptions();
+			if (projectOptions != null)
+				return projectOptions;
+		}
+
+		return globalOptions;
+	}
+
+	static boolean isStoreInProject() {
+		return options != globalOptions;
+	}
+
+	static void storeInProject(boolean enable) {
+		ProjectSettings projectSettings = ProjectSettings.get(ProjectManager.getActiveProject());
+		projectSettings.enableOptions(enable);
+		set(enable ? projectSettings.getOptions() : globalOptions);
 	}
 
 	/**
@@ -195,6 +257,12 @@ public class Options
 	public static boolean isFormatOnSave() { return formatOnSave.get(); }
 	public static void setFormatOnSave(boolean formatOnSave) { Options.formatOnSave.set(formatOnSave); }
 	public static BooleanProperty formatOnSaveProperty() { return formatOnSave; }
+
+	// 'formatOnlyModifiedParagraphs' property
+	private static final PrefsBooleanProperty formatOnlyModifiedParagraphs = new PrefsBooleanProperty();
+	public static boolean isFormatOnlyModifiedParagraphs() { return formatOnlyModifiedParagraphs.get(); }
+	public static void setFormatOnlyModifiedParagraphs(boolean formatOnlyModifiedParagraphs) { Options.formatOnlyModifiedParagraphs.set(formatOnlyModifiedParagraphs); }
+	public static BooleanProperty formatOnlyModifiedParagraphsProperty() { return formatOnlyModifiedParagraphs; }
 
 	// 'spellChecker' property
 	private static final PrefsBooleanProperty spellChecker = new PrefsBooleanProperty();

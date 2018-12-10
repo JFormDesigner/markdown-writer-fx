@@ -39,6 +39,7 @@ import java.util.Optional;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.WeakInvalidationListener;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
@@ -225,6 +226,10 @@ public class MarkdownEditorPane
 		textArea.setDisable(readOnly);
 	}
 
+	public BooleanProperty readOnlyProperty() {
+		return textArea.disableProperty();
+	}
+
 	public UndoManager<?> getUndoManager() {
 		return textArea.getUndoManager();
 	}
@@ -337,7 +342,7 @@ public class MarkdownEditorPane
 		applyHighlighting(markdownAST.get());
 	}
 
-	private Node parseMarkdown(String text) {
+	Node parseMarkdown(String text) {
 		if (parser == null) {
 			parser = Parser.builder()
 				.extensions(MarkdownExtensions.getFlexmarkExtensions(Options.getMarkdownRenderer()))

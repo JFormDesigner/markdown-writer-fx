@@ -59,7 +59,8 @@ class ProjectsComboBox
 
 	ProjectsComboBox(FileEditorManager fileEditorManager) {
 		getStyleClass().add("projects-combo-box");
-		setVisibleRowCount(20);
+		setFocusTraversable(false);
+		setVisibleRowCount(30);
 		setButtonCell(new ProjectButtonCell());
 		setCellFactory(listView -> new ProjectListCell());
 

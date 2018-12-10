@@ -10,7 +10,7 @@ new FormModel {
 		add( new FormContainer( "org.tbee.javafx.scene.layout.fxml.MigPane", new FormLayoutManager( class org.tbee.javafx.scene.layout.fxml.MigPane ) {
 			"$layoutConstraints": "hidemode 3"
 			"$columnConstraints": "[indent,fill]0[fill][fill][fill]"
-			"$rowConstraints": "[][][][]para[][][]"
+			"$rowConstraints": "[][][][]para[][][][]"
 		} ) {
 			name: "this"
 			add( new FormComponent( "javafx.scene.control.Label" ) {
@@ -105,6 +105,12 @@ new FormModel {
 				"text": new FormMessage( null, "EditorOptionsPane.formatOnSaveCheckBox.text" )
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 1 6 2 1,alignx left,growx 0"
+			} )
+			add( new FormComponent( "javafx.scene.control.CheckBox" ) {
+				name: "formatOnlyModifiedParagraphsCheckBox"
+				"text": new FormMessage( null, "EditorOptionsPane.formatOnlyModifiedParagraphsCheckBox.text" )
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 1 7 2 1,alignx left,growx 0"
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new javafx.geometry.Point2D( 0.0, 0.0 )

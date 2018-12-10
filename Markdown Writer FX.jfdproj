@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project>
-  <entry key="classpath1" value="bin" />
+  <entry key="classpath1" value="bin/main" />
   <entry key="classpath2" value="lib/fontawesomefx-8.9.jar" />
   <entry key="sourcefolders1" value="src/main/java" />
   <entry key="sourcefolders2" value="src/main/resources" />

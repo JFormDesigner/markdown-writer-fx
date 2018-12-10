@@ -137,6 +137,11 @@ class FileEditor
 	void setPath(Path path) { this.path.set(path); }
 	ObjectProperty<Path> pathProperty() { return path; }
 
+	// 'readOnly' property
+	private final ReadOnlyBooleanWrapper readOnly = new ReadOnlyBooleanWrapper();
+	boolean isReadOnly() { return readOnly.get(); }
+	ReadOnlyBooleanProperty readOnlyProperty() { return readOnly.getReadOnlyProperty(); }
+
 	// 'modified' property
 	private final ReadOnlyBooleanWrapper modified = new ReadOnlyBooleanWrapper();
 	boolean isModified() { return modified.get(); }
@@ -230,6 +235,9 @@ class FileEditor
 		markdownPreviewPane.editorSelectionProperty().bind(markdownEditorPane.selectionProperty());
 		markdownPreviewPane.scrollYProperty().bind(markdownEditorPane.scrollYProperty());
 
+		// bind properties
+		readOnly.bind(markdownEditorPane.readOnlyProperty());
+
 		// bind the editor undo manager to the properties
 		UndoManager<?> undoManager = markdownEditorPane.getUndoManager();
 		modified.bind(Bindings.not(undoManager.atMarkedPositionProperty()));
@@ -274,18 +282,7 @@ class FileEditor
 				readOnly = true;
 			} else {
 				// load file
-				byte[] bytes = Files.readAllBytes(path);
-
-				// decode file
-				if (Options.getEncoding() != null) {
-					try {
-						markdown = new String(bytes, Options.getEncoding());
-					} catch (UnsupportedEncodingException ex) {
-						// fallback
-						markdown = new String(bytes);
-					}
-				} else
-					markdown = new String(bytes);
+				markdown = load(path);
 
 				// check whether this is a binary file
 				if (markdown.indexOf(0) >= 0) {
@@ -305,9 +302,37 @@ class FileEditor
 		}
 	}
 
+	private String load(Path path) throws IOException {
+		String markdown;
+		byte[] bytes = Files.readAllBytes(path);
+
+		// decode file
+		if (Options.getEncoding() != null) {
+			try {
+				markdown = new String(bytes, Options.getEncoding());
+			} catch (UnsupportedEncodingException ex) {
+				// fallback
+				markdown = new String(bytes);
+			}
+		} else
+			markdown = new String(bytes);
+
+		return markdown;
+	}
+
 	boolean save() {
-		if (Options.isFormatOnSave())
-			markdownEditorPane.getSmartEdit().format(false);
+		if (Options.isFormatOnSave()) {
+			String oldMarkdown = null;
+			if (Options.isFormatOnlyModifiedParagraphs()) {
+				try {
+					oldMarkdown = load(path.get());
+				} catch (IOException e) {
+					// ignore
+				}
+			}
+
+			markdownEditorPane.getSmartEdit().format(false, oldMarkdown);
+		}
 
 		String markdown = markdownEditorPane.getMarkdown();
 

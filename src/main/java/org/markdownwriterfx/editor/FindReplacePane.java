@@ -514,6 +514,7 @@ class FindReplacePane
 		visible.set(false);
 		replacePane.setVisible(false);
 		clearHits();
+		textArea.requestFocus();
 	}
 
 	private void initComponents() {

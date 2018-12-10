@@ -38,6 +38,10 @@ import javafx.beans.property.SimpleObjectProperty;
 public class PrefsEnumProperty<T extends Enum<T>>
 	extends SimpleObjectProperty<T>
 {
+	private Preferences prefs;
+	private String key;
+	private T def;
+
 	public PrefsEnumProperty() {
 	}
 
@@ -46,9 +50,18 @@ public class PrefsEnumProperty<T extends Enum<T>>
 	}
 
 	public void init(Preferences prefs, String key, T def) {
-		set(Utils.getPrefsEnum(prefs, key, def));
+		this.key = key;
+		this.def = def;
+
+		setPreferences(prefs);
 		addListener((ob, o, n) -> {
-			Utils.putPrefsEnum(prefs, key, get(), def);
+			Utils.putPrefsEnum(this.prefs, this.key, get(), this.def);
 		});
+	}
+
+	public void setPreferences(Preferences prefs) {
+		this.prefs = prefs;
+
+		set(Utils.getPrefsEnum(prefs, key, def));
 	}
 }

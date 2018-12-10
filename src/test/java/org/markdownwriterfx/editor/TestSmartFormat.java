@@ -60,6 +60,21 @@ public class TestSmartFormat
 			"1234567890\n" +
 			"2345678901\n" +
 			"34567890");
+
+		testFormat(10,
+			"123 567 901 345 789 123 567 90\n" +
+			"\n" +
+			"123 567 901 345 789 123 567 90",
+
+			"123 567\n" +
+			"901 345\n" +
+			"789 123\n" +
+			"567 90\n" +
+			"\n" +
+			"123 567\n" +
+			"901 345\n" +
+			"789 123\n" +
+			"567 90");
 	}
 
 	@Test
@@ -95,7 +110,29 @@ public class TestSmartFormat
 			"    ijk lm");
 	}
 
+	@Test
+	public void html() {
+		testFormat(10,
+			"<div>\n" +
+			"123 567 901 345 789 123 567 90\n" +
+			"</div>",
+
+			"<div>\n" +
+			"123 567\n" +
+			"901 345\n" +
+			"789 123\n" +
+			"567 90\n" +
+			"</div>");
+	}
+
 	private void testFormat(int wrapLength, String input, String expected) {
+		testFormat2(wrapLength, input, expected);
+		testFormat2(wrapLength, input + "\n", expected + "\n");
+		testFormat2(wrapLength, input + "\n\n", expected + "\n\n");
+		testFormat2(wrapLength, "\n" + input + "\n\n", "\n" + expected + "\n\n");
+	}
+
+	private void testFormat2(int wrapLength, String input, String expected) {
 		// format
 		String actual = format(input, wrapLength);
 
@@ -109,7 +146,7 @@ public class TestSmartFormat
 
 		// format
 		List<Pair<Block, String>> formattedParagraphs = new SmartFormat(null, null)
-			.formatParagraphs(document, wrapLength, null);
+			.formatParagraphs(document, wrapLength, null, null);
 
 		// build result
 		StringBuilder output = new StringBuilder(input);
@@ -120,8 +157,6 @@ public class TestSmartFormat
 
 			int startOffset = paragraph.getStartOffset();
 			int endOffset = paragraph.getEndOffset();
-			if (paragraph.getChars().endsWith("\n"))
-				endOffset--;
 
 			output.replace(startOffset, endOffset, newText);
 		}

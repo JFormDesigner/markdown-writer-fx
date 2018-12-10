@@ -865,8 +865,8 @@ public class SmartEdit
 
 	//---- format -------------------------------------------------------------
 
-	public void format(boolean formatSelectionOnly) {
-		smartFormat.format(formatSelectionOnly);
+	public void format(boolean formatSelectionOnly, String oldMarkdown) {
+		smartFormat.format(formatSelectionOnly, oldMarkdown);
 	}
 
 	//---- text modification --------------------------------------------------

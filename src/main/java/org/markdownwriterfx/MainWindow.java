@@ -190,7 +190,8 @@ class MainWindow
 		Action fileCloseAllAction = new Action(Messages.get("MainWindow.fileCloseAllAction"), null, null, e -> fileCloseAll(), activeFileEditorIsNull);
 		Action fileSaveAction = new Action(Messages.get("MainWindow.fileSaveAction"), "Shortcut+S", FLOPPY_ALT, e -> fileSave(),
 				createActiveBooleanProperty(FileEditor::modifiedProperty).not());
-		Action fileSaveAsAction = new Action(Messages.get("MainWindow.fileSaveAsAction"), null, null, e -> fileSaveAs(), activeFileEditorIsNull);
+		Action fileSaveAsAction = new Action(Messages.get("MainWindow.fileSaveAsAction"), null, null, e -> fileSaveAs(),
+				activeFileEditorIsNull.or(createActiveBooleanProperty(FileEditor::readOnlyProperty)));
 		Action fileSaveAllAction = new Action(Messages.get("MainWindow.fileSaveAllAction"), "Shortcut+Shift+S", null, e -> fileSaveAll(),
 				Bindings.not(fileEditorTabPane.anyFileEditorModifiedProperty()));
 		Action fileExitAction = new Action(Messages.get("MainWindow.fileExitAction"), null, null, e -> fileExit());
@@ -228,10 +229,10 @@ class MainWindow
 				activeFileEditorIsNull);
 
 		Action editFormatAllAction = new Action(Messages.get("MainWindow.editFormatAll"), "Shortcut+Shift+F", null,
-				e -> getActiveSmartEdit().format(false),
+				e -> getActiveSmartEdit().format(false, null),
 				activeFileEditorIsNull);
 		Action editFormatSelectionAction = new Action(Messages.get("MainWindow.editFormatSelection"), "Shortcut+Shift+Alt+F", null,
-				e -> getActiveSmartEdit().format(true),
+				e -> getActiveSmartEdit().format(true, null),
 				activeFileEditorIsNull);
 
 		// View actions

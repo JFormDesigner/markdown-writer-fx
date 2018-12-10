@@ -3,6 +3,14 @@ Markdown Writer FX Change Log
 
 ## Unreleased
 
+- Project specific options: Select "Store in project" checkbox in Options dialog
+  to save options in per project (in file `<project-root>/.markdownwriterfx`).
+- "Format only modified paragraphs on Save" checkbox added to Options dialog.
+- Disabled "Save As" for read-only editors (binary or too-large files).
+
+
+## 0.11
+
 - Project Manager:
   - open any folder as project
   - project pane on left side of main window shows file tree of current project
