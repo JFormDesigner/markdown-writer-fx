@@ -38,6 +38,10 @@ import javafx.beans.property.SimpleIntegerProperty;
 public class PrefsIntegerProperty
 	extends SimpleIntegerProperty
 {
+	private Preferences prefs;
+	private String key;
+	private int def;
+
 	public PrefsIntegerProperty() {
 	}
 
@@ -46,9 +50,18 @@ public class PrefsIntegerProperty
 	}
 
 	public void init(Preferences prefs, String key, int def) {
-		set(prefs.getInt(key, def));
+		this.key = key;
+		this.def = def;
+
+		setPreferences(prefs);
 		addListener((ob, o, n) -> {
-			Utils.putPrefsInt(prefs, key, get(), def);
+			Utils.putPrefsInt(this.prefs, this.key, get(), this.def);
 		});
+	}
+
+	public void setPreferences(Preferences prefs) {
+		this.prefs = prefs;
+
+		set(prefs.getInt(key, def));
 	}
 }

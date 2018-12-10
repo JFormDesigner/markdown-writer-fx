@@ -38,6 +38,10 @@ import javafx.beans.property.SimpleBooleanProperty;
 public class PrefsBooleanProperty
 	extends SimpleBooleanProperty
 {
+	private Preferences prefs;
+	private String key;
+	private boolean def;
+
 	public PrefsBooleanProperty() {
 	}
 
@@ -50,9 +54,18 @@ public class PrefsBooleanProperty
 	}
 
 	public void init(Preferences prefs, String key, boolean def) {
-		set(prefs.getBoolean(key, def));
+		this.key = key;
+		this.def = def;
+
+		setPreferences(prefs);
 		addListener((ob, o, n) -> {
-			Utils.putPrefsBoolean(prefs, key, get(), def);
+			Utils.putPrefsBoolean(this.prefs, this.key, get(), this.def);
 		});
+	}
+
+	public void setPreferences(Preferences prefs) {
+		this.prefs = prefs;
+
+		set(prefs.getBoolean(key, def));
 	}
 }

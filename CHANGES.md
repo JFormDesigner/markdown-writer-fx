@@ -1,6 +1,12 @@
 Markdown Writer FX Change Log
 =============================
 
+## Unreleased
+
+- Project specific options: Select "Store in project" checkbox in Options dialog
+  to save options in per project (in file `<project-root>/.markdownwriterfx`).
+
+
 ## 0.11
 
 - Project Manager:
