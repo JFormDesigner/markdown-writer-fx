@@ -5,3 +5,4 @@ options:
    encoding: UTF-8
    formatOnSave: true
    formatOnlyModifiedParagraphs: true
+   language: en-US

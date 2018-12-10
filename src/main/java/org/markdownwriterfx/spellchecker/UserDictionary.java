@@ -50,8 +50,7 @@ class UserDictionary
 	UserDictionary() {
 		String filename = Options.getUserDictionary();
 		if (Utils.isNullOrEmpty(filename)) {
-			String userHome = System.getProperty("user.home");
-			file = new File(userHome, "dictionary-mwfx.txt");
+			file = Options.getDefaultUserDictionary();
 			Options.setUserDictionary(file.getAbsolutePath());
 		} else
 			file = new File(filename);

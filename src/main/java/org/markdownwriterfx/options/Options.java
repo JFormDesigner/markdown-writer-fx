@@ -97,7 +97,7 @@ public class Options
 		spellChecker.init(options, "spellChecker", true);
 		grammarChecker.init(options, "grammarChecker", true);
 		language.init(options, "language", null);
-		userDictionary.init(options, "userDictionary", null);
+		userDictionary.init(options, "userDictionary", getDefaultUserDictionary().getAbsolutePath());
 		disabledRules.init(options, "disabledRules");
 
 		// listen to active project
@@ -130,6 +130,12 @@ public class Options
 		wrapLineLength.setPreferences(options);
 		formatOnSave.setPreferences(options);
 		formatOnlyModifiedParagraphs.setPreferences(options);
+
+		spellChecker.setPreferences(options);
+		grammarChecker.setPreferences(options);
+		language.setPreferences(options);
+		userDictionary.setPreferences(options);
+		disabledRules.setPreferences(options);
 	}
 
 	private static Preferences getProjectOptions(File project) {
@@ -287,6 +293,9 @@ public class Options
 	public static String getUserDictionary() { return userDictionary.get(); }
 	public static void setUserDictionary(String userDictionary) { Options.userDictionary.set(userDictionary); }
 	public static StringProperty userDictionaryProperty() { return userDictionary; }
+	public static File getDefaultUserDictionary() {
+		return new File(System.getProperty("user.home"), "dictionary-mwfx.txt");
+	}
 
 	// 'disabledRules' property
 	// (value syntax: ruleID=ruleDescription)
