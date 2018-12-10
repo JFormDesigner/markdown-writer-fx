@@ -135,6 +135,11 @@ class FileEditor
 	void setPath(Path path) { this.path.set(path); }
 	ObjectProperty<Path> pathProperty() { return path; }
 
+	// 'readOnly' property
+	private final ReadOnlyBooleanWrapper readOnly = new ReadOnlyBooleanWrapper();
+	boolean isReadOnly() { return readOnly.get(); }
+	ReadOnlyBooleanProperty readOnlyProperty() { return readOnly.getReadOnlyProperty(); }
+
 	// 'modified' property
 	private final ReadOnlyBooleanWrapper modified = new ReadOnlyBooleanWrapper();
 	boolean isModified() { return modified.get(); }
@@ -226,6 +231,9 @@ class FileEditor
 		markdownPreviewPane.markdownASTProperty().bind(markdownEditorPane.markdownASTProperty());
 		markdownPreviewPane.editorSelectionProperty().bind(markdownEditorPane.selectionProperty());
 		markdownPreviewPane.scrollYProperty().bind(markdownEditorPane.scrollYProperty());
+
+		// bind properties
+		readOnly.bind(markdownEditorPane.readOnlyProperty());
 
 		// bind the editor undo manager to the properties
 		UndoManager<?> undoManager = markdownEditorPane.getUndoManager();

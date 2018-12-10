@@ -38,6 +38,7 @@ import java.util.List;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.WeakInvalidationListener;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
@@ -213,6 +214,10 @@ public class MarkdownEditorPane
 
 	public void setReadOnly(boolean readOnly) {
 		textArea.setDisable(readOnly);
+	}
+
+	public BooleanProperty readOnlyProperty() {
+		return textArea.disableProperty();
 	}
 
 	public UndoManager<?> getUndoManager() {
