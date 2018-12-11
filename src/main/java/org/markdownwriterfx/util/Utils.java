@@ -78,7 +78,7 @@ public class Utils
 	}
 
 	public static void putPrefs(Preferences prefs, String key, String value, String def) {
-		if (value != def && !value.equals(def))
+		if (value != def && value != null && !value.equals(def))
 			prefs.put(key, value);
 		else
 			prefs.remove(key);

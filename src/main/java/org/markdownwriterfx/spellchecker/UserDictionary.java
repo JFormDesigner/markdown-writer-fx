@@ -34,7 +34,6 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import org.markdownwriterfx.options.Options;
-import org.markdownwriterfx.util.Utils;
 
 /**
  * A user dictionary for spell checking.
@@ -43,17 +42,12 @@ import org.markdownwriterfx.util.Utils;
  */
 class UserDictionary
 {
-	private File file;
+	private final File file;
 	private List<String> lines;
 	private List<String> words;
 
 	UserDictionary() {
-		String filename = Options.getUserDictionary();
-		if (Utils.isNullOrEmpty(filename)) {
-			file = Options.getDefaultUserDictionary();
-			Options.setUserDictionary(file.getAbsolutePath());
-		} else
-			file = new File(filename);
+		file = new File(Options.getUserDictionary());
 
 		load();
 	}

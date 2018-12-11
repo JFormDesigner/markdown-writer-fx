@@ -44,6 +44,7 @@ import org.markdownwriterfx.util.PrefsEnumProperty;
 import org.markdownwriterfx.util.PrefsIntegerProperty;
 import org.markdownwriterfx.util.PrefsStringProperty;
 import org.markdownwriterfx.util.PrefsStringsProperty;
+import org.markdownwriterfx.util.Utils;
 
 /**
  * Options
@@ -97,7 +98,7 @@ public class Options
 		spellChecker.init(options, "spellChecker", true);
 		grammarChecker.init(options, "grammarChecker", true);
 		language.init(options, "language", null);
-		userDictionary.init(options, "userDictionary", getDefaultUserDictionary().getAbsolutePath());
+		userDictionary.init(options, "userDictionary", getDefaultUserDictionary());
 		disabledRules.init(options, "disabledRules");
 
 		// listen to active project
@@ -290,11 +291,14 @@ public class Options
 
 	// 'userDictionary' property
 	private static final PrefsStringProperty userDictionary = new PrefsStringProperty();
-	public static String getUserDictionary() { return userDictionary.get(); }
-	public static void setUserDictionary(String userDictionary) { Options.userDictionary.set(userDictionary); }
+	public static String getUserDictionary() { return userDictionaryOrDefault(userDictionary.get()); }
+	public static void setUserDictionary(String userDictionary) { Options.userDictionary.set(userDictionaryOrDefault(userDictionary)); }
 	public static StringProperty userDictionaryProperty() { return userDictionary; }
-	public static File getDefaultUserDictionary() {
-		return new File(System.getProperty("user.home"), "dictionary-mwfx.txt");
+	private static String getDefaultUserDictionary() {
+		return System.getProperty("user.home") + System.getProperty("file.separator") + "dictionary-mwfx.txt";
+	}
+	private static String userDictionaryOrDefault(String userDictionary) {
+		return !Utils.isNullOrEmpty(userDictionary) ? userDictionary : getDefaultUserDictionary();
 	}
 
 	// 'disabledRules' property
