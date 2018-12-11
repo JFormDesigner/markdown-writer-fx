@@ -37,6 +37,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -158,8 +159,16 @@ class GlobalLanguageTool
 	 * changed in the language tool and that they should check the text again.
 	 */
 	private void requestCheck() {
-		checkRequestID.set(checkRequestID.get() + 1);
+		if (requestCheckRunnable != null)
+			return;
+
+		requestCheckRunnable = () -> {
+			requestCheckRunnable = null;
+			checkRequestID.set(checkRequestID.get() + 1);
+		};
+		Platform.runLater(requestCheckRunnable);
 	}
+	private Runnable requestCheckRunnable;
 
 	List<RuleMatch> check(AnnotatedText text)
 		throws IllegalStateException, IOException
