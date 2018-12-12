@@ -101,6 +101,8 @@ public class Options
 		userDictionary.init(options, "userDictionary", getDefaultUserDictionary());
 		disabledRules.init(options, "disabledRules");
 
+		additionalCSS.init(options, "additionalCSS", null);
+
 		// listen to active project
 		ProjectManager.activeProjectProperty().addListener((observer, oldProject, newProject) -> {
 			set(getProjectOptions(newProject));
@@ -137,6 +139,8 @@ public class Options
 		language.setPreferences(options);
 		userDictionary.setPreferences(options);
 		disabledRules.setPreferences(options);
+
+		additionalCSS.setPreferences(options);
 	}
 
 	private static Preferences getProjectOptions(File project) {
@@ -321,4 +325,10 @@ public class Options
 			.map(Options::ruleIdDesc2id)
 			.collect(Collectors.toList());
 	}
+
+	// 'additionalCSS' property
+	private static final PrefsStringProperty additionalCSS = new PrefsStringProperty();
+	public static String getAdditionalCSS() { return additionalCSS.get(); }
+	public static void setAdditionalCSS(String additionalCSS) { Options.additionalCSS.set(additionalCSS); }
+	public static StringProperty additionalCSSProperty() { return additionalCSS; }
 }

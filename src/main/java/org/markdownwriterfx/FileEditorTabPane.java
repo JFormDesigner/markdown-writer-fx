@@ -216,6 +216,7 @@ class FileEditorTabPane
 							try {
 								fileEditor.setPath(path);
 								fileEditor.load();
+								fileEditor.requestFocus();
 							} finally {
 								inReloadPreviewEditor = false;
 							}

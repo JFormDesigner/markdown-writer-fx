@@ -112,6 +112,7 @@ public class OptionsDialog
 		editorOptionsPane.load();
 		markdownOptionsPane.load();
 		spellCheckerOptionsPane.load();
+		stylesheetsOptionsPane.load();
 	}
 
 	private void save() {
@@ -119,6 +120,7 @@ public class OptionsDialog
 		editorOptionsPane.save();
 		markdownOptionsPane.save();
 		spellCheckerOptionsPane.save();
+		stylesheetsOptionsPane.save();
 	}
 
 	private void initComponents() {
@@ -132,6 +134,8 @@ public class OptionsDialog
 		markdownOptionsPane = new MarkdownOptionsPane();
 		spellingTab = new Tab();
 		spellCheckerOptionsPane = new SpellCheckerOptionsPane();
+		stylesheetsTab = new Tab();
+		stylesheetsOptionsPane = new StylesheetsOptionsPane();
 
 		//======== tabPane ========
 		{
@@ -161,7 +165,14 @@ public class OptionsDialog
 				spellingTab.setContent(spellCheckerOptionsPane);
 			}
 
-			tabPane.getTabs().addAll(generalTab, editorTab, markdownTab, spellingTab);
+			//======== stylesheetsTab ========
+			{
+				stylesheetsTab.setText(Messages.get("OptionsDialog.stylesheetsTab.text"));
+				stylesheetsTab.setContent(stylesheetsOptionsPane);
+			}
+
+			tabPane.getTabs().addAll(generalTab, editorTab, markdownTab, spellingTab,
+				stylesheetsTab);
 		}
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 	}
@@ -176,5 +187,7 @@ public class OptionsDialog
 	private MarkdownOptionsPane markdownOptionsPane;
 	private Tab spellingTab;
 	private SpellCheckerOptionsPane spellCheckerOptionsPane;
+	private Tab stylesheetsTab;
+	private StylesheetsOptionsPane stylesheetsOptionsPane;
 	// JFormDesigner - End of variables declaration  //GEN-END:variables
 }

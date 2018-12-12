@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "9.9.9.9.9999" Java: "1.8.0_112" encoding: "UTF-8"
+JFDML JFormDesigner: "999.9.9.9.9999" Java: "1.8.0_192" encoding: "UTF-8"
 
 new FormModel {
 	"i18n.bundlePackage": "org.markdownwriterfx"
@@ -36,6 +36,13 @@ new FormModel {
 				"text": new FormMessage( null, "OptionsDialog.spellingTab.text" )
 				add( new FormComponent( "org.markdownwriterfx.options.SpellCheckerOptionsPane" ) {
 					name: "spellCheckerOptionsPane"
+				} )
+			} )
+			add( new FormContainer( "javafx.scene.control.Tab", new FormLayoutManager( class javafx.scene.control.Tab ) ) {
+				name: "stylesheetsTab"
+				"text": new FormMessage( null, "OptionsDialog.stylesheetsTab.text" )
+				add( new FormComponent( "org.markdownwriterfx.options.StylesheetsOptionsPane" ) {
+					name: "stylesheetsOptionsPane"
 				} )
 			} )
 		}, new FormLayoutConstraints( null ) {

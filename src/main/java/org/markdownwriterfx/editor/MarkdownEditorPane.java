@@ -53,6 +53,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Bounds;
+import javafx.scene.Scene;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.IndexRange;
 import javafx.scene.input.ContextMenuEvent;
@@ -239,7 +240,22 @@ public class MarkdownEditorPane
 	}
 
 	public void requestFocus() {
-		Platform.runLater(() -> textArea.requestFocus());
+		Platform.runLater(() -> {
+			if (textArea.getScene() != null)
+				textArea.requestFocus();
+			else {
+				// text area still does not have a scene
+				// --> use listener on scene to make sure that text area receives focus
+				ChangeListener<Scene> l = new ChangeListener<Scene>() {
+					@Override
+					public void changed(ObservableValue<? extends Scene> observable, Scene oldValue, Scene newValue) {
+						textArea.sceneProperty().removeListener(this);
+						textArea.requestFocus();
+					}
+				};
+				textArea.sceneProperty().addListener(l);
+			}
+		});
 	}
 
 	private String getLineSeparatorOrDefault() {

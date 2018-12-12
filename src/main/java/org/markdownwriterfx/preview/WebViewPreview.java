@@ -38,8 +38,10 @@ import java.util.HashMap;
 import javafx.concurrent.Worker.State;
 import javafx.scene.control.IndexRange;
 import javafx.scene.web.WebView;
+import org.markdownwriterfx.options.Options;
 import org.markdownwriterfx.preview.MarkdownPreviewPane.PreviewContext;
 import org.markdownwriterfx.preview.MarkdownPreviewPane.Renderer;
+import org.markdownwriterfx.util.Utils;
 import com.vladsch.flexmark.ast.FencedCodeBlock;
 import com.vladsch.flexmark.ast.Node;
 import com.vladsch.flexmark.ast.NodeVisitor;
@@ -126,6 +128,7 @@ class WebViewPreview
 			+ "<head>\n"
 			+ "<link rel=\"stylesheet\" href=\"" + getClass().getResource("markdownpad-github.css") + "\">\n"
 			+ "<style>\n"
+			+ Utils.defaultIfEmpty(Options.getAdditionalCSS(), "") + "\n"
 			+ ".mwfx-editor-selection {\n"
 			+ "  border-right: 5px solid #f47806;\n"
 			+ "  margin-right: -5px;\n"
