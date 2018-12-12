@@ -253,6 +253,11 @@ class FileEditor
 		editor.set(markdownEditorPane);
 	}
 
+	void requestFocus() {
+		if (markdownEditorPane != null)
+			markdownEditorPane.requestFocus();
+	}
+
 	void load() {
 		Path path = this.path.get();
 		if (path == null || markdownEditorPane == null)
