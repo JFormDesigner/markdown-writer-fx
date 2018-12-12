@@ -113,4 +113,73 @@ class MarkdownTextArea
 		if (newCaretPosition != caretPosition)
 			moveTo(newCaretPosition, selectionPolicy);
 	}
+
+	@Override
+	public void prevPage(SelectionPolicy selectionPolicy) {
+		disableFollowCaret = true;
+
+		// change behavior of PAGE_UP key:
+		//   old behavior: move caret visible lines count up (scrolling depends on caret position)
+		//   new behavior: scroll one page up and move caret visible lines count up
+		try {
+			int firstVisible = firstVisibleParToAllParIndex();
+			int lastVisible = lastVisibleParToAllParIndex();
+			int caretParagraph = getCurrentParagraph();
+			int caretColumn = getCaretColumn();
+
+			showParagraphAtBottom(firstVisible - 1);
+
+			// TODO improve handling of wrapped lines and tabs
+			int newCaretParagraph = Math.max(firstVisible - (lastVisible - caretParagraph), 0);
+			if (caretParagraph == lastVisible && newCaretParagraph > 0)
+				newCaretParagraph--;
+			int newCaretColumn = Math.min(caretColumn, getParagraphLength(newCaretParagraph));
+			moveTo(newCaretParagraph, newCaretColumn, selectionPolicy);
+		} catch (AssertionError e) {
+			// may be thrown in textArea.visibleParToAllParIndex()
+			// occurs if the last line is empty and and the text fits into
+			// the visible area (no vertical scroll bar shown)
+			// --> ignore
+			super.prevPage(selectionPolicy);
+		}
+	}
+
+	@Override
+	public void nextPage(SelectionPolicy selectionPolicy) {
+		disableFollowCaret = true;
+
+		// change behavior of PAGE_DOWN key:
+		//   old behavior: move caret visible lines count down (scrolling depends on caret position)
+		//   new behavior: scroll one page down and move caret visible lines count down
+		try {
+			int firstVisible = firstVisibleParToAllParIndex();
+			int lastVisible = lastVisibleParToAllParIndex();
+			int caretParagraph = getCurrentParagraph();
+			int caretColumn = getCaretColumn();
+
+			showParagraphAtTop(lastVisible);
+
+			// TODO improve handling of wrapped lines and tabs
+			int newCaretParagraph = Math.min(lastVisible + (caretParagraph - firstVisible), getParagraphs().size() - 1);
+			int newCaretColumn = Math.min(caretColumn, getParagraphLength(newCaretParagraph));
+			moveTo(newCaretParagraph, newCaretColumn, selectionPolicy);
+		} catch (AssertionError e) {
+			// may be thrown in textArea.visibleParToAllParIndex()
+			// occurs if the last line is empty and and the text fits into
+			// the visible area (no vertical scroll bar shown)
+			// --> ignore
+			super.nextPage(selectionPolicy);
+		}
+	}
+
+	private boolean disableFollowCaret;
+
+	@Override
+	public void requestFollowCaret() {
+		if (disableFollowCaret) {
+			disableFollowCaret = false;
+			requestLayout();
+		} else
+			super.requestFollowCaret();
+	}
 }
