@@ -92,4 +92,25 @@ class MarkdownTextArea
 		}
 		return oldSelection;
 	}
+
+	@Override
+	public void wordBreaksForwards(int n, SelectionPolicy selectionPolicy) {
+		super.wordBreaksForwards(n, selectionPolicy);
+
+		// change behavior of Ctrl+RIGHT:
+		//   old behavior: move caret to the end of the current word
+		//   new behavior: move caret to the beginning of the next word
+		String text = getText();
+		int caretPosition = getCaretPosition();
+		int newCaretPosition = caretPosition;
+		for (int i = caretPosition; i < text.length(); i++) {
+			char ch = text.charAt(i);
+			if (ch == ' ' || ch == '\t')
+				newCaretPosition++;
+			else
+				break;
+		}
+		if (newCaretPosition != caretPosition)
+			moveTo(newCaretPosition, selectionPolicy);
+	}
 }
