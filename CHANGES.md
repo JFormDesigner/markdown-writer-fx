@@ -3,6 +3,8 @@ Markdown Writer FX Change Log
 
 ## Unreleased
 
+- New "Stylesheets" tab in Options dialog allows specifying additional CSS for
+  preview.
 - Project specific options: Select "Store in project" checkbox in Options dialog
   to save options in per project (in file `<project-root>/.markdownwriterfx`).
 - "Format only modified paragraphs on Save" checkbox added to Options dialog.

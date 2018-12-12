@@ -110,12 +110,14 @@ public class OptionsDialog
 		generalOptionsPane.load();
 		editorOptionsPane.load();
 		markdownOptionsPane.load();
+		stylesheetsOptionsPane.load();
 	}
 
 	private void save() {
 		generalOptionsPane.save();
 		editorOptionsPane.save();
 		markdownOptionsPane.save();
+		stylesheetsOptionsPane.save();
 	}
 
 	private void initComponents() {
@@ -127,6 +129,8 @@ public class OptionsDialog
 		editorOptionsPane = new EditorOptionsPane();
 		markdownTab = new Tab();
 		markdownOptionsPane = new MarkdownOptionsPane();
+		stylesheetsTab = new Tab();
+		stylesheetsOptionsPane = new StylesheetsOptionsPane();
 
 		//======== tabPane ========
 		{
@@ -150,7 +154,13 @@ public class OptionsDialog
 				markdownTab.setContent(markdownOptionsPane);
 			}
 
-			tabPane.getTabs().addAll(generalTab, editorTab, markdownTab);
+			//======== stylesheetsTab ========
+			{
+				stylesheetsTab.setText(Messages.get("OptionsDialog.stylesheetsTab.text"));
+				stylesheetsTab.setContent(stylesheetsOptionsPane);
+			}
+
+			tabPane.getTabs().addAll(generalTab, editorTab, markdownTab, stylesheetsTab);
 		}
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 	}
@@ -163,5 +173,7 @@ public class OptionsDialog
 	private EditorOptionsPane editorOptionsPane;
 	private Tab markdownTab;
 	private MarkdownOptionsPane markdownOptionsPane;
+	private Tab stylesheetsTab;
+	private StylesheetsOptionsPane stylesheetsOptionsPane;
 	// JFormDesigner - End of variables declaration  //GEN-END:variables
 }

@@ -37,6 +37,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.control.IndexRange;
 import javafx.scene.layout.BorderPane;
+import org.markdownwriterfx.options.Options;
 import org.markdownwriterfx.options.Options.RendererType;
 import org.markdownwriterfx.util.Range;
 import com.vladsch.flexmark.ast.Node;
@@ -99,6 +100,8 @@ public class MarkdownPreviewPane
 		markdownAST.addListener((observable, oldValue, newValue) -> update() );
 		scrollY.addListener((observable, oldValue, newValue) -> scrollY());
 		editorSelection.addListener((observable, oldValue, newValue) -> editorSelectionChanged());
+
+		Options.additionalCSSProperty().addListener((observable, oldValue, newValue) -> update() );
 	}
 
 	public static boolean hasExternalPreview() {

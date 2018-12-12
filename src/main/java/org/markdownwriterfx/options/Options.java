@@ -92,6 +92,8 @@ public class Options
 		formatOnSave.init(options, "formatOnSave", false);
 		formatOnlyModifiedParagraphs.init(options, "formatOnlyModifiedParagraphs", false);
 
+		additionalCSS.init(options, "additionalCSS", null);
+
 		// listen to active project
 		ProjectManager.activeProjectProperty().addListener((observer, oldProject, newProject) -> {
 			set(getProjectOptions(newProject));
@@ -122,6 +124,8 @@ public class Options
 		wrapLineLength.setPreferences(options);
 		formatOnSave.setPreferences(options);
 		formatOnlyModifiedParagraphs.setPreferences(options);
+
+		additionalCSS.setPreferences(options);
 	}
 
 	private static Preferences getProjectOptions(File project) {
@@ -255,4 +259,10 @@ public class Options
 	public static boolean isFormatOnlyModifiedParagraphs() { return formatOnlyModifiedParagraphs.get(); }
 	public static void setFormatOnlyModifiedParagraphs(boolean formatOnlyModifiedParagraphs) { Options.formatOnlyModifiedParagraphs.set(formatOnlyModifiedParagraphs); }
 	public static BooleanProperty formatOnlyModifiedParagraphsProperty() { return formatOnlyModifiedParagraphs; }
+
+	// 'additionalCSS' property
+	private static final PrefsStringProperty additionalCSS = new PrefsStringProperty();
+	public static String getAdditionalCSS() { return additionalCSS.get(); }
+	public static void setAdditionalCSS(String additionalCSS) { Options.additionalCSS.set(additionalCSS); }
+	public static StringProperty additionalCSSProperty() { return additionalCSS; }
 }
