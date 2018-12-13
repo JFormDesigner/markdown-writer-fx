@@ -44,11 +44,11 @@ dependencies {
 	}
 	compile( "org.controlsfx:controlsfx:${controlsfxVersion}" )
 	compile( "org.fxmisc.cssfx:cssfx:1.0.0" )
-	compile( "org.apache.commons:commons-lang3:3.7" )
+	compile( "org.apache.commons:commons-lang3:3.8.1" )
 	compile( "com.esotericsoftware.yamlbeans:yamlbeans:1.13" )
 	compile( "org.languagetool:language-en:4.3" )
 
-	val flexmarkVersion = "0.34.53"
+	val flexmarkVersion = "0.35.0"
 	compile( "com.vladsch.flexmark:flexmark:${flexmarkVersion}" )
 	compile( "com.vladsch.flexmark:flexmark-ext-abbreviation:${flexmarkVersion}" )
 	compile( "com.vladsch.flexmark:flexmark-ext-anchorlink:${flexmarkVersion}" )
@@ -63,7 +63,7 @@ dependencies {
 	compile( "com.vladsch.flexmark:flexmark-ext-wikilink:${flexmarkVersion}" )
 	compile( "com.vladsch.flexmark:flexmark-ext-yaml-front-matter:${flexmarkVersion}" )
 
-	val commonmarkVersion = "0.11.0"
+	val commonmarkVersion = "0.12.1"
 	compile( "com.atlassian.commonmark:commonmark:${commonmarkVersion}" )
 	compile( "com.atlassian.commonmark:commonmark-ext-autolink:${commonmarkVersion}" )
 	compile( "com.atlassian.commonmark:commonmark-ext-gfm-strikethrough:${commonmarkVersion}" )

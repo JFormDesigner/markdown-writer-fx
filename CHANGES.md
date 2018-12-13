@@ -12,6 +12,7 @@ Markdown Writer FX Change Log
   whole page up or down.
 - Fixed behavior of `Ctrl+RIGHT`, which now moves caret to beginning of next
   word.
+- Undo and redo now selects changed text.
 - Disabled "Save As" for read-only editors (binary or too-large files).
 
 

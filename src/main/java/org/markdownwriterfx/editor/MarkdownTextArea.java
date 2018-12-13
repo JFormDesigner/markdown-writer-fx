@@ -29,6 +29,7 @@ package org.markdownwriterfx.editor;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import javafx.scene.Node;
@@ -36,6 +37,7 @@ import javafx.scene.control.IndexRange;
 import org.fxmisc.richtext.GenericStyledArea;
 import org.fxmisc.richtext.StyledTextArea;
 import org.fxmisc.richtext.TextExt;
+import org.fxmisc.richtext.model.PlainTextChange;
 import org.fxmisc.richtext.model.SegmentOps;
 import org.fxmisc.richtext.model.StyledSegment;
 import org.reactfx.util.Either;
@@ -82,6 +84,48 @@ class MarkdownTextArea
 			selectRange(oldSelection.getStart(), oldSelection.getEnd());
 	}
 
+	@Override
+	public void undo() {
+		@SuppressWarnings("unchecked")
+		List<PlainTextChange> nextUndo = (List<PlainTextChange>) getUndoManager().getNextUndo();
+		if (nextUndo != null && !nextUndo.isEmpty()) {
+			PlainTextChange change = findFirstChange(nextUndo);
+			int selStart = change.getPosition();
+			int selEnd = change.getRemovalEnd();
+
+			super.undo();
+
+			// select first change
+			selectRange(Math.min(selStart, getLength()), Math.min(selEnd, getLength()));
+		} else
+			super.undo();
+	}
+
+	@Override
+	public void redo() {
+		@SuppressWarnings("unchecked")
+		List<PlainTextChange> nextRedo = (List<PlainTextChange>) getUndoManager().getNextRedo();
+		if (nextRedo != null && !nextRedo.isEmpty()) {
+			PlainTextChange change = findFirstChange(nextRedo);
+			int selStart = change.getPosition();
+			int selEnd = change.getInsertionEnd();
+
+			super.redo();
+
+			// select first change
+			selectRange(Math.min(selStart, getLength()), Math.min(selEnd, getLength()));
+		} else
+			super.redo();
+	}
+
+	private PlainTextChange findFirstChange(List<PlainTextChange> changes) {
+		PlainTextChange firstChange = null;
+		for (PlainTextChange change : changes) {
+			if (firstChange == null || change.getPosition() < firstChange.getPosition())
+				firstChange = change;
+		}
+		return firstChange;
+	}
 
 	private IndexRange selectLineIfEmpty() {
 		IndexRange oldSelection = null;
