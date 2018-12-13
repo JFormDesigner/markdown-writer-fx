@@ -44,7 +44,7 @@ dependencies {
 	}
 	compile( "org.controlsfx:controlsfx:${controlsfxVersion}" )
 	compile( "org.fxmisc.cssfx:cssfx:1.0.0" )
-	compile( "org.apache.commons:commons-lang3:3.7" )
+	compile( "org.apache.commons:commons-lang3:3.8.1" )
 	compile( "com.esotericsoftware.yamlbeans:yamlbeans:1.13" )
 
 	val flexmarkVersion = "0.35.0"
