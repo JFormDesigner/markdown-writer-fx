@@ -281,6 +281,8 @@ class FileEditorTabPane
 		saveLastDirectory(file);
 		fileEditor.setPath(file.toPath());
 
+		saveEditorsState();
+
 		return fileEditor.save();
 	}
 
