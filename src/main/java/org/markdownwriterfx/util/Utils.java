@@ -59,6 +59,12 @@ public class Utils
 		return isNullOrEmpty(value) ? defaultValue : value;
 	}
 
+	public static String trimAndDefaultIfEmpty(String value, String defaultValue) {
+		if (value != null)
+			value = value.trim();
+		return defaultIfEmpty(value, defaultValue);
+	}
+
 	public static boolean isNullOrEmpty(String s) {
 		return s == null || s.isEmpty();
 	}
