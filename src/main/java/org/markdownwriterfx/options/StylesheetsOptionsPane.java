@@ -30,6 +30,7 @@ package org.markdownwriterfx.options;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import org.markdownwriterfx.Messages;
+import org.markdownwriterfx.util.Utils;
 import org.tbee.javafx.scene.layout.fxml.MigPane;
 
 /**
@@ -49,7 +50,7 @@ class StylesheetsOptionsPane
 	}
 
 	void save() {
-		Options.setAdditionalCSS(additionalCSSField.getText().trim());
+		Options.setAdditionalCSS(Utils.trimAndDefaultIfEmpty(additionalCSSField.getText(), null));
 	}
 
 	private void initComponents() {
