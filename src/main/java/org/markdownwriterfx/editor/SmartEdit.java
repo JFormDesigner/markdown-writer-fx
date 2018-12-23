@@ -891,7 +891,9 @@ public class SmartEdit
 	static void commitMultiChange(MarkdownTextArea textArea, MultiChangeBuilder<?, ?, ?> multiChange) {
 		runInPreventUndoMerge(textArea, () -> {
 			// commit multi-change
-			multiChange.commit();
+			textArea.scrollY.suspendWhile(() -> {
+				multiChange.commit();
+			});
 		});
 	}
 
