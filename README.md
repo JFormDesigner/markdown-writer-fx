@@ -28,7 +28,7 @@ Requirements
 
 Java 8u40 or later is required.
 Java 8u131 or later is recommended.
-Java 9 is not supported. Coming soon.
+Java 9, 10 and 11 supported.
 
 Installation
 ------------
