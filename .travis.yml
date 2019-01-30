@@ -1,4 +1,10 @@
 language: java
+sudo: false
+
+jdk:
+  - oraclejdk8
+  - oraclejdk9
+  - openjdk11
 
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
@@ -11,14 +17,3 @@ cache:
 before_install:
   - ./gradlew --version
   - java -version
-
-matrix:
-  include:
-    - dist: trusty
-      group: edge
-      jdk: oraclejdk8
-      sudo: false
-      addons:
-        apt:
-          packages:
-            - oracle-java8-installer
