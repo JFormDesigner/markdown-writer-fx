@@ -246,6 +246,12 @@ class MainWindow
 			? new Action(Messages.get("MainWindow.viewExternalAction"), null, EXTERNAL_LINK,
 		        null, null, fileEditorTabPane.externalVisible)
 			: null;
+		Action viewShowLineNoAction = new Action(Messages.get("MainWindow.viewShowLineNoAction"), null, null,
+				null, null, Options.showLineNoProperty());
+		Action viewShowWhitespaceAction = new Action(Messages.get("MainWindow.viewShowWhitespaceAction"), "Alt+W", null,
+				null, null, Options.showWhitespaceProperty());
+		Action viewShowImagesEmbeddedAction = new Action(Messages.get("MainWindow.viewShowImagesEmbeddedAction"), "Alt+I", null,
+				null, null, Options.showImagesEmbeddedProperty());
 
 		// Insert actions
 		Action insertBoldAction = new Action(Messages.get("MainWindow.insertBoldAction"), "Shortcut+B", BOLD,
@@ -348,9 +354,13 @@ class MainWindow
 		Menu viewMenu = ActionUtils.createMenu(Messages.get("MainWindow.viewMenu"),
 				viewPreviewAction,
 				viewHtmlSourceAction,
-				viewMarkdownAstAction);
+				viewMarkdownAstAction,
+				null,
+				viewShowLineNoAction,
+				viewShowWhitespaceAction,
+				viewShowImagesEmbeddedAction);
 		if (viewExternalAction != null)
-			viewMenu.getItems().add(ActionUtils.createMenuItem(viewExternalAction));
+			viewMenu.getItems().add(3, ActionUtils.createMenuItem(viewExternalAction));
 
 		Menu insertMenu = ActionUtils.createMenu(Messages.get("MainWindow.insertMenu"),
 				insertBoldAction,

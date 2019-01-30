@@ -119,7 +119,8 @@ public class MarkdownEditorPane
 			consume(keyPressed(PLUS, SHORTCUT_DOWN),	this::increaseFontSize),
 			consume(keyPressed(MINUS, SHORTCUT_DOWN),	this::decreaseFontSize),
 			consume(keyPressed(DIGIT0, SHORTCUT_DOWN),	this::resetFontSize),
-			consume(keyPressed(W, ALT_DOWN),			this::showWhitespace)
+			consume(keyPressed(W, ALT_DOWN),			this::showWhitespace),
+			consume(keyPressed(I, ALT_DOWN),			this::showImagesEmbedded)
 		));
 
 		// create scroll pane
@@ -363,6 +364,10 @@ public class MarkdownEditorPane
 
 	private void showWhitespace(KeyEvent e) {
 		Options.setShowWhitespace(!Options.isShowWhitespace());
+	}
+
+	private void showImagesEmbedded(KeyEvent e) {
+		Options.setShowImagesEmbedded(!Options.isShowImagesEmbedded());
 	}
 
 	private void updateShowLineNo() {
