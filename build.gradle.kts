@@ -29,7 +29,13 @@ repositories {
 }
 
 dependencies {
-	compile( "org.fxmisc.richtext:richtextfx:0.9.2" )
+	// build RichTextFX from branch 'markdown-writer-fx' on https://github.com/JFormDesigner/RichTextFX
+	compile( "org.fxmisc.richtext:richtextfx" ) {
+		version {
+			branch = "markdown-writer-fx"
+		}
+	}
+
 	compile( "com.miglayout:miglayout-javafx:5.2" )
 
 	val fontawesomefxVersion = if( javaCompatibility >= JavaVersion.VERSION_1_9 ) "4.7.0-9.1.2" else "4.7.0-5"
