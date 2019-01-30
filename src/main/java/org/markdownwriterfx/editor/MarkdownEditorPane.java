@@ -43,8 +43,6 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
-import javafx.beans.property.ReadOnlyDoubleProperty;
-import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringProperty;
@@ -129,17 +127,9 @@ public class MarkdownEditorPane
 			consume(keyPressed(PLUS, SHORTCUT_DOWN),	this::increaseFontSize),
 			consume(keyPressed(MINUS, SHORTCUT_DOWN),	this::decreaseFontSize),
 			consume(keyPressed(DIGIT0, SHORTCUT_DOWN),	this::resetFontSize),
-			consume(keyPressed(W, ALT_DOWN),			this::showWhitespace)
+			consume(keyPressed(W, ALT_DOWN),			this::showWhitespace),
+			consume(keyPressed(I, ALT_DOWN),			this::showImagesEmbedded)
 		));
-
-		// add listener to update 'scrollY' property
-		ChangeListener<Double> scrollYListener = (observable, oldValue, newValue) -> {
-			double value = textArea.estimatedScrollYProperty().getValue().doubleValue();
-			double maxValue = textArea.totalHeightEstimateProperty().getOrElse(0.).doubleValue() - textArea.getHeight();
-			scrollY.set((maxValue > 0) ? Math.min(Math.max(value / maxValue, 0), 1) : 0);
-		};
-		textArea.estimatedScrollYProperty().addListener(scrollYListener);
-		textArea.totalHeightEstimateProperty().addListener(scrollYListener);
 
 		// create scroll pane
 		VirtualizedScrollPane<MarkdownTextArea> scrollPane = new VirtualizedScrollPane<>(textArea);
@@ -312,9 +302,8 @@ public class MarkdownEditorPane
 	public ObservableValue<IndexRange> selectionProperty() { return textArea.selectionProperty(); }
 
 	// 'scrollY' property
-	private final ReadOnlyDoubleWrapper scrollY = new ReadOnlyDoubleWrapper();
-	public double getScrollY() { return scrollY.get(); }
-	public ReadOnlyDoubleProperty scrollYProperty() { return scrollY.getReadOnlyProperty(); }
+	public double getScrollY() { return textArea.scrollY.getValue(); }
+	public ObservableValue<Double> scrollYProperty() { return textArea.scrollY; }
 
 	// 'path' property
 	private final ObjectProperty<Path> path = new SimpleObjectProperty<>();
@@ -391,6 +380,10 @@ public class MarkdownEditorPane
 
 	private void showWhitespace(KeyEvent e) {
 		Options.setShowWhitespace(!Options.isShowWhitespace());
+	}
+
+	private void showImagesEmbedded(KeyEvent e) {
+		Options.setShowImagesEmbedded(!Options.isShowImagesEmbedded());
 	}
 
 	private void updateShowLineNo() {

@@ -26,9 +26,8 @@ Features
 Requirements
 ------------
 
-Java 8u40 or later is required.
-Java 8u131 or later is recommended.
-Java 9 is not supported. Coming soon.
+**Java 8 is required** to run current releases.
+Java 9, 10 and 11 currently only supported for building.
 
 Installation
 ------------

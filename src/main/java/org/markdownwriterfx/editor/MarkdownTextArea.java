@@ -33,14 +33,20 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.IndexRange;
 import org.fxmisc.richtext.GenericStyledArea;
 import org.fxmisc.richtext.StyledTextArea;
 import org.fxmisc.richtext.TextExt;
 import org.fxmisc.richtext.model.PlainTextChange;
 import org.fxmisc.richtext.model.SegmentOps;
+import org.fxmisc.richtext.model.StyleSpans;
+import org.fxmisc.richtext.model.StyledDocument;
 import org.fxmisc.richtext.model.StyledSegment;
+import org.reactfx.Guard;
 import org.reactfx.util.Either;
+import org.reactfx.value.SuspendableVal;
+import org.reactfx.value.Val;
 
 /**
  * Markdown text area.
@@ -50,6 +56,10 @@ import org.reactfx.util.Either;
 class MarkdownTextArea
 	extends GenericStyledArea<Collection<String>, Either<String, EmbeddedImage>, Collection<String>>
 {
+	// suspendable scrollY value to reduce enormous amount of change events on estimatedScrollY and totalHeightEstimate
+	final SuspendableVal<Double> scrollY;
+	private Guard scrollYguard;
+
 	public MarkdownTextArea() {
 		super(
 			/* initialParagraphStyle */ Collections.<String>emptyList(),
@@ -60,6 +70,13 @@ class MarkdownTextArea
 			/* nodeFactory */ seg -> createNode(seg,
 				(text, styleClasses) -> text.getStyleClass().addAll(styleClasses))
 			);
+
+		// compute scrollY
+		scrollY = Val.create(() -> {
+			double value = estimatedScrollYProperty().getValue().doubleValue();
+			double maxValue = totalHeightEstimateProperty().getOrElse(0.).doubleValue() - getHeight();
+			return (maxValue > 0) ? Math.min(Math.max(value / maxValue, 0), 1) : 0;
+		}, estimatedScrollYProperty(), totalHeightEstimateProperty()).suspendable();
 	}
 
 	private static Node createNode(StyledSegment<Either<String, EmbeddedImage>, Collection<String>> seg,
@@ -68,6 +85,60 @@ class MarkdownTextArea
 		return seg.getSegment().unify(
 				text -> StyledTextArea.createStyledTextNode(text, seg.getStyle(), applyStyle),
 				EmbeddedImage::createNode);
+	}
+
+	@Override
+	public void replace(int start, int end, StyledDocument<Collection<String>, Either<String, EmbeddedImage>, Collection<String>> replacement) {
+		suspendScrollYUntilLayout(() -> {
+			super.replace(start, end, replacement);
+		});
+	}
+
+	@Override
+	public void setStyleSpans(int from, StyleSpans<? extends Collection<String>> styleSpans) {
+		suspendScrollYUntilLayout(() -> {
+			super.setStyleSpans(from, styleSpans);
+		});
+	}
+
+	private void suspendScrollYUntilLayout(Runnable runnable) {
+		if (scrollYguard != null) {
+			// nested call --> already suspended
+			runnable.run();
+			return;
+		}
+
+		// suspend scrollY
+		scrollYguard = scrollY.suspend();
+
+		try {
+			runnable.run();
+		} finally {
+			// release scrollY only if no layout pass is needed
+			// otherwise scrollY will be released in layoutChildren()
+			if (!isNeedsLayout()) {
+				scrollYguard.close();
+				scrollYguard = null;
+			}
+		}
+	}
+
+	@Override
+	protected void layoutChildren() {
+		scrollY.suspendWhile(() -> {
+			super.layoutChildren();
+
+			// also layout children here to avoid unnecessary scrollY events when laying out VirtualFlow
+			for (Node child : getChildren()) {
+				if (child instanceof Parent)
+					((Parent)child).layout();
+			}
+		});
+
+		if (scrollYguard != null) {
+			scrollYguard.close();
+			scrollYguard = null;
+		}
 	}
 
 	@Override
@@ -93,7 +164,9 @@ class MarkdownTextArea
 			int selStart = change.getPosition();
 			int selEnd = change.getRemovalEnd();
 
-			super.undo();
+			scrollY.suspendWhile(() -> {
+				super.undo();
+			});
 
 			// select first change
 			selectRange(Math.min(selStart, getLength()), Math.min(selEnd, getLength()));
@@ -110,7 +183,9 @@ class MarkdownTextArea
 			int selStart = change.getPosition();
 			int selEnd = change.getInsertionEnd();
 
-			super.redo();
+			scrollY.suspendWhile(() -> {
+				super.redo();
+			});
 
 			// select first change
 			selectRange(Math.min(selStart, getLength()), Math.min(selEnd, getLength()));

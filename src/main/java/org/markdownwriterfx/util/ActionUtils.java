@@ -67,7 +67,8 @@ public class ActionUtils
 			menuItem.setAccelerator(action.accelerator);
 		if (action.icon != null)
 			menuItem.setGraphic(FontAwesomeIconFactory.get().createIcon(action.icon));
-		menuItem.setOnAction(action.action);
+		if (action.action != null)
+			menuItem.setOnAction(action.action);
 		if (action.disable != null)
 			menuItem.disableProperty().bind(action.disable);
 		if (action.selected != null)
@@ -99,7 +100,8 @@ public class ActionUtils
 			tooltip += " (" + action.accelerator.getDisplayText() + ')';
 		button.setTooltip(new Tooltip(tooltip));
 		button.setFocusTraversable(false);
-		button.setOnAction(action.action);
+		if (action.action != null)
+			button.setOnAction(action.action);
 		if (action.disable != null)
 			button.disableProperty().bind(action.disable);
 		if (action.selected != null)

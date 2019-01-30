@@ -45,6 +45,8 @@ import javafx.scene.shape.Polyline;
 import org.fxmisc.richtext.model.Paragraph;
 import org.fxmisc.richtext.model.ReadOnlyStyledDocument;
 import org.reactfx.util.Either;
+import com.vladsch.flexmark.ast.ImageRef;
+import com.vladsch.flexmark.ast.LinkNodeBase;
 import com.vladsch.flexmark.ast.NodeVisitor;
 
 /**
@@ -58,18 +60,16 @@ class EmbeddedImage
 	private static final HashMap<String, SoftReference<Image>> imageCache = new HashMap<>();
 
 	final Path basePath;
-	final com.vladsch.flexmark.ast.Image node;
+	final String url;
 	final String text;
 
-	EmbeddedImage(Path basePath, com.vladsch.flexmark.ast.Image node, String text) {
+	EmbeddedImage(Path basePath, String url, String text) {
 		this.basePath = basePath;
-		this.node = node;
+		this.url = url;
 		this.text = text;
 	}
 
 	Node createNode() {
-		String url = node.getUrl().toString();
-
 		String imageUrl;
 		try {
 			imageUrl = (basePath != null)
@@ -131,10 +131,16 @@ class EmbeddedImage
 		NodeVisitor visitor = new NodeVisitor(Collections.emptyList()) {
 			@Override
 			public void visit(com.vladsch.flexmark.ast.Node node) {
-				//TODO support ImageRef
-				if (node instanceof com.vladsch.flexmark.ast.Image) {
-					com.vladsch.flexmark.ast.Image imageNode = (com.vladsch.flexmark.ast.Image) node;
-					String url = imageNode.getUrl().toString();
+				if (node instanceof com.vladsch.flexmark.ast.Image ||
+					node instanceof ImageRef)
+				{
+					LinkNodeBase linkNode = (node instanceof ImageRef)
+						? ((ImageRef)node).getReferenceNode(astRoot.getDocument())
+						: (com.vladsch.flexmark.ast.Image) node;
+					if (linkNode == null)
+						return; // reference not found
+
+					String url = linkNode.getUrl().toString();
 					if (url.startsWith("http:") || url.startsWith("https:"))
 						return; // do not embed external images
 
@@ -142,7 +148,7 @@ class EmbeddedImage
 					int end = start + 1;
 
 					EmbeddedImage embeddedImage = new EmbeddedImage(basePath,
-							imageNode, textArea.getText(start, end));
+							url, textArea.getText(start, end));
 					addedImages.add(embeddedImage);
 
 					textArea.replace(start, end, ReadOnlyStyledDocument.fromSegment(
