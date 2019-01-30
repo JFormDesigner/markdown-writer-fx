@@ -78,7 +78,7 @@ dependencies {
 	compile( "com.atlassian.commonmark:commonmark-ext-yaml-front-matter:${commonmarkVersion}" )
 
 	if( javaCompatibility >= JavaVersion.VERSION_11 ) {
-		val javafxVersion = "11.0.1"
+		val javafxVersion = "11.0.2"
 		val osName = System.getProperty( "os.name" ).toLowerCase()
 		val platform = if( osName.startsWith( "windows" ) ) "win" else if( osName.startsWith( "mac" ) ) "mac" else "linux"
 
