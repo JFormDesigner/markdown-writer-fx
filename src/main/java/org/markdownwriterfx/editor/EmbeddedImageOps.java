@@ -59,7 +59,7 @@ class EmbeddedImageOps<S>
 	public EmbeddedImage realSubSequence(EmbeddedImage seg, int start, int end) {
 		return (start == 0 && end == seg.text.length())
 			? seg
-			: new EmbeddedImage(seg.basePath, seg.node, seg.text.substring(start, end));
+			: new EmbeddedImage(seg.basePath, seg.url, seg.text.substring(start, end));
 	}
 
 	@Override

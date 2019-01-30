@@ -6,10 +6,11 @@ Markdown Writer FX Change Log
 - New "Stylesheets" tab in Options dialog allows specifying additional CSS for
   preview.
 - Project specific options: Select "Store in project" checkbox in Options dialog
-  to save options in per project (in file `<project-root>/.markdownwriterfx`).
+  to save options per project (in file `<project-root>/.markdownwriterfx`).
 - "Format only modified paragraphs on Save" checkbox added to Options dialog.
 - "Show line numbers", "Show whitespace characters" and "Show images embedded"
   commands added to "View" menu.
+- (experimental) Embedded images now also support markdown image references.
 - Fixed behavior of `PageUp` and `PageDown` keys, which now always scroll a
   whole page up or down.
 - Fixed behavior of `Ctrl+RIGHT`, which now moves caret to beginning of next
