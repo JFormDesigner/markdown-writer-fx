@@ -1,7 +1,7 @@
 Markdown Writer FX Change Log
 =============================
 
-## Unreleased
+## 0.12
 
 - New "Stylesheets" tab in Options dialog allows specifying additional CSS for
   preview.

@@ -33,7 +33,7 @@ Installation
 ------------
 
 Download
-[markdown-writer-fx-0.11.zip](https://github.com/JFormDesigner/markdown-writer-fx/releases/download/0.11/markdown-writer-fx-0.11.zip)
+[markdown-writer-fx-0.12.zip](https://github.com/JFormDesigner/markdown-writer-fx/releases/download/0.12/markdown-writer-fx-0.12.zip)
 and extract it to any folder.
 
 Run: 
