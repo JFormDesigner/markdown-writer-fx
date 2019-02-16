@@ -34,6 +34,7 @@ import static org.fxmisc.wellbehaved.event.InputMap.consume;
 import static org.fxmisc.wellbehaved.event.InputMap.sequence;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -59,6 +60,7 @@ import org.languagetool.Languages;
 import org.languagetool.language.AmericanEnglish;
 import org.markdownwriterfx.Messages;
 import org.markdownwriterfx.controls.BrowseFileButton;
+import org.markdownwriterfx.projects.ProjectManager;
 import org.markdownwriterfx.util.Item;
 import org.markdownwriterfx.util.Utils;
 import org.tbee.javafx.scene.layout.fxml.MigPane;
@@ -86,7 +88,6 @@ class SpellCheckerOptionsPane
 
 		languageField.getItems().addAll(getLanguages());
 
-		browseUserDictionaryButton.setBasePath(new File(System.getProperty("user.home")).toPath());
 		browseUserDictionaryButton.urlProperty().bindBidirectional(userDictionaryField.textProperty());
 
 		disabledRulesField.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
@@ -284,16 +285,32 @@ class SpellCheckerOptionsPane
 			fileChooser.setInitialDirectory(getInitialDirectory());
 			File result = fileChooser.showOpenDialog(getScene().getWindow());
 			if (result != null)
-				setUrl(result.getAbsolutePath());
+				updateUrl(result);
 		}
 
 		@Override
 		protected File getInitialDirectory() {
 			String url = getUrl();
-			if (url != null)
-				return new File(url).getParentFile();
-			else
+			if (url != null) {
+				File f = new File(url);
+				if (!f.isAbsolute() && ProjectManager.getActiveProject() != null)
+					f = new File(ProjectManager.getActiveProject(), url);
+				return f.getParentFile();
+			} else
 				return new File(System.getProperty("user.home"));
+		}
+
+		@Override
+		protected void updateUrl(File file) {
+			if (Options.isStoreInProject() && ProjectManager.getActiveProject() != null) {
+				try {
+					Path projectPath = ProjectManager.getActiveProject().toPath();
+					setUrl(projectPath.relativize(file.toPath()).toString().replace('\\', '/'));
+				} catch (IllegalArgumentException ex) {
+					setUrl(file.toString());
+				}
+			} else
+				setUrl(file.toString());
 		}
 	}
 }

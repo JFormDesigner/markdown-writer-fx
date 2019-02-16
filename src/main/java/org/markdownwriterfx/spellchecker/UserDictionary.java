@@ -34,6 +34,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import org.markdownwriterfx.options.Options;
+import org.markdownwriterfx.projects.ProjectManager;
 
 /**
  * A user dictionary for spell checking.
@@ -47,7 +48,14 @@ class UserDictionary
 	private List<String> words;
 
 	UserDictionary() {
-		file = new File(Options.getUserDictionary());
+		String userDictionary = Options.getUserDictionary();
+		File f = new File(userDictionary);
+
+		// user dictionary path may be relative to project folder
+		if (!f.isAbsolute() && ProjectManager.getActiveProject() != null)
+			f = new File(ProjectManager.getActiveProject(), userDictionary);
+
+		file = f;
 
 		load();
 	}
