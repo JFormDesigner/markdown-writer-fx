@@ -46,6 +46,7 @@ class UserDictionary
 	private final File file;
 	private List<String> lines;
 	private List<String> words;
+	private boolean isSorted;
 
 	UserDictionary() {
 		String userDictionary = Options.getUserDictionary();
@@ -83,11 +84,13 @@ class UserDictionary
 			if (!line.startsWith("#"))
 				words.add(line);
 		}
+
+		isSorted = lines.equals(words) && lines.equals(sort(lines));
 	}
 
 	private void save() {
 		try {
-			Files.write(file.toPath(), lines, StandardCharsets.UTF_8);
+			Files.write(file.toPath(), isSorted ? sort(lines) : lines, StandardCharsets.UTF_8);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -106,5 +109,14 @@ class UserDictionary
 		words.add(word);
 
 		save();
+	}
+
+	private List<String> sort(List<String> list) {
+		List<String> sortedList = new ArrayList<>(list);
+		sortedList.sort((l1, l2) -> {
+			int r = l1.compareToIgnoreCase(l2);
+			return (r == 0) ? l1.compareTo(l2) : r;
+		});
+		return sortedList;
 	}
 }
