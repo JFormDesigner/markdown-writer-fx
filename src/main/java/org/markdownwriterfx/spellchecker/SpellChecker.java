@@ -69,10 +69,10 @@ import org.languagetool.rules.RuleMatch;
 import org.languagetool.rules.spelling.SpellingCheckRule;
 import org.markdownwriterfx.Messages;
 import org.markdownwriterfx.addons.SpellCheckerAddon;
+import org.markdownwriterfx.addons.SpellCheckerAddon.Range;
 import org.markdownwriterfx.editor.MarkdownEditorPane;
 import org.markdownwriterfx.editor.ParagraphOverlayGraphicFactory;
 import org.markdownwriterfx.options.Options;
-import org.markdownwriterfx.util.Range;
 import org.markdownwriterfx.util.Utils;
 import org.reactfx.EventStream;
 import org.reactfx.Subscription;
@@ -345,7 +345,13 @@ public class SpellChecker
 					for (Range range : ranges) {
 						if (i < range.start)
 							builder.addText(text.substring(i, range.start));
-						builder.addMarkup(getMarkupFiller(range.end - range.start));
+
+						String markupFiller = getMarkupFiller(range.end - range.start);
+						if (range.blockBreak)
+							builder.addMarkup(markupFiller, "\n\n");
+						else
+							builder.addMarkup(markupFiller);
+
 						i = range.end;
 					}
 					if (i < text.length())

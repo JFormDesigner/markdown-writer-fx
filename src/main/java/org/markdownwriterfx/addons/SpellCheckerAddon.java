@@ -27,12 +27,28 @@
 
 package org.markdownwriterfx.addons;
 
-import org.markdownwriterfx.util.Range;
-
 /**
  * @author Karl Tauber
  */
 public interface SpellCheckerAddon
 {
+	static public class Range
+	{
+		public final int start;
+		public final int end;
+		public final boolean blockBreak;
+
+		public Range(int start, int end, boolean blockBreak) {
+			this.start = start;
+			this.end = end;
+			this.blockBreak = blockBreak;
+		}
+
+		@Override
+		public String toString() {
+			return start + "-" + end + "  " + blockBreak;
+		}
+	}
+
 	Range[] getAnnotatedRanges(String text);
 }
