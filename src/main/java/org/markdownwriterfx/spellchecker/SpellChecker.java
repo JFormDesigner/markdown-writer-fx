@@ -236,6 +236,8 @@ public class SpellChecker
 			if (!Utils.safeEquals(newSpellProblems, spellProblems)) {
 				spellProblems = newSpellProblems;
 				overlayGraphicFactory.update();
+
+				updateQuickFixMenu();
 			}
 		} else {
 			//TODO
@@ -264,6 +266,7 @@ public class SpellChecker
 		// initialize language tool
 		languageTool.initialize();
 
+//		long startTime = System.currentTimeMillis();
 		ArrayList<SpellBlockProblems> spellProblems = new ArrayList<>();
 
 		// start timer to update overlays periodically during a lengthy check (on initial run)
@@ -297,15 +300,20 @@ public class SpellChecker
 					return null; // user turned spell checking off
 				}
 
-				SpellBlockProblems problem = new SpellBlockProblems(node.getStartOffset(), node.getEndOffset(), ruleMatches);
-				synchronized (spellProblems) {
-					spellProblems.add(problem);
+				if (!ruleMatches.isEmpty()) {
+					SpellBlockProblems problem = new SpellBlockProblems(node.getStartOffset(), node.getEndOffset(), ruleMatches);
+					synchronized (spellProblems) {
+						spellProblems.add(problem);
+					}
 				}
 			}
 		} finally {
 			if (timer != null)
 				timer.stop();
 		}
+
+//		long endTime = System.currentTimeMillis();
+//		System.out.printf("%,20d millis\n", endTime - startTime);
 
 		return spellProblems;
 	}
@@ -531,6 +539,19 @@ public class SpellChecker
 
 		// add new menu items to context menu
 		menuItems.addAll(0, newItems);
+	}
+
+	private void updateQuickFixMenu() {
+		if (quickFixMenu == null)
+			return;
+
+		if (spellProblems == null || spellProblems.isEmpty()) {
+			hideContextMenu();
+			return;
+		}
+
+		if (findProblemsAt(textArea.getSelection().getStart()).isEmpty())
+			navigateNextPrevious();
 	}
 
 	public void hideContextMenu() {
