@@ -261,20 +261,16 @@ public class MarkdownEditorPane
 		return markdown;
 	}
 	public void setMarkdown(String markdown) {
-		// remember old selection range and scrollY
+		// remember old selection range
 		IndexRange oldSelection = textArea.getSelection();
-		double oldScrollY = textArea.getEstimatedScrollY();
 
 		// replace text
 		lineSeparator = determineLineSeparator(markdown);
 		textArea.replaceText(markdown);
 
-		// restore old selection range and scrollY
+		// restore old selection range
         int newLength = textArea.getLength();
         textArea.selectRange(Math.min(oldSelection.getStart(), newLength), Math.min(oldSelection.getEnd(), newLength));
-		Platform.runLater(() -> {
-			textArea.estimatedScrollYProperty().setValue(oldScrollY);
-		});
 	}
 	public ObservableValue<String> markdownProperty() { return textArea.textProperty(); }
 
