@@ -423,6 +423,10 @@ public class MarkdownEditorPane
 		textArea.selectAll();
 	}
 
+	public void selectRange(int anchor, int caretPosition) {
+		SmartEdit.selectRange(textArea, anchor, caretPosition);
+	}
+
 	//---- context menu -------------------------------------------------------
 
 	private void showContextMenu(ContextMenuEvent e) {

@@ -214,9 +214,11 @@ class FileEditorTabPane
 							// replace existing preview editor
 							inReloadPreviewEditor = true;
 							try {
+								fileEditor.getEditor().selectRange(0, 0);
 								fileEditor.setPath(path);
 								fileEditor.load();
 								fileEditor.requestFocus();
+								fileEditor.getEditor().getUndoManager().forgetHistory();
 							} finally {
 								inReloadPreviewEditor = false;
 							}
