@@ -54,6 +54,7 @@ import javafx.scene.input.KeyCode;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import org.fxmisc.wellbehaved.event.Nodes;
+import org.markdownwriterfx.editor.MarkdownEditorPane;
 import org.markdownwriterfx.options.Options;
 import org.markdownwriterfx.projects.ProjectManager;
 import org.markdownwriterfx.util.PrefsBooleanProperty;
@@ -214,9 +215,14 @@ class FileEditorTabPane
 							// replace existing preview editor
 							inReloadPreviewEditor = true;
 							try {
+								MarkdownEditorPane editor = fileEditor.getEditor();
+								if (editor != null)
+									editor.selectRange(0, 0);
 								fileEditor.setPath(path);
 								fileEditor.load();
 								fileEditor.requestFocus();
+								if (editor != null)
+									editor.getUndoManager().forgetHistory();
 							} finally {
 								inReloadPreviewEditor = false;
 							}
