@@ -118,6 +118,12 @@ class FileEditor
 		});
 	}
 
+	void dispose() {
+		// avoid memory leaks
+		tab.setUserData(null);
+		tab.setContent(null);
+	}
+
 	Tab getTab() {
 		return tab;
 	}
