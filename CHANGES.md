@@ -1,6 +1,11 @@
 Markdown Writer FX Change Log
 =============================
 
+## Unreleased
+
+- Fixed memory leaks.
+
+
 ## 0.12
 
 - New "Stylesheets" tab in Options dialog allows specifying additional CSS for

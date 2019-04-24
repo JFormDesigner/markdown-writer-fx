@@ -65,6 +65,7 @@ import org.markdownwriterfx.preview.MarkdownPreviewPane.Type;
 class FileEditor
 {
 	private static final long MAX_FILE_SIZE = 500_000;
+	private static final long MAX_HEX_FILE_SIZE = 64 * 1024;
 
 	private final MainWindow mainWindow;
 	private final FileEditorTabPane fileEditorTabPane;
@@ -117,6 +118,12 @@ class FileEditor
 				mainWindow.stageFocusedProperty.removeListener(stageFocusedListener);
 			}
 		});
+	}
+
+	void dispose() {
+		// avoid memory leaks
+		tab.setUserData(null);
+		tab.setContent(null);
 	}
 
 	Tab getTab() {
@@ -293,6 +300,9 @@ class FileEditor
 				if (markdown.indexOf(0) >= 0) {
 					markdown = Messages.get("FileEditor.binary", fileSize);
 					readOnly = true;
+
+					if (fileSize <= MAX_HEX_FILE_SIZE)
+						markdown += "\n\n\n" + toHex(Files.readAllBytes(path));
 				}
 			}
 
@@ -405,5 +415,52 @@ class FileEditor
 		}
 
 		load();
+	}
+
+	private static final char[] HEX_DIGITS = {
+		'0', '1', '2', '3', '4', '5', '6', '7',
+		'8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
+	};
+
+	private String toHex(byte[] bytes) {
+		StringBuilder buf = new StringBuilder(bytes.length * 5);
+
+		for (int i = 0; i < bytes.length; i += 16) {
+			buf.append(HEX_DIGITS[(i >> 12) & 0xf]);
+			buf.append(HEX_DIGITS[(i >> 8) & 0xf]);
+			buf.append(HEX_DIGITS[(i >> 4) & 0xf]);
+			buf.append(HEX_DIGITS[i & 0xf]);
+			buf.append(' ');
+
+			for (int j = 0, i2 = i; j < 16; j++, i2++) {
+				if (j % 4 == 0)
+					buf.append(' ');
+				if (j == 8)
+					buf.append(' ');
+
+				if (i2 < bytes.length) {
+					buf.append(HEX_DIGITS[(bytes[i2] >> 4) & 0xf]);
+					buf.append(HEX_DIGITS[bytes[i2] & 0xf]);
+				} else
+					buf.append("  ");
+				buf.append(' ');
+			}
+
+			buf.append(' ');
+
+			for (int j = 0, i2 = i; j < 16; j++, i2++) {
+				if (j == 8)
+					buf.append(' ');
+
+				if (i2 < bytes.length) {
+					char ch = (char) bytes[i2];
+					buf.append((ch >= ' ') ? ch : ' ');
+				}
+			}
+
+			buf.append('\n');
+		}
+
+		return buf.toString();
 	}
 }

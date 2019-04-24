@@ -111,8 +111,10 @@ class FileEditorTabPane
 						((FileEditor)tab.getUserData()).modifiedProperty().addListener(modifiedListener);
 				}
 				if (c.wasRemoved()) {
-					for (Tab tab : c.getRemoved())
+					for (Tab tab : c.getRemoved()) {
 						((FileEditor)tab.getUserData()).modifiedProperty().removeListener(modifiedListener);
+						((FileEditor)tab.getUserData()).dispose();
+					}
 				}
 			}
 
