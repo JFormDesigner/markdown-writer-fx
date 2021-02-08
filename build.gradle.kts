@@ -1,7 +1,11 @@
+import java.lang.Boolean
 import org.gradle.plugins.ide.eclipse.model.AbstractClasspathEntry
 import org.gradle.plugins.ide.eclipse.model.AccessRule
 
-version = "0.12"
+val releaseVersion = "0.12"
+val developmentVersion = "0.13-SNAPSHOT"
+
+version = if( Boolean.getBoolean( "release" ) ) releaseVersion else developmentVersion
 
 // check required Java version
 if( JavaVersion.current() < JavaVersion.VERSION_1_8 || JavaVersion.current() > JavaVersion.VERSION_11 )
