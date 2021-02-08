@@ -43,6 +43,7 @@ import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javafx.application.Platform;
@@ -79,15 +80,16 @@ import org.reactfx.Subscription;
 import org.reactfx.util.FxTimer;
 import org.reactfx.util.Timer;
 import org.reactfx.util.Try;
-import com.vladsch.flexmark.ast.Block;
 import com.vladsch.flexmark.ast.Code;
 import com.vladsch.flexmark.ast.HardLineBreak;
 import com.vladsch.flexmark.ast.Heading;
-import com.vladsch.flexmark.ast.Node;
-import com.vladsch.flexmark.ast.NodeVisitor;
 import com.vladsch.flexmark.ast.Paragraph;
 import com.vladsch.flexmark.ast.SoftLineBreak;
 import com.vladsch.flexmark.ast.Text;
+import com.vladsch.flexmark.util.ast.Block;
+import com.vladsch.flexmark.util.ast.Node;
+import com.vladsch.flexmark.util.ast.NodeVisitor;
+import com.vladsch.flexmark.util.ast.Visitor;
 
 /**
  * Spell checker for an instance of StyleClassedTextArea
@@ -250,7 +252,7 @@ public class SpellChecker
 		ArrayList<Node> nodesToCheck = new ArrayList<>();
 		NodeVisitor visitor = new NodeVisitor(Collections.emptyList()) {
 			@Override
-			public void visit(Node node) {
+			protected void processNode(Node node, boolean withChildren, BiConsumer<Node, Visitor<Node>> processor) {
 				if (node instanceof Paragraph || node instanceof Heading)
 					nodesToCheck.add(node);
 
@@ -324,7 +326,7 @@ public class SpellChecker
 			int prevTextEnd = node.getStartOffset();
 
 			@Override
-			public void visit(Node node) {
+			protected void processNode(Node node, boolean withChildren, BiConsumer<Node, Visitor<Node>> processor) {
 				if (node instanceof Text)
 					addText(node.getStartOffset(), node.getChars().toString());
 				else if (node instanceof Code)

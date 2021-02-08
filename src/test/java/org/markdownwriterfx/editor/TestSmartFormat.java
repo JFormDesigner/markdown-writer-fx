@@ -34,10 +34,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import org.junit.Test;
-import com.vladsch.flexmark.ast.Block;
-import com.vladsch.flexmark.ast.Document;
 import com.vladsch.flexmark.parser.Parser;
-import com.vladsch.flexmark.util.Pair;
+import com.vladsch.flexmark.util.ast.Block;
+import com.vladsch.flexmark.util.ast.Document;
+import com.vladsch.flexmark.util.misc.Pair;
 
 /**
  * @author Karl Tauber

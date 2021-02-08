@@ -32,19 +32,21 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.ServiceLoader;
+import java.util.function.BiConsumer;
 import org.markdownwriterfx.addons.PreviewRendererAddon;
 import org.markdownwriterfx.options.MarkdownExtensions;
 import org.markdownwriterfx.util.Range;
 import com.vladsch.flexmark.ast.Heading;
-import com.vladsch.flexmark.ast.Node;
-import com.vladsch.flexmark.ast.NodeVisitor;
 import com.vladsch.flexmark.html.AttributeProvider;
 import com.vladsch.flexmark.html.HtmlRenderer;
 import com.vladsch.flexmark.html.IndependentAttributeProviderFactory;
 import com.vladsch.flexmark.html.renderer.AttributablePart;
 import com.vladsch.flexmark.html.renderer.LinkResolverContext;
 import com.vladsch.flexmark.parser.Parser;
-import com.vladsch.flexmark.util.html.Attributes;
+import com.vladsch.flexmark.util.ast.Node;
+import com.vladsch.flexmark.util.ast.NodeVisitor;
+import com.vladsch.flexmark.util.ast.Visitor;
+import com.vladsch.flexmark.util.html.MutableAttributes;
 import com.vladsch.flexmark.util.sequence.BasedSequence;
 
 /**
@@ -114,7 +116,7 @@ class FlexmarkPreviewRenderer
 
 		NodeVisitor visitor = new NodeVisitor(Collections.emptyList()) {
 			@Override
-			public void visit(Node node) {
+			protected void processNode(Node node, boolean withChildren, BiConsumer<Node, Visitor<Node>> processor) {
 				BasedSequence chars = node.getChars();
 				if (isInSequence(startOffset, endOffset, chars))
 					sequences.add(new Range(chars.getStartOffset(), chars.getEndOffset()));
@@ -221,13 +223,13 @@ class FlexmarkPreviewRenderer
 			extends IndependentAttributeProviderFactory
 		{
 			@Override
-			public AttributeProvider create(LinkResolverContext context) {
+			public AttributeProvider apply(LinkResolverContext context) {
 				return new MyAttributeProvider();
 			}
 		}
 
 		@Override
-		public void setAttributes(Node node, AttributablePart part, Attributes attributes) {
+		public void setAttributes(Node node, AttributablePart part, MutableAttributes attributes) {
 			attributes.addValue("data-pos", node.getStartOffset() + ":" + node.getEndOffset());
 		}
 	}

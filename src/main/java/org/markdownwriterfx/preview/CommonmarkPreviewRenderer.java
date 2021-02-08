@@ -65,7 +65,7 @@ class CommonmarkPreviewRenderer
 	private static final ServiceLoader<PreviewRendererAddon> addons = ServiceLoader.load(PreviewRendererAddon.class);
 
 	private String markdownText;
-	private com.vladsch.flexmark.ast.Node flexAstRoot;
+	private com.vladsch.flexmark.util.ast.Node flexAstRoot;
 	private Path path;
 	private Node astRoot;
 	private CommonmarkSourcePositions sourcePositions;
@@ -74,7 +74,7 @@ class CommonmarkPreviewRenderer
 	private String ast;
 
 	@Override
-	public void update(String markdownText, com.vladsch.flexmark.ast.Node astRoot, Path path) {
+	public void update(String markdownText, com.vladsch.flexmark.util.ast.Node astRoot, Path path) {
 		assert markdownText != null;
 		assert astRoot != null;
 
@@ -242,10 +242,10 @@ class CommonmarkPreviewRenderer
 		int fromIndex = buf.length();
 		if (value.length() > 30) {
 			// limit to 30 characters
-			com.vladsch.flexmark.ast.Node.segmentSpanChars(buf, 0, 1, name,
+			com.vladsch.flexmark.util.ast.Node.segmentSpanChars(buf, 0, 1, name,
 				value.substring(0, 30), "...", "");
 		} else
-			com.vladsch.flexmark.ast.Node.segmentSpanChars(buf, 0, 1, name, value);
+			com.vladsch.flexmark.util.ast.Node.segmentSpanChars(buf, 0, 1, name, value);
 
 		// change 'name:[0, 1, value]' to 'name=value'
 		String posStr = "[0, 1, ";

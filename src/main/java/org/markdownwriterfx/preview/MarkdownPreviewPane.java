@@ -41,7 +41,7 @@ import javafx.scene.layout.BorderPane;
 import org.markdownwriterfx.options.Options;
 import org.markdownwriterfx.options.Options.RendererType;
 import org.markdownwriterfx.util.Range;
-import com.vladsch.flexmark.ast.Node;
+import com.vladsch.flexmark.util.ast.Node;
 
 /**
  * Markdown preview pane.

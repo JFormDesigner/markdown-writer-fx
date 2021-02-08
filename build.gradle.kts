@@ -58,7 +58,7 @@ dependencies {
 	compile( "com.esotericsoftware.yamlbeans:yamlbeans:1.15" )
 	compile( "org.languagetool:language-en:5.2" )
 
-	val flexmarkVersion = "0.35.0"
+	val flexmarkVersion = "0.62.0"
 	compile( "com.vladsch.flexmark:flexmark:${flexmarkVersion}" )
 	compile( "com.vladsch.flexmark:flexmark-ext-abbreviation:${flexmarkVersion}" )
 	compile( "com.vladsch.flexmark:flexmark-ext-anchorlink:${flexmarkVersion}" )

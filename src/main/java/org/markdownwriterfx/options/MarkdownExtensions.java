@@ -84,11 +84,11 @@ public class MarkdownExtensions
 		return createdExtensions(commonmarkExtClasses, null);
 	}
 
-	public static List<com.vladsch.flexmark.Extension> getFlexmarkExtensions() {
+	public static List<com.vladsch.flexmark.util.misc.Extension> getFlexmarkExtensions() {
 		return createdExtensions(flexmarkExtClasses, null);
 	}
 
-	public static List<com.vladsch.flexmark.Extension> getFlexmarkExtensions(RendererType rendererType) {
+	public static List<com.vladsch.flexmark.util.misc.Extension> getFlexmarkExtensions(RendererType rendererType) {
 		return createdExtensions(flexmarkExtClasses, rendererType);
 	}
 

@@ -35,8 +35,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Predicate;
-import javafx.scene.Node;
 import javafx.scene.control.IndexRange;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -47,7 +47,9 @@ import org.fxmisc.richtext.model.ReadOnlyStyledDocument;
 import org.reactfx.util.Either;
 import com.vladsch.flexmark.ast.ImageRef;
 import com.vladsch.flexmark.ast.LinkNodeBase;
-import com.vladsch.flexmark.ast.NodeVisitor;
+import com.vladsch.flexmark.util.ast.Node;
+import com.vladsch.flexmark.util.ast.NodeVisitor;
+import com.vladsch.flexmark.util.ast.Visitor;
 
 /**
  * @author Karl Tauber
@@ -69,7 +71,7 @@ class EmbeddedImage
 		this.text = text;
 	}
 
-	Node createNode() {
+	javafx.scene.Node createNode() {
 		String imageUrl;
 		try {
 			imageUrl = (basePath != null)
@@ -92,7 +94,7 @@ class EmbeddedImage
 		return view;
 	}
 
-	private Node createErrorNode() {
+	private javafx.scene.Node createErrorNode() {
 		Polyline errorNode = new Polyline(
 			0, 0,  ERROR_SIZE, 0,  ERROR_SIZE, ERROR_SIZE,  0, ERROR_SIZE,  0, 0,	// rectangle
 			ERROR_SIZE, ERROR_SIZE,  0, ERROR_SIZE,  ERROR_SIZE, 0);				// cross
@@ -122,7 +124,7 @@ class EmbeddedImage
 		}
 	}
 
-	static void replaceImageSegments(MarkdownTextArea textArea, com.vladsch.flexmark.ast.Node astRoot, Path basePath) {
+	static void replaceImageSegments(MarkdownTextArea textArea, Node astRoot, Path basePath) {
 		// remember current selection (because textArea.replace() changes selection)
 		IndexRange selection = textArea.getSelection();
 
@@ -130,7 +132,7 @@ class EmbeddedImage
 		HashSet<EmbeddedImage> addedImages = new HashSet<>();
 		NodeVisitor visitor = new NodeVisitor(Collections.emptyList()) {
 			@Override
-			public void visit(com.vladsch.flexmark.ast.Node node) {
+			protected void processNode(Node node, boolean withChildren, BiConsumer<Node, Visitor<Node>> processor) {
 				if (node instanceof com.vladsch.flexmark.ast.Image ||
 					node instanceof ImageRef)
 				{
