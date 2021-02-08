@@ -1,0 +1,114 @@
+JFDML JFormDesigner: "9.9.9.9.9999" Java: "1.8.0_162" encoding: "UTF-8"
+
+new FormModel {
+	"i18n.bundlePackage": "org.markdownwriterfx"
+	"i18n.bundleName": "messages"
+	"i18n.autoExternalize": true
+	"i18n.keyPrefix": "SpellCheckerOptionsPane"
+	contentType: "form/javafx"
+	root: new FormRoot {
+		add( new FormContainer( "org.tbee.javafx.scene.layout.fxml.MigPane", new FormLayoutManager( class org.tbee.javafx.scene.layout.fxml.MigPane ) {
+			"$layoutConstraints": ""
+			"$columnConstraints": "[indent]0[shrink 0,fill][430,grow,fill]"
+			"$rowConstraints": "[][][][][][]para[][][200,grow,fill][]0[][]"
+		} ) {
+			name: "this"
+			add( new FormComponent( "javafx.scene.control.Label" ) {
+				name: "spellingSettingsLabel"
+				"text": new FormMessage( null, "SpellCheckerOptionsPane.spellingSettingsLabel.text" )
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 0 3 1"
+			} )
+			add( new FormComponent( "javafx.scene.control.CheckBox" ) {
+				name: "spellCheckerCheckBox"
+				"text": new FormMessage( null, "SpellCheckerOptionsPane.spellCheckerCheckBox.text" )
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 1 1 2 1,alignx left,growx 0"
+			} )
+			add( new FormComponent( "javafx.scene.control.Label" ) {
+				name: "languageLabel"
+				"text": new FormMessage( null, "SpellCheckerOptionsPane.languageLabel.text" )
+				"mnemonicParsing": true
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 1 3"
+			} )
+			add( new FormComponent( "javafx.scene.control.ComboBox" ) {
+				name: "languageField"
+				"visibleRowCount": 20
+				auxiliary() {
+					"JavaCodeGenerator.typeParameters": "Language"
+				}
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 2 3"
+			} )
+			add( new FormComponent( "javafx.scene.control.Label" ) {
+				name: "userDictionaryLabel"
+				"text": new FormMessage( null, "SpellCheckerOptionsPane.userDictionaryLabel.text" )
+				"mnemonicParsing": true
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 1 4"
+			} )
+			add( new FormComponent( "javafx.scene.control.TextField" ) {
+				name: "userDictionaryField"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 2 4"
+			} )
+			add( new FormComponent( "org.markdownwriterfx.options.SpellCheckerOptionsPane$BrowseUserDictionaryButton" ) {
+				name: "browseUserDictionaryButton"
+				"focusTraversable": false
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 2 4,alignx right,growx 0"
+			} )
+			add( new FormComponent( "javafx.scene.control.Label" ) {
+				name: "userDictionaryNote"
+				"text": new FormMessage( null, "SpellCheckerOptionsPane.userDictionaryNote.text" )
+				"wrapText": true
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 2 5"
+			} )
+			add( new FormComponent( "javafx.scene.control.Label" ) {
+				name: "grammarSettingsLabel"
+				"text": new FormMessage( null, "SpellCheckerOptionsPane.grammarSettingsLabel.text" )
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 6 3 1"
+			} )
+			add( new FormComponent( "javafx.scene.control.CheckBox" ) {
+				name: "grammarCheckerCheckBox"
+				"text": new FormMessage( null, "SpellCheckerOptionsPane.grammarCheckerCheckBox.text" )
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 1 7 2 1,alignx left,growx 0"
+			} )
+			add( new FormComponent( "javafx.scene.control.Label" ) {
+				name: "disabledRulesLabel"
+				"text": new FormMessage( null, "SpellCheckerOptionsPane.disabledRulesLabel.text" )
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 1 8,aligny top,growy 0"
+			} )
+			add( new FormComponent( "javafx.scene.control.ListView" ) {
+				name: "disabledRulesField"
+				auxiliary() {
+					"JavaCodeGenerator.typeParameters": "Item<String>"
+				}
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 2 8"
+			} )
+			add( new FormComponent( "javafx.scene.control.Label" ) {
+				name: "disabledRulesNote"
+				"text": new FormMessage( null, "SpellCheckerOptionsPane.disabledRulesNote.text" )
+				"wrapText": true
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 2 9"
+			} )
+			add( new FormComponent( "javafx.scene.control.Label" ) {
+				name: "disabledRulesNote2"
+				"text": new FormMessage( null, "SpellCheckerOptionsPane.disabledRulesNote2.text" )
+				"wrapText": true
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 2 10"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new javafx.geometry.Point2D( 0.0, 0.0 )
+			"size": new javafx.geometry.Dimension2D( 500.0, 401.0 )
+		} )
+	}
+}

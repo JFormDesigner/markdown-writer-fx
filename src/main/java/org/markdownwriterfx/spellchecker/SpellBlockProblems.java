@@ -5,10 +5,10 @@
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- *  - Redistributions of source code must retain the above copyright
+ *  * Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  *
- *  - Redistributions in binary form must reproduce the above copyright
+ *  * Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
@@ -25,31 +25,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.markdownwriterfx.editor;
+package org.markdownwriterfx.spellchecker;
 
-import javafx.scene.control.ContextMenu;
-import org.markdownwriterfx.Messages;
-import org.markdownwriterfx.util.Action;
-import org.markdownwriterfx.util.ActionUtils;
+import java.util.ArrayList;
+import java.util.List;
+import org.languagetool.rules.RuleMatch;
 
 /**
- * Smart Markdown text edit actions.
+ * Spell checker problems of a block (e.g. paragraph).
  *
  * @author Karl Tauber
  */
-class SmartEditActions
+class SpellBlockProblems
+	extends SpellRange
 {
-	static void initContextMenu(MarkdownEditorPane editor, ContextMenu contextMenu, int characterIndex) {
-		Action cutAction = new Action(Messages.get("MainWindow.editCutAction"), "Shortcut+X", null,
-				e -> editor.cut());
-		Action copyAction = new Action(Messages.get("MainWindow.editCopyAction"), "Shortcut+C", null,
-				e -> editor.copy());
-		Action pasteAction = new Action(Messages.get("MainWindow.editPasteAction"), "Shortcut+V", null,
-				e -> editor.paste());
+	final List<SpellProblem> problems;
 
-		contextMenu.getItems().addAll(ActionUtils.createMenuItems(
-				cutAction,
-				copyAction,
-				pasteAction));
+	SpellBlockProblems(int fromPos, int toPos, List<RuleMatch> ruleMatches) {
+		super(fromPos, toPos);
+
+		problems = new ArrayList<>(ruleMatches.size());
+		for (RuleMatch ruleMatch : ruleMatches)
+			problems.add(new SpellProblem(fromPos, ruleMatch));
+	}
+
+	@Override
+	void updateOffsets(int position, int inserted, int removed) {
+		super.updateOffsets(position, inserted, removed);
+
+		for (SpellProblem problem : problems)
+			problem.updateOffsets(position, inserted, removed);
 	}
 }

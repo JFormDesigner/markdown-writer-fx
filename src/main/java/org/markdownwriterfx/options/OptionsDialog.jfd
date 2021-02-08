@@ -32,6 +32,13 @@ new FormModel {
 				} )
 			} )
 			add( new FormContainer( "javafx.scene.control.Tab", new FormLayoutManager( class javafx.scene.control.Tab ) ) {
+				name: "spellingTab"
+				"text": new FormMessage( null, "OptionsDialog.spellingTab.text" )
+				add( new FormComponent( "org.markdownwriterfx.options.SpellCheckerOptionsPane" ) {
+					name: "spellCheckerOptionsPane"
+				} )
+			} )
+			add( new FormContainer( "javafx.scene.control.Tab", new FormLayoutManager( class javafx.scene.control.Tab ) ) {
 				name: "stylesheetsTab"
 				"text": new FormMessage( null, "OptionsDialog.stylesheetsTab.text" )
 				add( new FormComponent( "org.markdownwriterfx.options.StylesheetsOptionsPane" ) {

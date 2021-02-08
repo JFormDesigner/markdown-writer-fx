@@ -87,7 +87,7 @@ class WhitespaceOverlayFactory
 	}
 
 	@Override
-	void layoutOverlayNodes(int paragraphIndex, List<Node> nodes) {
+	public void layoutOverlayNodes(int paragraphIndex, List<Node> nodes) {
 		Insets insets = getInsets();
 		double leftInsets = insets.getLeft();
 		double topInsets = insets.getTop();

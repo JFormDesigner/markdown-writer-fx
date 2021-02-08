@@ -2,6 +2,7 @@ options:
    encoding: UTF-8
    formatOnSave: true
    formatOnlyModifiedParagraphs: true
+   language: en-US
    lineSeparator: "\n"
    showImagesEmbedded: true
    showLineNo: true

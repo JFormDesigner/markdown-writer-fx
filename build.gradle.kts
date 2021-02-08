@@ -56,6 +56,7 @@ dependencies {
 	compile( "org.fxmisc.cssfx:cssfx:1.0.0" )
 	compile( "org.apache.commons:commons-lang3:3.8.1" )
 	compile( "com.esotericsoftware.yamlbeans:yamlbeans:1.13" )
+	compile( "org.languagetool:language-en:4.5" )
 
 	val flexmarkVersion = "0.35.0"
 	compile( "com.vladsch.flexmark:flexmark:${flexmarkVersion}" )

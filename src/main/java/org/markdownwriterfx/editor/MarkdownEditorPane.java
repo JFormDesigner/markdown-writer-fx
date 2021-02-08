@@ -35,11 +35,14 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.WeakInvalidationListener;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringProperty;
@@ -47,6 +50,7 @@ import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.geometry.Bounds;
 import javafx.scene.Scene;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.IndexRange;
@@ -69,6 +73,7 @@ import org.markdownwriterfx.editor.FindReplacePane.HitsChangeListener;
 import org.markdownwriterfx.editor.MarkdownSyntaxHighlighter.ExtraStyledRanges;
 import org.markdownwriterfx.options.MarkdownExtensions;
 import org.markdownwriterfx.options.Options;
+import org.markdownwriterfx.spellchecker.SpellChecker;
 
 /**
  * Markdown editor pane.
@@ -91,6 +96,7 @@ public class MarkdownEditorPane
 	private final FindReplacePane findReplacePane;
 	private final HitsChangeListener findHitsChangeListener;
 	private Parser parser;
+	private final SpellChecker spellChecker;
 	private final InvalidationListener optionsListener;
 	private String lineSeparator = getLineSeparatorOrDefault();
 
@@ -104,10 +110,12 @@ public class MarkdownEditorPane
 
 		textArea.textProperty().addListener((observable, oldText, newText) -> {
 			textChanged(newText);
+			hideContextMenu();
 		});
 
 		textArea.addEventHandler(ContextMenuEvent.CONTEXT_MENU_REQUESTED, this::showContextMenu);
-		textArea.addEventHandler(MouseEvent.MOUSE_PRESSED, this::hideContextMenu);
+		textArea.addEventHandler(MouseEvent.MOUSE_PRESSED, e -> hideContextMenu());
+		textArea.focusedProperty().addListener(e -> hideContextMenu());
 		textArea.setOnDragEntered(this::onDragEntered);
 		textArea.setOnDragExited(this::onDragExited);
 		textArea.setOnDragOver(this::onDragOver);
@@ -138,6 +146,8 @@ public class MarkdownEditorPane
 		// initialize properties
 		markdownText.set("");
 		markdownAST.set(parseMarkdown(""));
+
+		spellChecker = new SpellChecker(this, textArea, overlayGraphicFactory);
 
 		// find/replace
 		findReplacePane = new FindReplacePane(textArea);
@@ -297,6 +307,12 @@ public class MarkdownEditorPane
 	public void setPath(Path path) { this.path.set(path); }
 	public ObjectProperty<Path> pathProperty() { return path; }
 
+	// 'visible' property
+	private final ReadOnlyBooleanWrapper visible = new ReadOnlyBooleanWrapper(false);
+	public boolean isVisible() { return visible.get(); }
+	public void setVisible(boolean visible) { this.visible.set(visible); }
+	public ReadOnlyBooleanProperty visibleProperty() { return visible.getReadOnlyProperty(); }
+
 	Path getParentPath() {
 		Path path = getPath();
 		return (path != null) ? path.getParent() : null;
@@ -423,41 +439,84 @@ public class MarkdownEditorPane
 		SmartEdit.selectRange(textArea, anchor, caretPosition);
 	}
 
+	public void scrollCaretToVisible() {
+		scrollParagraphToVisible(textArea.getCurrentParagraph());
+	}
+
+	public void scrollParagraphToVisible(int paragraph) {
+		try {
+			int firstVisible = textArea.firstVisibleParToAllParIndex();
+			int lastVisible = textArea.lastVisibleParToAllParIndex();
+			int visibleCount = lastVisible - firstVisible;
+			int distance = visibleCount / 8;
+
+			if (paragraph > lastVisible - distance) {
+				// scroll down so that paragraph is in the upper area
+				textArea.showParagraphAtTop(paragraph - distance);
+
+			} else if (paragraph < firstVisible + distance) {
+				// scroll up so that paragraph is in the lower area
+				textArea.showParagraphAtBottom(paragraph + distance);
+			}
+		} catch (AssertionError e) {
+			// may be thrown in textArea.visibleParToAllParIndex()
+			// occurs if the last line is empty and and the text fits into
+			// the visible area (no vertical scroll bar shown)
+			// --> ignore
+		}
+	}
+
 	//---- context menu -------------------------------------------------------
 
 	private void showContextMenu(ContextMenuEvent e) {
 		if (e.isConsumed())
 			return;
 
-		// create context menu
-		if (contextMenu == null) {
-			contextMenu = new ContextMenu();
-			initContextMenu();
+		// hide old context menu
+		hideContextMenu();
+
+		// determine character index and menu x/y
+		int characterIndex;
+		double menuX = e.getScreenX();
+		double menuY = e.getScreenY();
+		if (e.isKeyboardTrigger()) {
+			// keyboard triggered --> use caret
+			characterIndex = textArea.getCaretPosition();
+
+			Optional<Bounds> caretBounds = textArea.getCaretBounds();
+			if (caretBounds.isPresent()) {
+				menuX = caretBounds.get().getMaxX();
+				menuY = caretBounds.get().getMaxY();
+			}
+		} else {
+			// mouse triggered
+			CharacterHit hit = textArea.hit(e.getX(), e.getY());
+			characterIndex = hit.getCharacterIndex().orElse(-1);
 		}
 
-		// update context menu
-		CharacterHit hit = textArea.hit(e.getX(), e.getY());
-		updateContextMenu(hit.getCharacterIndex().orElse(-1), hit.getInsertionIndex());
+		// create context menu
+		ContextMenu contextMenu = new ContextMenu();
+
+		// initialize context menu
+		SmartEditActions.initContextMenu(this, contextMenu, characterIndex);
+		spellChecker.initContextMenu(contextMenu, characterIndex);
 
 		if (contextMenu.getItems().isEmpty())
 			return;
 
 		// show context menu
-		contextMenu.show(textArea, e.getScreenX(), e.getScreenY());
+		contextMenu.show(textArea, menuX, menuY);
+		this.contextMenu = contextMenu;
 		e.consume();
 	}
 
-	private void hideContextMenu(MouseEvent e) {
-		if (contextMenu != null)
+	public void hideContextMenu() {
+		if (contextMenu != null) {
 			contextMenu.hide();
-	}
+			contextMenu = null;
+		}
 
-	private void initContextMenu() {
-		SmartEditActions.initContextMenu(this, contextMenu);
-	}
-
-	private void updateContextMenu(int characterIndex, int insertionIndex) {
-		SmartEditActions.updateContextMenu(this, contextMenu, characterIndex);
+		spellChecker.hideContextMenu();
 	}
 
 	//---- find/replace -------------------------------------------------------

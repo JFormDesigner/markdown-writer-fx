@@ -56,7 +56,7 @@ import javafx.scene.shape.PathElement;
  *
  * @author Karl Tauber
  */
-class ParagraphOverlayGraphicFactory
+public class ParagraphOverlayGraphicFactory
 	implements IntFunction<Node>
 {
 	private final MarkdownTextArea textArea;
@@ -67,12 +67,12 @@ class ParagraphOverlayGraphicFactory
 		this.textArea = textArea;
 	}
 
-	void addOverlayFactory(OverlayFactory overlayFactory) {
+	public void addOverlayFactory(OverlayFactory overlayFactory) {
 		overlayFactories.add(overlayFactory);
 		update();
 	}
 
-	void removeOverlayFactory(OverlayFactory overlayFactory) {
+	public void removeOverlayFactory(OverlayFactory overlayFactory) {
 		overlayFactories.remove(overlayFactory);
 		update();
 	}
@@ -87,7 +87,7 @@ class ParagraphOverlayGraphicFactory
 		update();
 	}
 
-	void update() {
+	public void update() {
 		// temporary remove paragraph graphic factory to update the view
 		IntFunction<? extends Node> factory = textArea.getParagraphGraphicFactory();
 		textArea.setParagraphGraphicFactory(null);
@@ -193,7 +193,7 @@ class ParagraphOverlayGraphicFactory
 
 	//---- class OverlayFactory -----------------------------------------------
 
-	static abstract class OverlayFactory
+	public static abstract class OverlayFactory
 	{
 		private MarkdownTextArea textArea;
 		private Node paragraphTextNode;
@@ -207,8 +207,8 @@ class ParagraphOverlayGraphicFactory
 			this.gutterWidth = -1;
 		}
 
-		abstract List<Node> createOverlayNodes(int paragraphIndex);
-		abstract void layoutOverlayNodes(int paragraphIndex, List<Node> nodes);
+		public abstract List<Node> createOverlayNodes(int paragraphIndex);
+		public abstract void layoutOverlayNodes(int paragraphIndex, List<Node> nodes);
 
 		protected MarkdownTextArea getTextArea() {
 			return textArea;
@@ -237,6 +237,33 @@ class ParagraphOverlayGraphicFactory
 				}
 			}
 			return new Rectangle2D(minX, minY, maxX - minX, maxY - minY);
+		}
+
+		protected List<Rectangle2D> getAllBounds(int start, int end) {
+			PathElement[] shape = getShape(start, end);
+
+			ArrayList<Rectangle2D> rectangles = new ArrayList<>(shape.length / 4);
+			double minX = 0, minY = 0, maxX = 0, maxY = 0;
+			for (PathElement pathElement : shape) {
+				if (pathElement instanceof MoveTo) {
+					if (pathElement != shape[0])
+						rectangles.add(new Rectangle2D(minX, minY, maxX - minX, maxY - minY));
+
+					MoveTo moveTo = (MoveTo) pathElement;
+					minX = maxX = moveTo.getX();
+					minY = maxY = moveTo.getY();
+				} else if (pathElement instanceof LineTo) {
+					LineTo lineTo = (LineTo) pathElement;
+					double x = lineTo.getX();
+					double y = lineTo.getY();
+					minX = Math.min(minX, x);
+					minY = Math.min(minY, y);
+					maxX = Math.max(maxX, x);
+					maxY = Math.max(maxY, y);
+				}
+			}
+			rectangles.add(new Rectangle2D(minX, minY, maxX - minX, maxY - minY));
+			return rectangles;
 		}
 
 		protected Insets getInsets() {

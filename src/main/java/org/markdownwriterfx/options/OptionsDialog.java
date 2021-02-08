@@ -54,6 +54,7 @@ public class OptionsDialog
 	public OptionsDialog(Window owner) {
 		setTitle(Messages.get("OptionsDialog.title"));
 		initOwner(owner);
+		setResizable(true);
 
 		initComponents();
 
@@ -110,6 +111,7 @@ public class OptionsDialog
 		generalOptionsPane.load();
 		editorOptionsPane.load();
 		markdownOptionsPane.load();
+		spellCheckerOptionsPane.load();
 		stylesheetsOptionsPane.load();
 	}
 
@@ -117,6 +119,7 @@ public class OptionsDialog
 		generalOptionsPane.save();
 		editorOptionsPane.save();
 		markdownOptionsPane.save();
+		spellCheckerOptionsPane.save();
 		stylesheetsOptionsPane.save();
 	}
 
@@ -129,6 +132,8 @@ public class OptionsDialog
 		editorOptionsPane = new EditorOptionsPane();
 		markdownTab = new Tab();
 		markdownOptionsPane = new MarkdownOptionsPane();
+		spellingTab = new Tab();
+		spellCheckerOptionsPane = new SpellCheckerOptionsPane();
 		stylesheetsTab = new Tab();
 		stylesheetsOptionsPane = new StylesheetsOptionsPane();
 
@@ -154,13 +159,20 @@ public class OptionsDialog
 				markdownTab.setContent(markdownOptionsPane);
 			}
 
+			//======== spellingTab ========
+			{
+				spellingTab.setText(Messages.get("OptionsDialog.spellingTab.text"));
+				spellingTab.setContent(spellCheckerOptionsPane);
+			}
+
 			//======== stylesheetsTab ========
 			{
 				stylesheetsTab.setText(Messages.get("OptionsDialog.stylesheetsTab.text"));
 				stylesheetsTab.setContent(stylesheetsOptionsPane);
 			}
 
-			tabPane.getTabs().addAll(generalTab, editorTab, markdownTab, stylesheetsTab);
+			tabPane.getTabs().addAll(generalTab, editorTab, markdownTab, spellingTab,
+				stylesheetsTab);
 		}
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 	}
@@ -173,6 +185,8 @@ public class OptionsDialog
 	private EditorOptionsPane editorOptionsPane;
 	private Tab markdownTab;
 	private MarkdownOptionsPane markdownOptionsPane;
+	private Tab spellingTab;
+	private SpellCheckerOptionsPane spellCheckerOptionsPane;
 	private Tab stylesheetsTab;
 	private StylesheetsOptionsPane stylesheetsOptionsPane;
 	// JFormDesigner - End of variables declaration  //GEN-END:variables

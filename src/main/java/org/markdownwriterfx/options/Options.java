@@ -30,6 +30,8 @@ package org.markdownwriterfx.options;
 import java.io.File;
 import java.util.List;
 import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
@@ -42,6 +44,7 @@ import org.markdownwriterfx.util.PrefsEnumProperty;
 import org.markdownwriterfx.util.PrefsIntegerProperty;
 import org.markdownwriterfx.util.PrefsStringProperty;
 import org.markdownwriterfx.util.PrefsStringsProperty;
+import org.markdownwriterfx.util.Utils;
 
 /**
  * Options
@@ -92,6 +95,12 @@ public class Options
 		formatOnSave.init(options, "formatOnSave", false);
 		formatOnlyModifiedParagraphs.init(options, "formatOnlyModifiedParagraphs", false);
 
+		spellChecker.init(options, "spellChecker", true);
+		grammarChecker.init(options, "grammarChecker", true);
+		language.init(options, "language", null);
+		userDictionary.init(options, "userDictionary", getDefaultUserDictionary());
+		disabledRules.init(options, "disabledRules");
+
 		additionalCSS.init(options, "additionalCSS", null);
 
 		// listen to active project
@@ -124,6 +133,12 @@ public class Options
 		wrapLineLength.setPreferences(options);
 		formatOnSave.setPreferences(options);
 		formatOnlyModifiedParagraphs.setPreferences(options);
+
+		spellChecker.setPreferences(options);
+		grammarChecker.setPreferences(options);
+		language.setPreferences(options);
+		userDictionary.setPreferences(options);
+		disabledRules.setPreferences(options);
 
 		additionalCSS.setPreferences(options);
 	}
@@ -259,6 +274,57 @@ public class Options
 	public static boolean isFormatOnlyModifiedParagraphs() { return formatOnlyModifiedParagraphs.get(); }
 	public static void setFormatOnlyModifiedParagraphs(boolean formatOnlyModifiedParagraphs) { Options.formatOnlyModifiedParagraphs.set(formatOnlyModifiedParagraphs); }
 	public static BooleanProperty formatOnlyModifiedParagraphsProperty() { return formatOnlyModifiedParagraphs; }
+
+	// 'spellChecker' property
+	private static final PrefsBooleanProperty spellChecker = new PrefsBooleanProperty();
+	public static boolean isSpellChecker() { return spellChecker.get(); }
+	public static void setSpellChecker(boolean spellChecker) { Options.spellChecker.set(spellChecker); }
+	public static BooleanProperty spellCheckerProperty() { return spellChecker; }
+
+	// 'grammarChecker' property
+	private static final PrefsBooleanProperty grammarChecker = new PrefsBooleanProperty();
+	public static boolean isGrammarChecker() { return grammarChecker.get(); }
+	public static void setGrammarChecker(boolean grammarChecker) { Options.grammarChecker.set(grammarChecker); }
+	public static BooleanProperty grammarCheckerProperty() { return grammarChecker; }
+
+	// 'language' property
+	private static final PrefsStringProperty language = new PrefsStringProperty();
+	public static String getLanguage() { return language.get(); }
+	public static void setLanguage(String language) { Options.language.set(language); }
+	public static StringProperty languageProperty() { return language; }
+
+	// 'userDictionary' property
+	private static final PrefsStringProperty userDictionary = new PrefsStringProperty();
+	public static String getUserDictionary() { return userDictionaryOrDefault(userDictionary.get()); }
+	public static void setUserDictionary(String userDictionary) { Options.userDictionary.set(userDictionaryOrDefault(userDictionary)); }
+	public static StringProperty userDictionaryProperty() { return userDictionary; }
+	private static String getDefaultUserDictionary() {
+		return System.getProperty("user.home") + System.getProperty("file.separator") + "dictionary-mwfx.txt";
+	}
+	private static String userDictionaryOrDefault(String userDictionary) {
+		return !Utils.isNullOrEmpty(userDictionary) ? userDictionary : getDefaultUserDictionary();
+	}
+
+	// 'disabledRules' property
+	// (value syntax: ruleID=ruleDescription)
+	private static final PrefsStringsProperty disabledRules = new PrefsStringsProperty();
+	public static String[] getDisabledRules() { return disabledRules.get(); }
+	public static void setDisabledRules(String[] disabledRules) { Options.disabledRules.set(disabledRules); }
+	public static ObjectProperty<String[]> disabledRulesProperty() { return disabledRules; }
+
+	public static String ruleIdDesc2id(String str) {
+		return str.contains("=") ? str.substring(0, str.indexOf('=')) : str;
+	}
+
+	public static String ruleIdDesc2desc(String str) {
+		return str.contains("=") ? str.substring(str.indexOf('=') + 1) : str;
+	}
+
+	public static List<String> ruleIdDescs2ids(String[] strs) {
+		return Stream.of(strs)
+			.map(Options::ruleIdDesc2id)
+			.collect(Collectors.toList());
+	}
 
 	// 'additionalCSS' property
 	private static final PrefsStringProperty additionalCSS = new PrefsStringProperty();

@@ -311,7 +311,7 @@ class MainWindow
 				activeFileEditorIsNull);
 
 		// Tools actions
-		Action toolsOptionsAction = new Action(Messages.get("MainWindow.toolsOptionsAction"), "Shortcut+,", null, e -> toolsOptions());
+		Action toolsOptionsAction = new Action(Messages.get("MainWindow.toolsOptionsAction"), "Shortcut+Shift+,", null, e -> toolsOptions());
 
 		// Help actions
 		Action helpAboutAction = new Action(Messages.get("MainWindow.helpAboutAction"), null, null, e -> helpAbout());
