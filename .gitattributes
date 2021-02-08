@@ -7,6 +7,11 @@
 * text eol=lf
 
 
+# TEXT FILES:
+
+*.bat text eol=crlf
+
+
 # BINARY FILES:
 #   Disable line ending normalize on checkin.
 
