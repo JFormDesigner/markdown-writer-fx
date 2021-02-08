@@ -43,7 +43,7 @@ dependencies {
 	compile( "com.miglayout:miglayout-javafx:5.2" )
 
 	val fontawesomefxVersion = if( javaCompatibility >= JavaVersion.VERSION_1_9 ) "4.7.0-9.1.2" else "4.7.0-5"
-	val controlsfxVersion = if( javaCompatibility >= JavaVersion.VERSION_1_9 ) "9.0.0" else "8.40.14"
+	val controlsfxVersion = if( javaCompatibility >= JavaVersion.VERSION_1_9 ) "11.0.3" else "8.40.18"
 	compile( "de.jensd:fontawesomefx-fontawesome:${fontawesomefxVersion}" )
 	if( javaCompatibility == JavaVersion.VERSION_1_8 ) {
 		// required since Gradle 5.0 because fontawesomefx-fontawesome-4.7.0-5.pom uses
@@ -53,10 +53,10 @@ dependencies {
 		compile( "de.jensd:fontawesomefx-commons:8.15" )
 	}
 	compile( "org.controlsfx:controlsfx:${controlsfxVersion}" )
-	compile( "org.fxmisc.cssfx:cssfx:1.0.0" )
-	compile( "org.apache.commons:commons-lang3:3.8.1" )
-	compile( "com.esotericsoftware.yamlbeans:yamlbeans:1.13" )
-	compile( "org.languagetool:language-en:4.5" )
+	compile( "org.fxmisc.cssfx:cssfx:1.1.1" )
+	compile( "org.apache.commons:commons-lang3:3.11" )
+	compile( "com.esotericsoftware.yamlbeans:yamlbeans:1.15" )
+	compile( "org.languagetool:language-en:5.2" )
 
 	val flexmarkVersion = "0.35.0"
 	compile( "com.vladsch.flexmark:flexmark:${flexmarkVersion}" )
@@ -73,7 +73,7 @@ dependencies {
 	compile( "com.vladsch.flexmark:flexmark-ext-wikilink:${flexmarkVersion}" )
 	compile( "com.vladsch.flexmark:flexmark-ext-yaml-front-matter:${flexmarkVersion}" )
 
-	val commonmarkVersion = "0.12.1"
+	val commonmarkVersion = "0.17.0"
 	compile( "com.atlassian.commonmark:commonmark:${commonmarkVersion}" )
 	compile( "com.atlassian.commonmark:commonmark-ext-autolink:${commonmarkVersion}" )
 	compile( "com.atlassian.commonmark:commonmark-ext-gfm-strikethrough:${commonmarkVersion}" )
@@ -93,7 +93,7 @@ dependencies {
 		compile( "org.openjfx:javafx-web:${javafxVersion}:${platform}" )
 	}
 
-	testCompile( "junit:junit:4.12" )
+	testCompile( "junit:junit:4.13.1" )
 }
 
 java {
