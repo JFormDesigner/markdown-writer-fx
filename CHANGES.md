@@ -3,6 +3,7 @@ Markdown Writer FX Change Log
 
 ## Unreleased
 
+- Spell and grammar checking with LanguageTool. (issue #10)
 - Fixed memory leaks.
 
 
