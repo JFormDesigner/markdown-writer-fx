@@ -25,8 +25,8 @@ new FormModel {
 			add( new FormComponent( "org.markdownwriterfx.controls.EscapeTextField" ) {
 				name: "urlField"
 				"escapeCharacters": "()"
-				"text": "http://yourlink.com"
-				"promptText": "http://yourlink.com"
+				"text": "https://yourlink.com"
+				"promptText": "https://yourlink.com"
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 1 0"
 			} )

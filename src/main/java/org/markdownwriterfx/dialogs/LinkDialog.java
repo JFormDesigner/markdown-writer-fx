@@ -90,8 +90,8 @@ public class LinkDialog
 		Platform.runLater(() -> {
 			urlField.requestFocus();
 
-			if (urlField.getText().startsWith("http://"))
-				urlField.selectRange("http://".length(), urlField.getLength());
+			if (urlField.getText().startsWith("https://"))
+				urlField.selectRange("https://".length(), urlField.getLength());
 		});
 	}
 
@@ -126,8 +126,8 @@ public class LinkDialog
 
 			//---- urlField ----
 			urlField.setEscapeCharacters("()");
-			urlField.setText("http://yourlink.com");
-			urlField.setPromptText("http://yourlink.com");
+			urlField.setText("https://yourlink.com");
+			urlField.setPromptText("https://yourlink.com");
 			pane.add(urlField, "cell 1 0");
 
 			//---- linkBrowseDirectoyButton ----
