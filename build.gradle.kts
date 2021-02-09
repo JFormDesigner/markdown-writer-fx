@@ -73,14 +73,14 @@ dependencies {
 	compile( "com.vladsch.flexmark:flexmark-ext-wikilink:${flexmarkVersion}" )
 	compile( "com.vladsch.flexmark:flexmark-ext-yaml-front-matter:${flexmarkVersion}" )
 
-	val commonmarkVersion = "0.17.0"
-	compile( "com.atlassian.commonmark:commonmark:${commonmarkVersion}" )
-	compile( "com.atlassian.commonmark:commonmark-ext-autolink:${commonmarkVersion}" )
-	compile( "com.atlassian.commonmark:commonmark-ext-gfm-strikethrough:${commonmarkVersion}" )
-	compile( "com.atlassian.commonmark:commonmark-ext-gfm-tables:${commonmarkVersion}" )
-	compile( "com.atlassian.commonmark:commonmark-ext-heading-anchor:${commonmarkVersion}" )
-	compile( "com.atlassian.commonmark:commonmark-ext-ins:${commonmarkVersion}" )
-	compile( "com.atlassian.commonmark:commonmark-ext-yaml-front-matter:${commonmarkVersion}" )
+	val commonmarkVersion = "0.17.1"
+	compile( "org.commonmark:commonmark:${commonmarkVersion}" )
+	compile( "org.commonmark:commonmark-ext-autolink:${commonmarkVersion}" )
+	compile( "org.commonmark:commonmark-ext-gfm-strikethrough:${commonmarkVersion}" )
+	compile( "org.commonmark:commonmark-ext-gfm-tables:${commonmarkVersion}" )
+	compile( "org.commonmark:commonmark-ext-heading-anchor:${commonmarkVersion}" )
+	compile( "org.commonmark:commonmark-ext-ins:${commonmarkVersion}" )
+	compile( "org.commonmark:commonmark-ext-yaml-front-matter:${commonmarkVersion}" )
 
 	if( javaCompatibility >= JavaVersion.VERSION_11 ) {
 		val javafxVersion = "11.0.2"

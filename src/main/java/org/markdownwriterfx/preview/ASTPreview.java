@@ -140,17 +140,17 @@ class ASTPreview
 	//---- syntax highlighting ------------------------------------------------
 
 	private static final Pattern PATTERN = Pattern.compile("(?m)^\\s*(\\w+)(\\[.*$)");
-	private static final Pattern ATTRIBUTES = Pattern.compile("(?:(\\w+[=:])|(\"[^\"]*\")|(\\d+)|([\\[\\],]))");
+	private static final Pattern ATTRIBUTES = Pattern.compile("(?:(\"[^\"]*\")|(\\d+)|([\\[\\],])|(\\w+[=:]))");
 
 	// groups in PATTERN
 	private static final int GROUP_NODE_NAME = 1;
 	private static final int GROUP_ATTRS = 2;
 
 	// groups in ATTRIBUTES
-	private static final int GROUP_ATTR_NAME = 1;
-	private static final int GROUP_ATTR_STRING = 2;
-	private static final int GROUP_ATTR_NUMBER = 3;
-	private static final int GROUP_ATTR_PUNCTATION = 4;
+	private static final int GROUP_ATTR_STRING = 1;
+	private static final int GROUP_ATTR_NUMBER = 2;
+	private static final int GROUP_ATTR_PUNCTATION = 3;
+	private static final int GROUP_ATTR_NAME = 4;
 
 	private static final Collection<String> STYLE_PUNCTATION = Arrays.asList("punctuation", "token");
 	private static final Collection<String> STYLE_NODE       = Arrays.asList("tag", "token");

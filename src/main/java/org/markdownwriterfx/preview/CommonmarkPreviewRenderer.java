@@ -42,8 +42,10 @@ import org.commonmark.node.Image;
 import org.commonmark.node.IndentedCodeBlock;
 import org.commonmark.node.Link;
 import org.commonmark.node.Node;
+import org.commonmark.node.SourceSpan;
 import org.commonmark.node.Text;
 import org.commonmark.node.Visitor;
+import org.commonmark.parser.IncludeSourceSpans;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.AttributeProvider;
 import org.commonmark.renderer.html.AttributeProviderContext;
@@ -143,6 +145,7 @@ class CommonmarkPreviewRenderer
 	private Node parseMarkdown(String text) {
 		Parser parser = Parser.builder()
 				.extensions(MarkdownExtensions.getCommonmarkExtensions())
+				.includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES)
 				.build();
 		return parser.parse(text);
 	}
@@ -203,7 +206,17 @@ class CommonmarkPreviewRenderer
 		Range range = toSourcePositions().get(node);
 		if (range != null)
 			buf.append(range.start).append(", ").append(range.end);
-		buf.append("]");
+		buf.append(']');
+		List<SourceSpan> sourceSpans = node.getSourceSpans();
+		for (SourceSpan sourceSpan : sourceSpans) {
+			buf.append(" [")
+				.append(sourceSpan.getLineIndex() + 1)
+				.append(':')
+				.append(sourceSpan.getColumnIndex())
+				.append(':')
+				.append(sourceSpan.getLength())
+				.append(']');
+		}
 		printAttributes(buf, node);
 		buf.append('\n');
 
