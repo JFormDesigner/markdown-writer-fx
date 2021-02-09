@@ -34,66 +34,66 @@ repositories {
 
 dependencies {
 	// build RichTextFX from branch 'markdown-writer-fx' on https://github.com/JFormDesigner/RichTextFX
-	compile( "org.fxmisc.richtext:richtextfx" ) {
+	implementation( "org.fxmisc.richtext:richtextfx" ) {
 		version {
 			branch = "markdown-writer-fx"
 		}
 	}
 
-	compile( "com.miglayout:miglayout-javafx:5.2" )
+	implementation( "com.miglayout:miglayout-javafx:5.2" )
 
 	val fontawesomefxVersion = if( javaCompatibility >= JavaVersion.VERSION_1_9 ) "4.7.0-9.1.2" else "4.7.0-5"
 	val controlsfxVersion = if( javaCompatibility >= JavaVersion.VERSION_1_9 ) "11.0.3" else "8.40.18"
-	compile( "de.jensd:fontawesomefx-fontawesome:${fontawesomefxVersion}" )
+	implementation( "de.jensd:fontawesomefx-fontawesome:${fontawesomefxVersion}" )
 	if( javaCompatibility == JavaVersion.VERSION_1_8 ) {
 		// required since Gradle 5.0 because fontawesomefx-fontawesome-4.7.0-5.pom uses
 		// scope "runtime" for its "fontawesomefx-commons" dependency
 		// (fontawesomefx-fontawesome-4.7.0-9.pom uses scope "compile")
 		// https://docs.gradle.org/5.0/userguide/upgrading_version_4.html#rel5.0:pom_compile_runtime_separation
-		compile( "de.jensd:fontawesomefx-commons:8.15" )
+		implementation( "de.jensd:fontawesomefx-commons:8.15" )
 	}
-	compile( "org.controlsfx:controlsfx:${controlsfxVersion}" )
-	compile( "org.fxmisc.cssfx:cssfx:1.1.1" )
-	compile( "org.apache.commons:commons-lang3:3.11" )
-	compile( "com.esotericsoftware.yamlbeans:yamlbeans:1.15" )
-	compile( "org.languagetool:language-en:5.2" )
+	implementation( "org.controlsfx:controlsfx:${controlsfxVersion}" )
+	implementation( "org.fxmisc.cssfx:cssfx:1.1.1" )
+	implementation( "org.apache.commons:commons-lang3:3.11" )
+	implementation( "com.esotericsoftware.yamlbeans:yamlbeans:1.15" )
+	implementation( "org.languagetool:language-en:5.2" )
 
 	val flexmarkVersion = "0.62.0"
-	compile( "com.vladsch.flexmark:flexmark:${flexmarkVersion}" )
-	compile( "com.vladsch.flexmark:flexmark-ext-abbreviation:${flexmarkVersion}" )
-	compile( "com.vladsch.flexmark:flexmark-ext-anchorlink:${flexmarkVersion}" )
-	compile( "com.vladsch.flexmark:flexmark-ext-aside:${flexmarkVersion}" )
-	compile( "com.vladsch.flexmark:flexmark-ext-autolink:${flexmarkVersion}" )
-	compile( "com.vladsch.flexmark:flexmark-ext-definition:${flexmarkVersion}" )
-	compile( "com.vladsch.flexmark:flexmark-ext-footnotes:${flexmarkVersion}" )
-	compile( "com.vladsch.flexmark:flexmark-ext-gfm-strikethrough:${flexmarkVersion}" )
-	compile( "com.vladsch.flexmark:flexmark-ext-gfm-tasklist:${flexmarkVersion}" )
-	compile( "com.vladsch.flexmark:flexmark-ext-tables:${flexmarkVersion}" )
-	compile( "com.vladsch.flexmark:flexmark-ext-toc:${flexmarkVersion}" )
-	compile( "com.vladsch.flexmark:flexmark-ext-wikilink:${flexmarkVersion}" )
-	compile( "com.vladsch.flexmark:flexmark-ext-yaml-front-matter:${flexmarkVersion}" )
+	implementation( "com.vladsch.flexmark:flexmark:${flexmarkVersion}" )
+	implementation( "com.vladsch.flexmark:flexmark-ext-abbreviation:${flexmarkVersion}" )
+	implementation( "com.vladsch.flexmark:flexmark-ext-anchorlink:${flexmarkVersion}" )
+	implementation( "com.vladsch.flexmark:flexmark-ext-aside:${flexmarkVersion}" )
+	implementation( "com.vladsch.flexmark:flexmark-ext-autolink:${flexmarkVersion}" )
+	implementation( "com.vladsch.flexmark:flexmark-ext-definition:${flexmarkVersion}" )
+	implementation( "com.vladsch.flexmark:flexmark-ext-footnotes:${flexmarkVersion}" )
+	implementation( "com.vladsch.flexmark:flexmark-ext-gfm-strikethrough:${flexmarkVersion}" )
+	implementation( "com.vladsch.flexmark:flexmark-ext-gfm-tasklist:${flexmarkVersion}" )
+	implementation( "com.vladsch.flexmark:flexmark-ext-tables:${flexmarkVersion}" )
+	implementation( "com.vladsch.flexmark:flexmark-ext-toc:${flexmarkVersion}" )
+	implementation( "com.vladsch.flexmark:flexmark-ext-wikilink:${flexmarkVersion}" )
+	implementation( "com.vladsch.flexmark:flexmark-ext-yaml-front-matter:${flexmarkVersion}" )
 
 	val commonmarkVersion = "0.17.1"
-	compile( "org.commonmark:commonmark:${commonmarkVersion}" )
-	compile( "org.commonmark:commonmark-ext-autolink:${commonmarkVersion}" )
-	compile( "org.commonmark:commonmark-ext-gfm-strikethrough:${commonmarkVersion}" )
-	compile( "org.commonmark:commonmark-ext-gfm-tables:${commonmarkVersion}" )
-	compile( "org.commonmark:commonmark-ext-heading-anchor:${commonmarkVersion}" )
-	compile( "org.commonmark:commonmark-ext-ins:${commonmarkVersion}" )
-	compile( "org.commonmark:commonmark-ext-yaml-front-matter:${commonmarkVersion}" )
+	implementation( "org.commonmark:commonmark:${commonmarkVersion}" )
+	implementation( "org.commonmark:commonmark-ext-autolink:${commonmarkVersion}" )
+	implementation( "org.commonmark:commonmark-ext-gfm-strikethrough:${commonmarkVersion}" )
+	implementation( "org.commonmark:commonmark-ext-gfm-tables:${commonmarkVersion}" )
+	implementation( "org.commonmark:commonmark-ext-heading-anchor:${commonmarkVersion}" )
+	implementation( "org.commonmark:commonmark-ext-ins:${commonmarkVersion}" )
+	implementation( "org.commonmark:commonmark-ext-yaml-front-matter:${commonmarkVersion}" )
 
 	if( javaCompatibility >= JavaVersion.VERSION_11 ) {
 		val javafxVersion = "11.0.2"
 		val osName = System.getProperty( "os.name" ).toLowerCase()
 		val platform = if( osName.startsWith( "windows" ) ) "win" else if( osName.startsWith( "mac" ) ) "mac" else "linux"
 
-		compile( "org.openjfx:javafx-base:${javafxVersion}:${platform}" )
-		compile( "org.openjfx:javafx-controls:${javafxVersion}:${platform}" )
-		compile( "org.openjfx:javafx-graphics:${javafxVersion}:${platform}" )
-		compile( "org.openjfx:javafx-web:${javafxVersion}:${platform}" )
+		implementation( "org.openjfx:javafx-base:${javafxVersion}:${platform}" )
+		implementation( "org.openjfx:javafx-controls:${javafxVersion}:${platform}" )
+		implementation( "org.openjfx:javafx-graphics:${javafxVersion}:${platform}" )
+		implementation( "org.openjfx:javafx-web:${javafxVersion}:${platform}" )
 	}
 
-	testCompile( "junit:junit:4.13.1" )
+	testImplementation( "junit:junit:4.13.1" )
 }
 
 java {
@@ -102,7 +102,7 @@ java {
 }
 
 application {
-	mainClassName = "org.markdownwriterfx.MarkdownWriterFXApp"
+	mainClass.set( "org.markdownwriterfx.MarkdownWriterFXApp" )
 }
 
 val jar: Jar by tasks
