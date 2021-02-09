@@ -47,7 +47,12 @@ import org.markdownwriterfx.util.Utils;
 public class FileTreeItem
 	extends TreeItem<File>
 {
-	private static final Comparator<File> FILE_COMPARATOR = (f1, f2) -> f1.getName().compareToIgnoreCase(f2.getName());
+	private static final Comparator<File> FILE_COMPARATOR = (f1, f2) -> {
+		int result = Boolean.compare(f1.isDirectory(), f2.isDirectory());
+		if (result != 0)
+			return -result;
+		return f1.getName().compareToIgnoreCase(f2.getName());
+	};
 	private static final Comparator<TreeItem<File>> ITEM_COMPARATOR = (i1, i2) -> FILE_COMPARATOR.compare(i1.getValue(), i2.getValue());
 
 	private final FilenameFilter filter;
