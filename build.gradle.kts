@@ -4,6 +4,7 @@ import org.gradle.plugins.ide.eclipse.model.AccessRule
 
 val releaseVersion = "0.12"
 val developmentVersion = "0.13-SNAPSHOT"
+val richtextfxBranchVersion = "0.13"
 
 version = if( Boolean.getBoolean( "release" ) ) releaseVersion else developmentVersion
 
@@ -36,7 +37,7 @@ dependencies {
 	// build RichTextFX from branch 'markdown-writer-fx' on https://github.com/JFormDesigner/RichTextFX
 	implementation( "org.fxmisc.richtext:richtextfx" ) {
 		version {
-			branch = "markdown-writer-fx"
+			branch = "markdown-writer-fx-${richtextfxBranchVersion}"
 		}
 	}
 
