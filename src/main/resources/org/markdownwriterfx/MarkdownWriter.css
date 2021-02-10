@@ -113,6 +113,33 @@
     -fx-padding: 1 0 0 0;
 }
 
+.main .project-tree-view .folder .glyph-icon {
+}
+.main .project-tree-view .markdown .glyph-icon {
+    -fx-fill: #389FD6;
+}
+.main .project-tree-view .file .glyph-icon,
+.main .project-tree-view .image .glyph-icon,
+.main .project-tree-view .hidden .glyph-icon {
+    -fx-fill: #888;
+}
+.main .project-tree-view .file,
+.main .project-tree-view .image,
+.main .project-tree-view .hidden {
+	-fx-text-fill: #888;
+}
+
+.main .project-tree-view .tree-cell:selected {
+	-fx-text-fill: -fx-text-background-color;
+}
+.main .project-tree-view .tree-cell:selected .glyph-icon {
+    -fx-fill: -fx-text-background-color;
+}
+
+.main .project-tree-view .tree-cell {
+	-fx-graphic-text-gap: 0.5em;
+}
+
 
 /*---- main tab pane ----*/
 

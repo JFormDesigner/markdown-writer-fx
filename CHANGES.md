@@ -5,7 +5,10 @@ Markdown Writer FX Change Log
 
 - Spell and grammar checking with LanguageTool. (issue #10)
 - Project Manager:
-  - changed sort order: directories first, then files
+  - changed sort order: folders first, then files
+  - non-markdown files now use plain file icon
+  - use lighter color for non-markdown files or hidden folders/files
+  - use blue color for icons of markdown files
 - Fixed memory leaks.
 
 

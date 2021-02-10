@@ -31,6 +31,7 @@ import java.io.File;
 import javafx.scene.Node;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
+import org.markdownwriterfx.options.Options;
 import org.markdownwriterfx.util.Utils;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.utils.FontAwesomeIconFactory;
@@ -67,15 +68,59 @@ public class FileTreeCell
 		Node graphic = null;
 		if (!empty && file != null) {
 			text = file.getName();
-			graphic = FontAwesomeIconFactory.get().createIcon(getTreeItem().isLeaf()
+			FontAwesomeIcon icon = getTreeItem().isLeaf()
 				? fileIcon(text)
-				: FontAwesomeIcon.FOLDER_ALT);
+				: FontAwesomeIcon.FOLDER_ALT;
+			graphic = FontAwesomeIconFactory.get().createIcon(icon, "1.2em");
+
+			String styleClass;
+			switch (icon) {
+				case FOLDER_ALT: styleClass = "folder"; break;
+				case FILE_ALT: styleClass = "file"; break;
+				case FILE_TEXT_ALT: styleClass = "markdown"; break;
+				case FILE_IMAGE_ALT: styleClass = "image"; break;
+				default: styleClass = null; break;
+			}
+			getStyleClass().setAll("tree-cell"); // reset because cell may be reused for other files
+			if (styleClass != null)
+				getStyleClass().add(styleClass);
+			if (text.startsWith("."))
+				getStyleClass().add("hidden");
 		}
 		setText(text);
 		setGraphic(graphic);
 	}
 
 	private FontAwesomeIcon fileIcon(String name) {
-		return Utils.isImage(name) ? FontAwesomeIcon.FILE_IMAGE_ALT : FontAwesomeIcon.FILE_TEXT_ALT;
+		return Utils.isImage(name)
+			? FontAwesomeIcon.FILE_IMAGE_ALT
+			: (isMarkdownFile(name)
+				? FontAwesomeIcon.FILE_TEXT_ALT
+				: FontAwesomeIcon.FILE_ALT);
+	}
+
+	private static String lastMarkdownFileExtensions;
+	private static String[] extensions;
+
+	private static boolean isMarkdownFile(String name) {
+		String markdownFileExtensions = Options.getMarkdownFileExtensions();
+		if (markdownFileExtensions != lastMarkdownFileExtensions) {
+			lastMarkdownFileExtensions = markdownFileExtensions;
+			extensions = markdownFileExtensions.trim().split("\\s*,\\s*");
+			for (int i = 0; i < extensions.length; i++)
+				extensions[i] = extensions[i].startsWith("*.") ? extensions[i].substring(2) : null;
+		}
+
+		int sepIndex = name.lastIndexOf('.');
+		if (sepIndex < 0)
+			return false;
+
+		String ext = name.substring(sepIndex + 1).toLowerCase();
+		for (String e : extensions) {
+			if (e != null && e.equals(ext))
+				return true;
+		}
+
+		return false;
 	}
 }

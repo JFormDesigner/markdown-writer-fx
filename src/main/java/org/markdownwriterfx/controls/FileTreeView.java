@@ -35,12 +35,14 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javafx.application.Platform;
+import javafx.beans.WeakInvalidationListener;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.input.MouseButton;
+import org.markdownwriterfx.options.Options;
 
 /**
  * A tree view of directories and files.
@@ -66,6 +68,11 @@ public class FileTreeView
 					Platform.runLater(() -> refreshFiles());
 			});
 		});
+
+		// refresh tree if markdown file extensions were changed in options dialog
+		Options.markdownFileExtensionsProperty().addListener(new WeakInvalidationListener(e -> {
+			refresh();
+		}));
 	}
 
 	protected void handleClicks(TreeItem<File> item, MouseButton button, int clickCount) {
