@@ -9,8 +9,12 @@ val richtextfxBranchVersion = "0.13"
 version = if( Boolean.getBoolean( "release" ) ) releaseVersion else developmentVersion
 
 // check required Java version
-if( JavaVersion.current() < JavaVersion.VERSION_1_8 || JavaVersion.current() > JavaVersion.VERSION_11 )
-	throw RuntimeException( "Java 8, 9, 10 or 11 required (running ${System.getProperty( "java.version" )})" )
+when( JavaVersion.current() ) {
+	JavaVersion.VERSION_1_8,
+	JavaVersion.VERSION_11,
+	JavaVersion.VERSION_15 -> true
+	else -> throw RuntimeException( "Java 8, 11 or 15 required (running ${System.getProperty( "java.version" )})" )
+}
 
 // use Java version that currently runs Gradle for source/target compatibility
 val javaCompatibility = JavaVersion.current()
@@ -43,8 +47,8 @@ dependencies {
 
 	implementation( "com.miglayout:miglayout-javafx:5.2" )
 
-	val fontawesomefxVersion = if( javaCompatibility >= JavaVersion.VERSION_1_9 ) "4.7.0-9.1.2" else "4.7.0-5"
-	val controlsfxVersion = if( javaCompatibility >= JavaVersion.VERSION_1_9 ) "11.0.3" else "8.40.18"
+	val fontawesomefxVersion = if( javaCompatibility > JavaVersion.VERSION_1_8 ) "4.7.0-9.1.2" else "4.7.0-5"
+	val controlsfxVersion = if( javaCompatibility > JavaVersion.VERSION_1_8 ) "11.0.3" else "8.40.18"
 	implementation( "de.jensd:fontawesomefx-fontawesome:${fontawesomefxVersion}" )
 	if( javaCompatibility == JavaVersion.VERSION_1_8 ) {
 		// required since Gradle 5.0 because fontawesomefx-fontawesome-4.7.0-5.pom uses
@@ -84,10 +88,17 @@ dependencies {
 	implementation( "org.commonmark:commonmark-ext-yaml-front-matter:${commonmarkVersion}" )
 
 	if( javaCompatibility >= JavaVersion.VERSION_11 ) {
-		val javafxVersion = "11.0.2"
+		val javafxVersion = when( javaCompatibility ) {
+			JavaVersion.VERSION_11 -> "11.0.2"
+			JavaVersion.VERSION_15 -> "15.0.1"
+			else -> throw RuntimeException( "JavaFX 8, 11 or 15 required (running ${javaCompatibility})" )
+		}
 		val osName = System.getProperty( "os.name" ).toLowerCase()
-		val platform = if( osName.startsWith( "windows" ) ) "win" else if( osName.startsWith( "mac" ) ) "mac" else "linux"
-
+		val platform = when {
+			osName.startsWith("windows") -> "win"
+			osName.startsWith("mac") -> "mac"
+			else -> "linux"
+		}
 		implementation( "org.openjfx:javafx-base:${javafxVersion}:${platform}" )
 		implementation( "org.openjfx:javafx-controls:${javafxVersion}:${platform}" )
 		implementation( "org.openjfx:javafx-graphics:${javafxVersion}:${platform}" )
