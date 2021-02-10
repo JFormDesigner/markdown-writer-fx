@@ -236,7 +236,7 @@ class MainWindow
 				activeFileEditorIsNull);
 
 		// View actions
-		Action viewPreviewAction = new Action(Messages.get("MainWindow.viewPreviewAction"), null, EYE,
+		Action viewPreviewAction = new Action(Messages.get("MainWindow.viewPreviewAction"), "F12", EYE,
 				null, null, fileEditorTabPane.previewVisible);
 		Action viewHtmlSourceAction = new Action(Messages.get("MainWindow.viewHtmlSourceAction"), null, HTML5,
 				null, null, fileEditorTabPane.htmlSourceVisible);

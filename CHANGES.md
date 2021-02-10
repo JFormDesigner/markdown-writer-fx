@@ -9,6 +9,7 @@ Markdown Writer FX Change Log
   - non-markdown files now use plain file icon
   - use lighter color for non-markdown files or hidden folders/files
   - use blue color for icons of markdown files
+- `F12` key shows/hides preview.
 - Fixed memory leaks.
 
 
