@@ -26,8 +26,7 @@ Features
 Requirements
 ------------
 
-**Java 8 is required** to run current releases.
-Java 9, 10 and 11 currently only supported for building.
+**Java 8, Java 9, 10 and 11 is required** to run current releases.
 
 Installation
 ------------
