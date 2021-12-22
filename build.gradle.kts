@@ -4,7 +4,7 @@ import org.gradle.plugins.ide.eclipse.model.AccessRule
 
 val releaseVersion = "0.12"
 val developmentVersion = "0.13-SNAPSHOT"
-val richtextfxBranchVersion = "0.13"
+val richtextfxBranchVersion = "0.10.7"//0.13
 
 version = if( Boolean.getBoolean( "release" ) ) releaseVersion else developmentVersion
 
@@ -35,20 +35,25 @@ plugins {
 
 repositories {
 	jcenter()
+	mavenCentral()
+	maven("https://maven.aliyun.com/repository/public/")
+	maven("https://maven.aliyun.com/repository/spring/")
 }
 
 dependencies {
 	// build RichTextFX from branch 'markdown-writer-fx' on https://github.com/JFormDesigner/RichTextFX
-	implementation( "org.fxmisc.richtext:richtextfx" ) {
-		version {
-			branch = "markdown-writer-fx-${richtextfxBranchVersion}"
-		}
-	}
+//	implementation( "org.fxmisc.richtext:richtextfx" ) {
+//		version {
+//			branch = "markdown-writer-fx-${richtextfxBranchVersion}"
+//		}
+//	}
 
-	implementation( "com.miglayout:miglayout-javafx:5.2" )
+	// https://mvnrepository.com/artifact/org.fxmisc.richtext/richtextfx
+	implementation("org.fxmisc.richtext:richtextfx:0.10.7")
+
+	implementation("com.miglayout:miglayout-javafx:11.0")
 
 	val fontawesomefxVersion = if( javaCompatibility > JavaVersion.VERSION_1_8 ) "4.7.0-9.1.2" else "4.7.0-5"
-	val controlsfxVersion = if( javaCompatibility > JavaVersion.VERSION_1_8 ) "11.0.3" else "8.40.18"
 	implementation( "de.jensd:fontawesomefx-fontawesome:${fontawesomefxVersion}" )
 	if( javaCompatibility == JavaVersion.VERSION_1_8 ) {
 		// required since Gradle 5.0 because fontawesomefx-fontawesome-4.7.0-5.pom uses
@@ -57,13 +62,15 @@ dependencies {
 		// https://docs.gradle.org/5.0/userguide/upgrading_version_4.html#rel5.0:pom_compile_runtime_separation
 		implementation( "de.jensd:fontawesomefx-commons:8.15" )
 	}
-	implementation( "org.controlsfx:controlsfx:${controlsfxVersion}" )
-	implementation( "org.fxmisc.cssfx:cssfx:1.1.1" )
-	implementation( "org.apache.commons:commons-lang3:3.11" )
-	implementation( "com.esotericsoftware.yamlbeans:yamlbeans:1.15" )
-	implementation( "org.languagetool:language-en:5.2" )
 
-	val flexmarkVersion = "0.62.0"
+	val controlsfxVersion = if( javaCompatibility > JavaVersion.VERSION_1_8 ) "11.1.1" else "8.40.18"
+	implementation( "org.controlsfx:controlsfx:${controlsfxVersion}" )
+	implementation("org.fxmisc.cssfx:cssfx:11.2.2")
+	implementation("org.apache.commons:commons-lang3:3.12.0")
+	implementation( "com.esotericsoftware.yamlbeans:yamlbeans:1.15" )
+	implementation("org.languagetool:language-en:5.5")
+
+	val flexmarkVersion = "0.62.2"
 	implementation( "com.vladsch.flexmark:flexmark:${flexmarkVersion}" )
 	implementation( "com.vladsch.flexmark:flexmark-ext-abbreviation:${flexmarkVersion}" )
 	implementation( "com.vladsch.flexmark:flexmark-ext-anchorlink:${flexmarkVersion}" )
@@ -78,7 +85,7 @@ dependencies {
 	implementation( "com.vladsch.flexmark:flexmark-ext-wikilink:${flexmarkVersion}" )
 	implementation( "com.vladsch.flexmark:flexmark-ext-yaml-front-matter:${flexmarkVersion}" )
 
-	val commonmarkVersion = "0.17.1"
+	val commonmarkVersion = "0.18.1"
 	implementation( "org.commonmark:commonmark:${commonmarkVersion}" )
 	implementation( "org.commonmark:commonmark-ext-autolink:${commonmarkVersion}" )
 	implementation( "org.commonmark:commonmark-ext-gfm-strikethrough:${commonmarkVersion}" )
@@ -87,6 +94,7 @@ dependencies {
 	implementation( "org.commonmark:commonmark-ext-ins:${commonmarkVersion}" )
 	implementation( "org.commonmark:commonmark-ext-yaml-front-matter:${commonmarkVersion}" )
 
+	println("javaCompatibility version is $javaCompatibility")
 	if( javaCompatibility >= JavaVersion.VERSION_11 ) {
 		val javafxVersion = when( javaCompatibility ) {
 			JavaVersion.VERSION_11 -> "11.0.2"
@@ -103,9 +111,16 @@ dependencies {
 		implementation( "org.openjfx:javafx-controls:${javafxVersion}:${platform}" )
 		implementation( "org.openjfx:javafx-graphics:${javafxVersion}:${platform}" )
 		implementation( "org.openjfx:javafx-web:${javafxVersion}:${platform}" )
+		implementation( "org.openjfx:javafx-media:${javafxVersion}:${platform}" )
 	}
 
-	testImplementation( "junit:junit:4.13.1" )
+	// https://mvnrepository.com/artifact/org.slf4j/slf4j-api
+	implementation("org.slf4j:slf4j-api:1.7.32")
+	implementation("org.apache.logging.log4j:log4j:2.16.0")
+	implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.16.0")
+
+
+	testImplementation("junit:junit:4.13.2")
 }
 
 java {
@@ -114,7 +129,7 @@ java {
 }
 
 application {
-	mainClass.set( "org.markdownwriterfx.MarkdownWriterFXApp" )
+	mainClass.set( "org.markdownwriterfx.Main" )
 }
 
 val jar: Jar by tasks
