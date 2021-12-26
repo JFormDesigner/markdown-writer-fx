@@ -116,7 +116,7 @@ dependencies {
 
 	// https://mvnrepository.com/artifact/org.slf4j/slf4j-api
 	implementation("org.slf4j:slf4j-api:1.7.32")
-	implementation("org.apache.logging.log4j:log4j:2.16.0")
+	implementation("org.apache.logging.log4j:log4j:2.17.0")
 	implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.16.0")
 
 
@@ -135,7 +135,7 @@ application {
 val jar: Jar by tasks
 jar.manifest {
 	attributes( mapOf(
-		"Main-Class" to "org.markdownwriterfx.MarkdownWriterFXApp",
+		"Main-Class" to "org.markdownwriterfx.Main",
 		"Class-Path" to configurations.compile.get().map { it.getName() }.joinToString( " " ),
 		"Implementation-Version" to version ) )
 }
