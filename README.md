@@ -3,7 +3,7 @@
 Markdown Writer FX
 ==================
 
-An open source [Markdown] editor written in JavaFX 8.
+An open source [Markdown] editor written in JavaFX.
 
 ![Markdown Writer FX Screenshot](images/screenshot.png)
 
@@ -26,8 +26,7 @@ Features
 Requirements
 ------------
 
-**Java 8 is required** to run current releases.
-Java 9, 10 and 11 currently only supported for building.
+**Java 19 is required** to run current releases.
 
 Installation
 ------------
@@ -43,8 +42,9 @@ Run:
 from the project folder.
 
 Building
--------
-Prerequisites are git and Java 8 in order to build *Markdown Writer FX* form sources.
+--------
+
+Prerequisites are git and Java 19 in order to build *Markdown Writer FX* form sources.
 
  - get the source, e.g. by cloning the official repo with: 
    `git clone https://github.com/JFormDesigner/markdown-writer-fx.git`

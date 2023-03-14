@@ -9,13 +9,12 @@ version = if( Boolean.getBoolean( "release" ) ) releaseVersion else developmentV
 
 // check required Java version
 when( JavaVersion.current() ) {
-	JavaVersion.VERSION_11,
-	JavaVersion.VERSION_15 -> true
-	else -> throw RuntimeException( "Java 11 or 15 required (running ${System.getProperty( "java.version" )})" )
+	JavaVersion.VERSION_19 -> true
+	else -> throw RuntimeException( "Java 19 required (running ${System.getProperty( "java.version" )})" )
 }
 
-// use Java version that currently runs Gradle for source/target compatibility
-val javaCompatibility = JavaVersion.current()
+// use Java 19 source/target compatibility
+val javaCompatibility = 19
 
 // log version, Gradle and Java versions
 println()
@@ -79,9 +78,8 @@ dependencies {
 	testImplementation( "junit:junit:4.13.2" )
 }
 
-java {
-	sourceCompatibility = javaCompatibility
-	targetCompatibility = javaCompatibility
+tasks.compileJava {
+	options.release.set( javaCompatibility )
 }
 
 application {
