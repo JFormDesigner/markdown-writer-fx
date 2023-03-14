@@ -88,6 +88,7 @@ application {
 	mainClass.set( "org.markdownwriterfx.MarkdownWriterFXApp" )
 }
 
+/*
 val jar: Jar by tasks
 jar.manifest {
 	attributes( mapOf(
@@ -95,6 +96,7 @@ jar.manifest {
 		"Class-Path" to configurations.compile.get().map { it.getName() }.joinToString( " " ),
 		"Implementation-Version" to version ) )
 }
+ */
 
 distributions {
 	getByName( "main" ) {
