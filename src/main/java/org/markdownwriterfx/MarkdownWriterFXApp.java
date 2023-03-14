@@ -34,8 +34,8 @@ import java.util.prefs.Preferences;
 import javafx.application.Application;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
-import org.fxmisc.cssfx.CSSFX;
-import org.fxmisc.cssfx.api.URIToPathConverter;
+import fr.brouillard.oss.cssfx.CSSFX;
+import fr.brouillard.oss.cssfx.api.URIToPathConverter;
 import org.markdownwriterfx.options.Options;
 import org.markdownwriterfx.util.StageState;
 

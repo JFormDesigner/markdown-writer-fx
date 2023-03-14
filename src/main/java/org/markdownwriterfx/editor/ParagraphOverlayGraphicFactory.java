@@ -279,14 +279,10 @@ public class ParagraphOverlayGraphicFactory
 
 	//---- reflection utilities -----------------------------------------------
 
-	private static Method mGetChildren;
 	private static Method mGetRangeShape;
 
 	static {
 		try {
-			mGetChildren = Parent.class.getDeclaredMethod("getChildren");
-			mGetChildren.setAccessible(true);
-
 			Class<?> textFlowExtClass = Class.forName("org.fxmisc.richtext.TextFlowExt");
 			mGetRangeShape = textFlowExtClass.getDeclaredMethod("getRangeShape", int.class, int.class);
 			mGetRangeShape.setAccessible(true);
