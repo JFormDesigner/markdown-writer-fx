@@ -49,7 +49,8 @@ dependencies {
 	implementation( "fr.brouillard.oss:cssfx:11.5.1" )
 	implementation( "org.apache.commons:commons-lang3:3.12.0" )
 	implementation( "com.esotericsoftware.yamlbeans:yamlbeans:1.15" )
-	implementation( "org.languagetool:language-en:5.2" )
+	implementation( "org.languagetool:language-en:6.0" )
+	implementation( "com.google.guava:guava:31.1-jre" ) // required for languagetool, which would otherwise use '31.1-android'
 
 	val flexmarkVersion = "0.64.0"
 	implementation( "com.vladsch.flexmark:flexmark:${flexmarkVersion}" )
