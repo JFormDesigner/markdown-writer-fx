@@ -42,7 +42,9 @@ public class PrefsEnumProperty<T extends Enum<T>>
 	private String key;
 	private T def;
 
-	public PrefsEnumProperty() {
+	public PrefsEnumProperty( T initial ) {
+		// make sure that property is not null when used in JFormDesigner
+		set( initial );
 	}
 
 	public PrefsEnumProperty(Preferences prefs, String key, T def) {

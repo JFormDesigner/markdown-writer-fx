@@ -86,16 +86,16 @@ class EditorOptionsPane
 	private void initComponents() {
 		// JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
 		markersTitle = new Label();
-		Label strongEmphasisMarkerLabel = new Label();
+		var strongEmphasisMarkerLabel = new Label();
 		strongEmphasisMarkerField = new ChoiceBox<>();
-		Label emphasisMarkerLabel = new Label();
+		var emphasisMarkerLabel = new Label();
 		emphasisMarkerField = new ChoiceBox<>();
-		Label bulletListMarkerLabel = new Label();
+		var bulletListMarkerLabel = new Label();
 		bulletListMarkerField = new ChoiceBox<>();
 		formatTitle = new Label();
 		wrapLineLengthLabel = new Label();
 		wrapLineLengthField = new IntSpinner();
-		Label wrapLineLengthLabel2 = new Label();
+		var wrapLineLengthLabel2 = new Label();
 		formatOnSaveCheckBox = new CheckBox();
 		formatOnlyModifiedParagraphsCheckBox = new CheckBox();
 

@@ -101,20 +101,26 @@ public class ImageDialog
 	private void initComponents() {
 		// JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
 		pane = new MigPane();
-		Label urlLabel = new Label();
+		var urlLabel = new Label();
 		urlField = new EscapeTextField();
 		linkBrowseFileButton = new BrowseFileButton();
-		Label textLabel = new Label();
+		var textLabel = new Label();
 		textField = new EscapeTextField();
-		Label titleLabel = new Label();
+		var titleLabel = new Label();
 		titleField = new EscapeTextField();
-		Label previewLabel = new Label();
+		var previewLabel = new Label();
 		previewField = new Label();
 
 		//======== pane ========
 		{
-			pane.setCols("[shrink 0,fill][400,grow,fill]");
-			pane.setRows("[][][][]");
+			pane.setCols(
+				"[shrink 0,fill]" +
+				"[400,grow,fill]");
+			pane.setRows(
+				"[]" +
+				"[]" +
+				"[]" +
+				"[]");
 
 			//---- urlLabel ----
 			urlLabel.setText(Messages.get("ImageDialog.urlLabel.text"));

@@ -42,6 +42,8 @@ public class PrefsStringsProperty
 	private String key;
 
 	public PrefsStringsProperty() {
+		// make sure that property is not null when used in JFormDesigner
+		set( new String[0] );
 	}
 
 	public PrefsStringsProperty(Preferences prefs, String key) {

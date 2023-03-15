@@ -537,8 +537,17 @@ class FindReplacePane
 		//======== pane ========
 		{
 			pane.setLayout("insets 0,hidemode 3");
-			pane.setCols("[shrink 0,fill][fill]0[fill][pref:n,fill]1px[pref:n,fill][grow,fill][fill]");
-			pane.setRows("[fill]0[]");
+			pane.setCols(
+				"[shrink 0,fill]" +
+				"[fill]0" +
+				"[fill]" +
+				"[pref:n,fill]1px" +
+				"[pref:n,fill]" +
+				"[grow,fill]" +
+				"[fill]");
+			pane.setRows(
+				"[fill]0" +
+				"[]");
 
 			//---- findField ----
 			findField.setPromptText(Messages.get("FindReplacePane.findField.promptText"));
@@ -571,8 +580,13 @@ class FindReplacePane
 			//======== replacePane ========
 			{
 				replacePane.setLayout("insets rel 0 0 0");
-				replacePane.setCols("[shrink 0,fill][pref:n,fill][pref:n,fill][grow,fill]");
-				replacePane.setRows("[]");
+				replacePane.setCols(
+					"[shrink 0,fill]" +
+					"[pref:n,fill]" +
+					"[pref:n,fill]" +
+					"[grow,fill]");
+				replacePane.setRows(
+					"[]");
 
 				//---- replaceField ----
 				replaceField.setPromptText(Messages.get("FindReplacePane.replaceField.promptText"));

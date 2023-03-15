@@ -216,7 +216,7 @@ public class Options
 	public static ObjectProperty<String[]> markdownExtensionsProperty() { return markdownExtensions; }
 
 	// 'markdownRenderer' property
-	private static final PrefsEnumProperty<RendererType> markdownRenderer = new PrefsEnumProperty<>();
+	private static final PrefsEnumProperty<RendererType> markdownRenderer = new PrefsEnumProperty<>( RendererType.CommonMark );
 	public static RendererType getMarkdownRenderer() { return markdownRenderer.get(); }
 	public static void setMarkdownRenderer(RendererType markdownRenderer) { Options.markdownRenderer.set(markdownRenderer); }
 	public static ObjectProperty<RendererType> markdownRendererProperty() { return markdownRenderer; }

@@ -188,8 +188,23 @@ class SpellCheckerOptionsPane
 		disabledRulesNote2 = new Label();
 
 		//======== this ========
-		setCols("[indent]0[shrink 0,fill][430,grow,fill]");
-		setRows("[][][][][][]para[][][200,grow,fill][]0[][]");
+		setCols(
+			"[indent]0" +
+			"[shrink 0,fill]" +
+			"[430,grow,fill]");
+		setRows(
+			"[]" +
+			"[]" +
+			"[]" +
+			"[]" +
+			"[]" +
+			"[]para" +
+			"[]" +
+			"[]" +
+			"[200,grow,fill]" +
+			"[]0" +
+			"[]" +
+			"[]");
 
 		//---- spellingSettingsLabel ----
 		spellingSettingsLabel.setText(Messages.get("SpellCheckerOptionsPane.spellingSettingsLabel.text"));

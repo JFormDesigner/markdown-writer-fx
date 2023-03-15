@@ -71,8 +71,13 @@ class MarkdownOptionsPane
 
 		//======== this ========
 		setLayout("insets dialog");
-		setCols("[][grow,fill]");
-		setRows("[]para[][grow,fill]");
+		setCols(
+			"[]" +
+			"[grow,fill]");
+		setRows(
+			"[]para" +
+			"[]" +
+			"[grow,fill]");
 
 		//---- markdownRendererLabel ----
 		markdownRendererLabel.setText(Messages.get("MarkdownOptionsPane.markdownRendererLabel.text"));

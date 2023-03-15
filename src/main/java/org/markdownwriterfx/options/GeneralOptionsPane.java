@@ -167,12 +167,12 @@ class GeneralOptionsPane
 		showWhitespaceCheckBox = new CheckBox();
 		showImagesEmbeddedCheckBox = new CheckBox();
 		fileSettingsLabel = new Label();
-		Label lineSeparatorLabel = new Label();
+		var lineSeparatorLabel = new Label();
 		lineSeparatorField = new ComboBox<>();
-		Label lineSeparatorLabel2 = new Label();
-		Label encodingLabel = new Label();
+		var lineSeparatorLabel2 = new Label();
+		var encodingLabel = new Label();
 		encodingField = new ComboBox<>();
-		Label markdownFileExtensionsLabel = new Label();
+		var markdownFileExtensionsLabel = new Label();
 		markdownFileExtensionsField = new TextField();
 
 		//======== this ========
