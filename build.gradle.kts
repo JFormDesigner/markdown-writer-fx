@@ -1,9 +1,10 @@
 import java.lang.Boolean
+import java.util.Locale
 import org.gradle.plugins.ide.eclipse.model.AbstractClasspathEntry
 import org.gradle.plugins.ide.eclipse.model.AccessRule
 
 val releaseVersion = "0.12"
-val developmentVersion = "0.13-SNAPSHOT"
+val developmentVersion = "0.13"
 
 version = if( Boolean.getBoolean( "release" ) ) releaseVersion else developmentVersion
 
@@ -16,18 +17,25 @@ when( JavaVersion.current() ) {
 // use Java 19 source/target compatibility
 val javaCompatibility = 19
 
+val osName = System.getProperty( "os.name" ).lowercase( Locale.ENGLISH )
+val isWindows = osName.startsWith( "windows" )
+val isMac = osName.startsWith( "mac" )
+val isLinux = osName.startsWith( "linux" )
+
 // log version, Gradle and Java versions
 println()
 println( "-------------------------------------------------------------------------------" )
 println( "Markdown Writer FX Version: ${version}" )
 println( "Gradle ${gradle.gradleVersion} at ${gradle.gradleHomeDir}" )
-println( "Java ${System.getProperty( "java.version" )}" )
+println( "Java ${System.getProperty( "java.version" )} ${System.getProperty( "java.vendor" )}" )
+println( "Java FX ${System.getProperty( "javafx.version" )}" )
 println()
 
 plugins {
 	java
 	application
 	id( "org.openjfx.javafxplugin" ) version "0.0.13"
+	id( "org.beryx.runtime" ) version "1.13.0"
 	eclipse
 }
 
@@ -108,6 +116,52 @@ distributions {
 	}
 }
 
+runtime {
+	options.set( listOf( "--strip-debug", "--compress", "2", "--no-header-files", "--no-man-pages" ) )
+	modules.set( listOf(
+		"java.prefs",
+		"java.desktop",
+		"jdk.jfr",
+		"java.xml",
+		"jdk.unsupported",
+		"java.net.http",
+		"jdk.jsobject",
+		"jdk.xml.dom",
+		"java.logging",
+
+		// this requires that Gradle is running on a JDK that includes JavaFX
+		// e.g. BellSoft Liberica JDK (package 'Full JDK') or Azul Zulu JDK (package 'JDK FX')
+		"javafx.controls",
+		"javafx.web",
+	) )
+
+	jpackage {
+		imageName = "Markdown Writer FX $version"
+	}
+}
+
+tasks {
+	assembleDist {
+		dependsOn( "distWindowsZip" )
+	}
+
+	register<Zip>( "distWindowsZip" ) {
+		group = "distribution"
+		dependsOn( "jpackageImage" )
+		onlyIf { isWindows }
+
+		archiveFileName.set( "Markdown Writer FX $version.zip" )
+
+		from( layout.buildDirectory.dir( "jpackage" ) ) {
+			// exclude JavaFX jars because JavaFX is included in JRE built by jlink
+			exclude( "**/app/javafx-*.jar" )
+		}
+	}
+
+	// disable some tasks
+	distTar { onlyIf{ false } }
+	distZip { onlyIf{ false } }
+}
 
 //---- eclipse ----------------------------------------------------------------
 

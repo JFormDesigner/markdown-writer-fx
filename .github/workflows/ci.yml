@@ -10,8 +10,8 @@ on:
       - '[0-9]*'
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  build-windows:
+    runs-on: windows-latest
 
     steps:
       - uses: actions/checkout@v3
@@ -23,14 +23,15 @@ jobs:
         with:
           java-version: 19
           distribution: liberica
+          java-package: jdk+fx
           cache: gradle
 
       - name: Build with Gradle
-        run: ./gradlew build
+        run: ./gradlew assembleDist
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
           name: markdown-writer-fx-build-artifacts
           path: |
-            build/libs
+            build/distributions
