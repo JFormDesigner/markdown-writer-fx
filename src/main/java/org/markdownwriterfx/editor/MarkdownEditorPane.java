@@ -281,6 +281,9 @@ public class MarkdownEditorPane
 		// restore old selection range
 		int newLength = textArea.getLength();
 		textArea.selectRange(Math.min(oldSelection.getStart(), newLength), Math.min(oldSelection.getEnd(), newLength));
+
+		// make sure that caret is visible
+		textArea.requestFollowCaret();
 	}
 	public ObservableValue<String> markdownProperty() { return textArea.textProperty(); }
 
