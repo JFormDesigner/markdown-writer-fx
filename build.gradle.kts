@@ -4,7 +4,7 @@ import org.gradle.plugins.ide.eclipse.model.AbstractClasspathEntry
 import org.gradle.plugins.ide.eclipse.model.AccessRule
 
 val releaseVersion = "0.12"
-val developmentVersion = "0.13"
+val developmentVersion = "1.0"
 
 version = if( Boolean.getBoolean( "release" ) ) releaseVersion else developmentVersion
 
