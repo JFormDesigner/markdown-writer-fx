@@ -52,6 +52,11 @@
 }
 */
 
+/* use light blue for selection background to keep dark text readable */
+.markdown-editor .main-selection {
+	-fx-fill: #bce2ff;
+}
+
 /* highlight current line */
 .markdown-editor .paragraph-box:has-caret {
     -fx-background-color: #f2f9fc;
