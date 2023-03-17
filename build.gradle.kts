@@ -35,7 +35,7 @@ plugins {
 	java
 	application
 	id( "org.openjfx.javafxplugin" ) version "0.0.13"
-	id( "org.beryx.runtime" ) version "1.13.0"
+	id( "org.beryx.jlink" ) version "2.26.0"
 	eclipse
 }
 
@@ -57,8 +57,8 @@ dependencies {
 	implementation( "fr.brouillard.oss:cssfx:11.5.1" )
 	implementation( "org.apache.commons:commons-lang3:3.12.0" )
 	implementation( "com.esotericsoftware.yamlbeans:yamlbeans:1.15" )
-	implementation( "org.languagetool:language-en:6.0" )
-	implementation( "com.google.guava:guava:31.1-jre" ) // required for languagetool, which would otherwise use '31.1-android'
+//	implementation( "org.languagetool:language-en:6.0" )
+//	implementation( "com.google.guava:guava:31.1-jre" ) // required for languagetool, which would otherwise use '31.1-android'
 
 	val flexmarkVersion = "0.64.0"
 	implementation( "com.vladsch.flexmark:flexmark:${flexmarkVersion}" )
@@ -93,6 +93,7 @@ tasks.compileJava {
 
 application {
 	mainClass.set( "org.markdownwriterfx.MarkdownWriterFXApp" )
+	mainModule.set( "org.markdownwriterfx" )
 }
 
 /*
@@ -116,24 +117,8 @@ distributions {
 	}
 }
 
-runtime {
+jlink {
 	options.set( listOf( "--strip-debug", "--compress", "2", "--no-header-files", "--no-man-pages" ) )
-	modules.set( listOf(
-		"java.prefs",
-		"java.desktop",
-		"jdk.jfr",
-		"java.xml",
-		"jdk.unsupported",
-		"java.net.http",
-		"jdk.jsobject",
-		"jdk.xml.dom",
-		"java.logging",
-
-		// this requires that Gradle is running on a JDK that includes JavaFX
-		// e.g. BellSoft Liberica JDK (package 'Full JDK') or Azul Zulu JDK (package 'JDK FX')
-		"javafx.controls",
-		"javafx.web",
-	) )
 
 	jpackage {
 		imageName = "Markdown Writer FX $version"
