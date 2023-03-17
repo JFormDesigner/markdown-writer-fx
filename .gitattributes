@@ -16,6 +16,9 @@
 #   Disable line ending normalize on checkin.
 
 *.gif binary
+*.icns binary
+*.ico binary
 *.jar binary
 *.png binary
+*.sketch binary
 *.zip binary

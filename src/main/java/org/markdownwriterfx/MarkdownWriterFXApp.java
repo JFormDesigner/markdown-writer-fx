@@ -84,8 +84,8 @@ public class MarkdownWriterFXApp
 		stageState = new StageState(primaryStage, getState());
 
 		primaryStage.getIcons().addAll(
-				new Image("org/markdownwriterfx/markdownwriterfx32.png"),
-				new Image("org/markdownwriterfx/markdownwriterfx128.png"));
+				new Image("org/markdownwriterfx/markdown-writer-fx-32.png"),
+				new Image("org/markdownwriterfx/markdown-writer-fx-128.png"));
 		primaryStage.setTitle("Markdown Writer FX");
 		primaryStage.setScene(mainWindow.getScene());
 		primaryStage.show();

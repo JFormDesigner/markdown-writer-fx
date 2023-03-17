@@ -137,6 +137,11 @@ runtime {
 
 	jpackage {
 		imageName = "Markdown Writer FX $version"
+
+		val icon = if( isWindows ) "images/markdown-writer-fx.ico"
+			else if( isMac ) "images/markdown-writer-fx.icns"
+			else "images/markdown-writer-fx-256.png"
+		imageOptions = listOf( "--icon", icon )
 	}
 }
 

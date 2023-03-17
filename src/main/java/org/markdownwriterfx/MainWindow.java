@@ -602,7 +602,7 @@ class MainWindow
 		alert.setTitle(Messages.get("MainWindow.about.title"));
 		alert.setHeaderText(Messages.get("MainWindow.about.headerText"));
 		alert.setContentText(Messages.get("MainWindow.about.contentText", version));
-		alert.setGraphic(new ImageView(new Image("org/markdownwriterfx/markdownwriterfx32.png")));
+		alert.setGraphic(new ImageView(new Image("org/markdownwriterfx/markdown-writer-fx-32.png")));
 		alert.initOwner(getScene().getWindow());
 		alert.getDialogPane().setPrefWidth(420);
 
