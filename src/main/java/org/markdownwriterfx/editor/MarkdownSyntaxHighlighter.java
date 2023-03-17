@@ -143,7 +143,7 @@ class MarkdownSyntaxHighlighter
 		String cssClass() {
 			return (cssClass != null) ? cssClass : name();
 		}
-	};
+	}
 
 	private static final HashMap<Long, Collection<String>> styleClassesCache = new HashMap<>();
 	private static final HashMap<Class<? extends Node>, StyleClass> node2style = new HashMap<>();

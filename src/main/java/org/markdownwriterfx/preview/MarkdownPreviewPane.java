@@ -50,7 +50,7 @@ import com.vladsch.flexmark.util.ast.Node;
  */
 public class MarkdownPreviewPane
 {
-	public enum Type { None, Web, Source, Ast, External };
+	public enum Type { None, Web, Source, Ast, External }
 
 	private final BorderPane pane = new BorderPane();
 	private final WebViewPreview webViewPreview = new WebViewPreview();

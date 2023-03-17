@@ -207,7 +207,7 @@ class FileEditor
 		else if (fileEditorTabPane.markdownAstVisible.get())
 			previewType = MarkdownPreviewPane.Type.Ast;
 		else if (fileEditorTabPane.externalVisible.get() && MarkdownPreviewPane.hasExternalPreview())
-		    previewType = MarkdownPreviewPane.Type.External;
+			previewType = MarkdownPreviewPane.Type.External;
 		return previewType;
 	}
 

@@ -160,10 +160,10 @@ class FlexmarkPreviewRenderer
 		if (addons.iterator().hasNext()) {
 			String text = markdownText;
 
-		    for (PreviewRendererAddon addon : addons)
-	            text = addon.preParse(text, path);
+			for (PreviewRendererAddon addon : addons)
+				text = addon.preParse(text, path);
 
-		    astRoot = parseMarkdown(text);
+			astRoot = parseMarkdown(text);
 		} else {
 			// no addons --> use cached AST
 			astRoot = toAstRoot();
@@ -178,10 +178,10 @@ class FlexmarkPreviewRenderer
 			builder.attributeProviderFactory(new MyAttributeProvider.Factory());
 		String html = builder.build().render(astRoot);
 
-        for (PreviewRendererAddon addon : addons)
-            html = addon.postRender(html, path);
+		for (PreviewRendererAddon addon : addons)
+			html = addon.postRender(html, path);
 
-        return html;
+		return html;
 	}
 
 	private String printTree() {

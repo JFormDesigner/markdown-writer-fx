@@ -64,7 +64,7 @@ public class Options
 	public static final int MIN_FONT_SIZE = 8;
 	public static final int MAX_FONT_SIZE = 36;
 	public static final String DEF_MARKDOWN_FILE_EXTENSIONS = "*.md,*.markdown,*.txt";
-	public enum RendererType { CommonMark, FlexMark };
+	public enum RendererType { CommonMark, FlexMark }
 	public static final int DEF_WRAP_LINE_LENGTH = 80;
 	public static final int MIN_WRAP_LINE_LENGTH = 10;
 

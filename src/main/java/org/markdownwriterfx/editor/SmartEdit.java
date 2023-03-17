@@ -1017,7 +1017,7 @@ public class SmartEdit
 	}
 
 	private interface FindNodePredicate {
-	    boolean test(int start, int end, Node node);
+		boolean test(int start, int end, Node node);
 	}
 
 	private boolean isInNode(int start, int end, Node node) {

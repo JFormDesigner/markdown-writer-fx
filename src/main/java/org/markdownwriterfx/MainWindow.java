@@ -244,7 +244,7 @@ class MainWindow
 				null, null, fileEditorTabPane.markdownAstVisible);
 		Action viewExternalAction = MarkdownPreviewPane.hasExternalPreview()
 			? new Action(Messages.get("MainWindow.viewExternalAction"), null, EXTERNAL_LINK,
-		        null, null, fileEditorTabPane.externalVisible)
+				null, null, fileEditorTabPane.externalVisible)
 			: null;
 		Action viewShowLineNoAction = new Action(Messages.get("MainWindow.viewShowLineNoAction"), null, null,
 				null, null, Options.showLineNoProperty());

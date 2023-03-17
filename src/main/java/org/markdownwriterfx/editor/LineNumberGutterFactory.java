@@ -40,8 +40,8 @@ import org.reactfx.value.Val;
 class LineNumberGutterFactory
 	implements IntFunction<Node>
 {
-    private final MarkdownTextArea textArea;
-    private final Val<Integer> lineCount;
+	private final MarkdownTextArea textArea;
+	private final Val<Integer> lineCount;
 
 	LineNumberGutterFactory(MarkdownTextArea textArea) {
 		this.textArea = textArea;

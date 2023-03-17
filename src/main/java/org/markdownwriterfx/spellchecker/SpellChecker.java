@@ -205,7 +205,7 @@ public class SpellChecker
 		Node astRoot = editor.getMarkdownAST();
 		boolean updatePeriodically = (spellProblems == null || spellProblems.isEmpty());
 
-		Task<List<SpellBlockProblems>> task = new Task<List<SpellBlockProblems>>() {
+		Task<List<SpellBlockProblems>> task = new Task<>() {
 			@Override
 			protected List<SpellBlockProblems> call() throws Exception {
 				return check(this, astRoot, updatePeriodically);

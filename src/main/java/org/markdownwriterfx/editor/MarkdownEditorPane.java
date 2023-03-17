@@ -236,7 +236,7 @@ public class MarkdownEditorPane
 			else {
 				// text area still does not have a scene
 				// --> use listener on scene to make sure that text area receives focus
-				ChangeListener<Scene> l = new ChangeListener<Scene>() {
+				ChangeListener<Scene> l = new ChangeListener<>() {
 					@Override
 					public void changed(ObservableValue<? extends Scene> observable, Scene oldValue, Scene newValue) {
 						textArea.sceneProperty().removeListener(this);
@@ -279,8 +279,8 @@ public class MarkdownEditorPane
 		textArea.replaceText(markdown);
 
 		// restore old selection range
-        int newLength = textArea.getLength();
-        textArea.selectRange(Math.min(oldSelection.getStart(), newLength), Math.min(oldSelection.getEnd(), newLength));
+		int newLength = textArea.getLength();
+		textArea.selectRange(Math.min(oldSelection.getStart(), newLength), Math.min(oldSelection.getEnd(), newLength));
 	}
 	public ObservableValue<String> markdownProperty() { return textArea.textProperty(); }
 
@@ -552,7 +552,7 @@ public class MarkdownEditorPane
 		}
 
 		// show drag caret
-        dragCaret.setShowCaret(CaretVisibility.ON);
+		dragCaret.setShowCaret(CaretVisibility.ON);
 	}
 
 	private void onDragExited(DragEvent event) {
