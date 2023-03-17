@@ -142,18 +142,28 @@ runtime {
 			else if( isMac ) "images/markdown-writer-fx.icns"
 			else "images/markdown-writer-fx-256.png"
 		imageOptions = listOf( "--icon", icon )
+
+		installerOutputDir = file( layout.buildDirectory.dir( "distributions" ) )
+
+		if( isWindows )
+			skipInstaller = true
+		else if( isMac )
+			installerType = "dmg"
+		else if( isLinux )
+			skipInstaller = true
 	}
 }
 
 tasks {
 	assembleDist {
-		dependsOn( "distWindowsZip" )
+		dependsOn( "distAppZip" )
+		dependsOn( "distMacDmg" )
 	}
 
-	register<Zip>( "distWindowsZip" ) {
+	register<Zip>( "distAppZip" ) {
 		group = "distribution"
 		dependsOn( "jpackageImage" )
-		onlyIf { isWindows }
+		onlyIf { isWindows || isLinux }
 
 		archiveFileName.set( "Markdown Writer FX $version.zip" )
 
@@ -161,6 +171,12 @@ tasks {
 			// exclude JavaFX jars because JavaFX is included in JRE built by jlink
 			exclude( "**/app/javafx-*.jar" )
 		}
+	}
+
+	register( "distMacDmg" ) {
+		group = "distribution"
+		dependsOn( "jpackage" )
+		onlyIf { isMac }
 	}
 
 	// disable some tasks

@@ -33,11 +33,13 @@ jobs:
           cache: gradle
 
       - name: Build with Gradle
-        run: ./gradlew jpackageImage
+        # --no-daemon is necessary on Windows otherwise caching Gradle would fail with:
+        #   tar.exe: Couldn't open ~/.gradle/caches/modules-2/modules-2.lock: Permission denied
+        run: ./gradlew assembleDist --no-daemon
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
           name: markdown-writer-fx-${{ matrix.os }}
           path: |
-            build/jpackage
+            build/distributions
