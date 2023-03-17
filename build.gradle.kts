@@ -162,7 +162,7 @@ tasks {
 
 	register<Zip>( "distAppZip" ) {
 		group = "distribution"
-		dependsOn( "jpackageImage" )
+		dependsOn( "jpackage" )
 		onlyIf { isWindows || isLinux }
 
 		archiveFileName.set( "Markdown Writer FX $version.zip" )
