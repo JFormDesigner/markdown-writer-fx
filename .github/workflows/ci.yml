@@ -33,11 +33,11 @@ jobs:
           cache: gradle
 
       - name: Build with Gradle
-        run: ./gradlew assembleDist
+        run: ./gradlew jpackageImage
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
           name: markdown-writer-fx-${{ matrix.os }}
           path: |
-            build/distributions
+            build/jpackage
