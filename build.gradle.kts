@@ -29,7 +29,6 @@ println( "----------------------------------------------------------------------
 println( "Markdown Writer FX Version: ${version}" )
 println( "Gradle ${gradle.gradleVersion} at ${gradle.gradleHomeDir}" )
 println( "Java ${System.getProperty( "java.version" )} ${System.getProperty( "java.vendor" )}" )
-println( "Java FX ${System.getProperty( "javafx.version" )}" )
 println()
 
 plugins {
@@ -58,8 +57,6 @@ dependencies {
 	implementation( "fr.brouillard.oss:cssfx:11.5.1" )
 	implementation( "org.apache.commons:commons-lang3:3.12.0" )
 	implementation( "com.esotericsoftware.yamlbeans:yamlbeans:1.15" )
-	implementation( "org.languagetool:language-en:6.0" )
-	implementation( "com.google.guava:guava:31.1-jre" ) // required for languagetool, which would otherwise use '31.1-android'
 
 	val flexmarkVersion = "0.64.0"
 	implementation( "com.vladsch.flexmark:flexmark:${flexmarkVersion}" )
@@ -84,6 +81,10 @@ dependencies {
 	implementation( "org.commonmark:commonmark-ext-heading-anchor:${commonmarkVersion}" )
 	implementation( "org.commonmark:commonmark-ext-ins:${commonmarkVersion}" )
 	implementation( "org.commonmark:commonmark-ext-yaml-front-matter:${commonmarkVersion}" )
+
+	val languagetoolVersion = "6.0"
+	implementation( "org.languagetool:language-all:${languagetoolVersion}" )
+	implementation( "com.google.guava:guava:31.1-jre" ) // required for languagetool, which would otherwise use '31.1-android'
 
 	testImplementation( "junit:junit:4.13.2" )
 }
