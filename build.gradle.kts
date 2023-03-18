@@ -18,6 +18,7 @@ when( JavaVersion.current() ) {
 val javaCompatibility = 19
 
 val osName = System.getProperty( "os.name" ).lowercase( Locale.ENGLISH )
+val osArch = System.getProperty( "os.arch" )
 val isWindows = osName.startsWith( "windows" )
 val isMac = osName.startsWith( "mac" )
 val isLinux = osName.startsWith( "linux" )
@@ -143,8 +144,6 @@ runtime {
 			else "images/markdown-writer-fx-256.png"
 		imageOptions = listOf( "--icon", icon )
 
-		installerOutputDir = file( layout.buildDirectory.dir( "distributions" ) )
-
 		if( isWindows )
 			skipInstaller = true
 		else if( isMac )
@@ -165,7 +164,7 @@ tasks {
 		dependsOn( "jpackage" )
 		onlyIf { isWindows || isLinux }
 
-		archiveFileName.set( "Markdown Writer FX $version.zip" )
+		archiveFileName.set( "markdown-writer-fx-$version-${ if( isWindows ) "win" else "linux" }.zip" )
 
 		from( layout.buildDirectory.dir( "jpackage" ) ) {
 			// exclude JavaFX jars because JavaFX is included in JRE built by jlink
@@ -173,10 +172,14 @@ tasks {
 		}
 	}
 
-	register( "distMacDmg" ) {
+	register<Copy>( "distMacDmg" ) {
 		group = "distribution"
 		dependsOn( "jpackage" )
 		onlyIf { isMac }
+
+		from( layout.buildDirectory.file( "jpackage/markdown-writer-fx-$version.dmg" ) )
+		rename( "markdown-writer-fx-$version.dmg", "markdown-writer-fx-$version-mac-$osArch.dmg" )
+		into( layout.buildDirectory.dir( "distributions" ) )
 	}
 
 	// disable some tasks
