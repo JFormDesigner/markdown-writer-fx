@@ -3,7 +3,11 @@ Markdown Writer FX Change Log
 
 ## 1.0
 
-- Spell and grammar checking with LanguageTool. (issue #10)
+- Distributions for Windows, macOS (Apple Silicon and Intel) and Linux that
+  include Java and JavaFX runtime environment and provide native launchers (e.g.
+  `exe` on Windows or application bundle on macOS).
+- Spell and grammar checking with [LanguageTool](https://languagetool.org/) for
+  more than 30 languages and dialects. (issue #10)
 - Project Manager:
   - changed sort order: folders first, then files
   - non-markdown files now use plain file icon
