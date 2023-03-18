@@ -46,7 +46,7 @@ repositories {
 
 javafx {
 	version = "19.0.2.1"
-	modules = listOf( "javafx.controls", "javafx.web" )
+	modules = listOf( "javafx.controls", "javafx.swing", "javafx.web" )
 }
 
 dependencies {
@@ -133,6 +133,7 @@ runtime {
 		// this requires that Gradle is running on a JDK that includes JavaFX
 		// e.g. BellSoft Liberica JDK (package 'Full JDK') or Azul Zulu JDK (package 'JDK FX')
 		"javafx.controls",
+		"javafx.swing", // for addons
 		"javafx.web",
 	) )
 

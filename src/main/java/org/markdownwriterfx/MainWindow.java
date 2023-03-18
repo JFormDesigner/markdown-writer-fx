@@ -54,6 +54,8 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.ToolBar;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
@@ -171,6 +173,16 @@ class MainWindow
 			e.setDropCompleted(success);
 			e.consume();
 		});
+
+		// show options dialog with internal options visible
+		// (using scene.addEventFilter() because scene.getAccelerators().put() does not work with Alt key)
+		KeyCombination internalOptions = KeyCodeCombination.valueOf( "Shortcut+Shift+Alt+," );
+		scene.addEventFilter( KeyEvent.KEY_PRESSED, e -> {
+			if( internalOptions.match( e ) ) {
+				toolsOptions( true );
+				e.consume();
+			}
+		} );
 
 		Platform.runLater(() -> stageFocusedProperty.bind(scene.getWindow().focusedProperty()));
 	}
@@ -311,7 +323,7 @@ class MainWindow
 				activeFileEditorIsNull);
 
 		// Tools actions
-		Action toolsOptionsAction = new Action(Messages.get("MainWindow.toolsOptionsAction"), "Shortcut+Shift+,", null, e -> toolsOptions());
+		Action toolsOptionsAction = new Action(Messages.get("MainWindow.toolsOptionsAction"), "Shortcut+Shift+,", null, e -> toolsOptions(false));
 
 		// Help actions
 		Action helpAboutAction = new Action(Messages.get("MainWindow.helpAboutAction"), null, null, e -> helpAbout());
@@ -583,8 +595,8 @@ class MainWindow
 
 	//---- Tools actions ------------------------------------------------------
 
-	private void toolsOptions() {
-		OptionsDialog dialog = new OptionsDialog(getScene().getWindow());
+	private void toolsOptions(boolean showInternal) {
+		OptionsDialog dialog = new OptionsDialog(getScene().getWindow(), showInternal);
 		dialog.showAndWait();
 	}
 

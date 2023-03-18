@@ -58,6 +58,7 @@ import org.fxmisc.richtext.model.StyleSpansBuilder;
 import org.fxmisc.richtext.model.TwoDimensional.Bias;
 import org.markdownwriterfx.addons.MarkdownSyntaxHighlighterAddon;
 import org.markdownwriterfx.syntaxhighlighter.SyntaxHighlighter;
+import org.markdownwriterfx.util.Addons;
 import org.markdownwriterfx.util.Range;
 
 /**
@@ -190,7 +191,8 @@ class MarkdownSyntaxHighlighter
 		node2style.put(Abbreviation.class, StyleClass.abbr);
 	}
 
-	private static final ServiceLoader<MarkdownSyntaxHighlighterAddon> addons = ServiceLoader.load(MarkdownSyntaxHighlighterAddon.class);
+	private static final ServiceLoader<MarkdownSyntaxHighlighterAddon> addons
+		= ServiceLoader.load( MarkdownSyntaxHighlighterAddon.class, Addons.getAddonsClassLoader() );
 
 	private final MarkdownTextArea textArea;
 	private ArrayList<StyleRange> styleRanges;
@@ -539,8 +541,9 @@ class MarkdownSyntaxHighlighter
 	private void addonsAddStylesheets() {
 		for (MarkdownSyntaxHighlighterAddon addon : addons) {
 			for (String stylesheet : addon.getStylesheets()) {
-				if (!textArea.getStylesheets().contains(stylesheet))
-					textArea.getStylesheets().add(stylesheet);
+				String url = Addons.getAddonsClassLoader().getResource( stylesheet ).toString();
+				if (!textArea.getStylesheets().contains(url))
+					textArea.getStylesheets().add(url);
 			}
 		}
 	}

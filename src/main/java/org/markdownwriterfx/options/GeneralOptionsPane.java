@@ -63,6 +63,7 @@ class GeneralOptionsPane
 		Font titleFont = Font.font(16);
 		editorSettingsLabel.setFont(titleFont);
 		fileSettingsLabel.setFont(titleFont);
+		addonsSettingsLabel.setFont(titleFont);
 
 		// font family
 		fontFamilyField.getItems().addAll(getMonospacedFonts());
@@ -86,6 +87,13 @@ class GeneralOptionsPane
 
 		// file extensions
 		markdownFileExtensionsField.setPromptText(Options.DEF_MARKDOWN_FILE_EXTENSIONS);
+	}
+
+	void hideInternal() {
+		addonsSettingsLabel.setVisible( false );
+		addonsPathLabel.setVisible( false );
+		addonsPathField.setVisible( false );
+		addonsPathLabel2.setVisible( false );
 	}
 
 	/**
@@ -138,6 +146,9 @@ class GeneralOptionsPane
 		lineSeparatorField.setValue(new Item<>(Options.getLineSeparator(), Options.getLineSeparator()));
 		encodingField.setValue(new Item<>(Options.getEncoding(), Options.getEncoding()));
 		markdownFileExtensionsField.setText(Options.getMarkdownFileExtensions());
+
+		// addons settings
+		addonsPathField.setText( Options.getAddonsPath() );
 	}
 
 	void save() {
@@ -154,6 +165,9 @@ class GeneralOptionsPane
 		Options.setMarkdownFileExtensions(Utils.defaultIfEmpty(
 				markdownFileExtensionsField.getText().trim(),
 				Options.DEF_MARKDOWN_FILE_EXTENSIONS));
+
+		// addons settings
+		Options.setAddonsPath( Utils.defaultIfEmpty( addonsPathField.getText().trim(), null ) );
 	}
 
 	private void initComponents() {
@@ -174,6 +188,10 @@ class GeneralOptionsPane
 		encodingField = new ComboBox<>();
 		var markdownFileExtensionsLabel = new Label();
 		markdownFileExtensionsField = new TextField();
+		addonsSettingsLabel = new Label();
+		addonsPathLabel = new Label();
+		addonsPathField = new TextField();
+		addonsPathLabel2 = new Label();
 
 		//======== this ========
 		setCols(
@@ -191,7 +209,10 @@ class GeneralOptionsPane
 			"[]" +
 			"[]" +
 			"[]" +
-			"[]para");
+			"[]para" +
+			"[]" +
+			"[]" +
+			"[]");
 
 		//---- editorSettingsLabel ----
 		editorSettingsLabel.setText(Messages.get("GeneralOptionsPane.editorSettingsLabel.text"));
@@ -252,6 +273,19 @@ class GeneralOptionsPane
 		markdownFileExtensionsLabel.setMnemonicParsing(true);
 		add(markdownFileExtensionsLabel, "cell 1 9");
 		add(markdownFileExtensionsField, "cell 2 9 2 1");
+
+		//---- addonsSettingsLabel ----
+		addonsSettingsLabel.setText(Messages.get("GeneralOptionsPane.addonsSettingsLabel.text"));
+		add(addonsSettingsLabel, "cell 0 10 2 1");
+
+		//---- addonsPathLabel ----
+		addonsPathLabel.setText(Messages.get("GeneralOptionsPane.addonsPathLabel.text"));
+		add(addonsPathLabel, "cell 1 11");
+		add(addonsPathField, "cell 2 11 2 1");
+
+		//---- addonsPathLabel2 ----
+		addonsPathLabel2.setText(Messages.get("GeneralOptionsPane.addonsPathLabel2.text"));
+		add(addonsPathLabel2, "cell 2 12 2 1");
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 
 		// TODO set this in JFormDesigner as soon as it supports labelFor
@@ -260,6 +294,7 @@ class GeneralOptionsPane
 		lineSeparatorLabel.setLabelFor(lineSeparatorField);
 		encodingLabel.setLabelFor(encodingField);
 		markdownFileExtensionsLabel.setLabelFor(markdownFileExtensionsField);
+		addonsPathLabel.setLabelFor( addonsPathField );
 	}
 
 	// JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
@@ -275,6 +310,10 @@ class GeneralOptionsPane
 	private ComboBox<Item<String>> lineSeparatorField;
 	private ComboBox<Item<String>> encodingField;
 	private TextField markdownFileExtensionsField;
+	private Label addonsSettingsLabel;
+	private Label addonsPathLabel;
+	private TextField addonsPathField;
+	private Label addonsPathLabel2;
 	// JFormDesigner - End of variables declaration  //GEN-END:variables
 
 	//---- class FontListCell -------------------------------------------------

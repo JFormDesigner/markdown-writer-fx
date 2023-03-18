@@ -35,6 +35,7 @@ import java.util.ServiceLoader;
 import java.util.function.BiConsumer;
 import org.markdownwriterfx.addons.PreviewRendererAddon;
 import org.markdownwriterfx.options.MarkdownExtensions;
+import org.markdownwriterfx.util.Addons;
 import org.markdownwriterfx.util.Range;
 import com.vladsch.flexmark.ast.Heading;
 import com.vladsch.flexmark.html.AttributeProvider;
@@ -57,7 +58,8 @@ import com.vladsch.flexmark.util.sequence.BasedSequence;
 class FlexmarkPreviewRenderer
 	implements MarkdownPreviewPane.Renderer
 {
-	private static final ServiceLoader<PreviewRendererAddon> addons = ServiceLoader.load(PreviewRendererAddon.class);
+	private static final ServiceLoader<PreviewRendererAddon> addons
+		= ServiceLoader.load( PreviewRendererAddon.class, Addons.getAddonsClassLoader() );
 
 	private String markdownText;
 	private Node astRoot;

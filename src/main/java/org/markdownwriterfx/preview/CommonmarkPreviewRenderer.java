@@ -53,6 +53,7 @@ import org.commonmark.renderer.html.AttributeProviderFactory;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.markdownwriterfx.addons.PreviewRendererAddon;
 import org.markdownwriterfx.options.MarkdownExtensions;
+import org.markdownwriterfx.util.Addons;
 import org.markdownwriterfx.util.CommonmarkSourcePositions;
 import org.markdownwriterfx.util.Range;
 
@@ -64,7 +65,8 @@ import org.markdownwriterfx.util.Range;
 class CommonmarkPreviewRenderer
 	implements MarkdownPreviewPane.Renderer
 {
-	private static final ServiceLoader<PreviewRendererAddon> addons = ServiceLoader.load(PreviewRendererAddon.class);
+	private static final ServiceLoader<PreviewRendererAddon> addons
+		= ServiceLoader.load( PreviewRendererAddon.class, Addons.getAddonsClassLoader() );
 
 	private String markdownText;
 	private com.vladsch.flexmark.util.ast.Node flexAstRoot;

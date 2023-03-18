@@ -51,12 +51,15 @@ import org.markdownwriterfx.util.Utils;
 public class OptionsDialog
 	extends Dialog<Void>
 {
-	public OptionsDialog(Window owner) {
+	public OptionsDialog(Window owner, boolean showInternal) {
 		setTitle(Messages.get("OptionsDialog.title"));
 		initOwner(owner);
 		setResizable(true);
 
 		initComponents();
+
+		if( !showInternal )
+			generalOptionsPane.hideInternal();
 
 		tabPane.getStyleClass().add(TabPane.STYLE_CLASS_FLOATING);
 

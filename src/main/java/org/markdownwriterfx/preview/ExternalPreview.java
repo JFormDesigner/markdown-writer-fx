@@ -37,6 +37,7 @@ import org.markdownwriterfx.Messages;
 import org.markdownwriterfx.addons.PreviewViewAddon;
 import org.markdownwriterfx.preview.MarkdownPreviewPane.PreviewContext;
 import org.markdownwriterfx.preview.MarkdownPreviewPane.Renderer;
+import org.markdownwriterfx.util.Addons;
 
 /**
  * External preview (provided by addon).
@@ -47,7 +48,7 @@ class ExternalPreview
 	implements MarkdownPreviewPane.Preview
 {
 	private static final boolean hasExternalPreview =
-		ServiceLoader.load(PreviewViewAddon.class).iterator().hasNext();
+		ServiceLoader.load( PreviewViewAddon.class, Addons.getAddonsClassLoader() ).iterator().hasNext();
 
 	private PreviewViewAddon previewView;
 
@@ -55,7 +56,7 @@ class ExternalPreview
 		// Not using a static field for service loader here because each instance of this class
 		// requires a new instance of PreviewViewAddon.
 		// This allows PreviewViewAddon implementations to store information in fields.
-		ServiceLoader<PreviewViewAddon> addons = ServiceLoader.load(PreviewViewAddon.class);
+		ServiceLoader<PreviewViewAddon> addons = ServiceLoader.load( PreviewViewAddon.class, Addons.getAddonsClassLoader() );
 		Iterator<PreviewViewAddon> it = addons.iterator();
 		if (it.hasNext())
 			previewView = it.next();

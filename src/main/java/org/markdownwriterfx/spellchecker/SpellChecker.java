@@ -74,6 +74,7 @@ import org.markdownwriterfx.addons.SpellCheckerAddon.Range;
 import org.markdownwriterfx.editor.MarkdownEditorPane;
 import org.markdownwriterfx.editor.ParagraphOverlayGraphicFactory;
 import org.markdownwriterfx.options.Options;
+import org.markdownwriterfx.util.Addons;
 import org.markdownwriterfx.util.Utils;
 import org.reactfx.EventStream;
 import org.reactfx.Subscription;
@@ -116,7 +117,8 @@ public class SpellChecker
 	// global language tool used in executor for all spell checking
 	private static final GlobalLanguageTool languageTool = new GlobalLanguageTool();
 
-	private static final ServiceLoader<SpellCheckerAddon> addons = ServiceLoader.load(SpellCheckerAddon.class);
+	private static final ServiceLoader<SpellCheckerAddon> addons
+		= ServiceLoader.load( SpellCheckerAddon.class, Addons.getAddonsClassLoader() );
 
 	public SpellChecker(MarkdownEditorPane editor, GenericStyledArea<?, ?, ?> textArea,
 		ParagraphOverlayGraphicFactory overlayGraphicFactory)

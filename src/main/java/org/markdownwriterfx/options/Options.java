@@ -103,6 +103,9 @@ public class Options
 
 		additionalCSS.init(options, "additionalCSS", null);
 
+		// addons settings are always global
+		addonsPath.init(globalOptions, "addonsPath", null);
+
 		// listen to active project
 		ProjectManager.activeProjectProperty().addListener((observer, oldProject, newProject) -> {
 			set(getProjectOptions(newProject));
@@ -141,6 +144,8 @@ public class Options
 		disabledRules.setPreferences(options);
 
 		additionalCSS.setPreferences(options);
+
+		addonsPath.setPreferences(globalOptions);
 	}
 
 	private static Preferences getProjectOptions(File project) {
@@ -331,4 +336,10 @@ public class Options
 	public static String getAdditionalCSS() { return additionalCSS.get(); }
 	public static void setAdditionalCSS(String additionalCSS) { Options.additionalCSS.set(additionalCSS); }
 	public static StringProperty additionalCSSProperty() { return additionalCSS; }
+
+	// 'addonsPath' property
+	private static final PrefsStringProperty addonsPath = new PrefsStringProperty();
+	public static String getAddonsPath() { return addonsPath.get(); }
+	public static void setAddonsPath(String addonsPath) { Options.addonsPath.set(addonsPath); }
+	public static StringProperty addonsPathProperty() { return addonsPath; }
 }

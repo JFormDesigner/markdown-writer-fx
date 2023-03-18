@@ -39,6 +39,7 @@ import javafx.scene.input.KeyEvent;
 import org.fxmisc.richtext.MultiChangeBuilder;
 import org.markdownwriterfx.addons.SmartFormatAddon;
 import org.markdownwriterfx.options.Options;
+import org.markdownwriterfx.util.Addons;
 import com.vladsch.flexmark.ast.BlockQuote;
 import com.vladsch.flexmark.ast.HardLineBreak;
 import com.vladsch.flexmark.ast.HtmlBlock;
@@ -62,7 +63,8 @@ import static org.markdownwriterfx.addons.SmartFormatAddon.*;
  */
 class SmartFormat
 {
-	private static final ServiceLoader<SmartFormatAddon> addons = ServiceLoader.load(SmartFormatAddon.class);
+	private static final ServiceLoader<SmartFormatAddon> addons
+		= ServiceLoader.load( SmartFormatAddon.class, Addons.getAddonsClassLoader() );
 
 	private final MarkdownEditorPane editor;
 	private final MarkdownTextArea textArea;
