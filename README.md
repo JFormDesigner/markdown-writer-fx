@@ -17,45 +17,38 @@ Features
   * Keyboard shortcuts to insert Markdown (Bold, Italic, Code, Links, Images, Header, Lists, ...)
   * Auto-indent lists
   * Search and replace
+  * Spell and grammar checking with [LanguageTool](https://languagetool.org/)
+    for more than 30 languages and dialects.
   * Project manager
   * HTML preview
   * HTML source preview
   * Markdown AST view
-  * Multi-platform: Windows, Mac, Linux, ...
-
-Requirements
-------------
-
-**Java 19 is required** to run current releases.
-
-Installation
-------------
+  * Multi-platform: Windows, Mac and Linux
 
 Download
-[markdown-writer-fx-0.12.zip](https://github.com/JFormDesigner/markdown-writer-fx/releases/download/0.12/markdown-writer-fx-0.12.zip)
-and extract it to any folder.
-
-Run: 
- - for Windows, `bin/markdown-writer-fx.bat` to start *Markdown Writer FX*
- - and for Unix systems `./bin/markdown-writer-fx.sh` to start *Markdown Writer FX*
-
-from the project folder.
-
-Building
 --------
 
-Prerequisites are git and Java 19 in order to build *Markdown Writer FX* form sources.
-
- - get the source, e.g. by cloning the official repo with: 
-   `git clone https://github.com/JFormDesigner/markdown-writer-fx.git`
- - run `./gradlew assembleDist` to create the distribution in the
-   `$project/build/distributions/` folder.
+See "Assets" in
+[releases section](https://github.com/JFormDesigner/markdown-writer-fx/releases).
 
 
 Changes
 -------
 
 See [Change Log](CHANGES.md)
+
+
+Building
+--------
+
+[Gradle](https://gradle.org) can be used to build Markdown Writer FX from source
+code. **Java 19** is required to run Gradle (and Markdown Writer FX).
+
+The Gradle task `assembleDist` builds a distribution for the current platform
+(uses `jpackage`) and requires that Gradle is running on a JDK that includes
+JavaFX. E.g. BellSoft Liberica JDK (package 'Full JDK') or Azul Zulu JDK
+(package 'JDK FX').
+
 
 Credits
 -------

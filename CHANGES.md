@@ -1,7 +1,7 @@
 Markdown Writer FX Change Log
 =============================
 
-## Unreleased
+## 1.0
 
 - Spell and grammar checking with LanguageTool. (issue #10)
 - Project Manager:
