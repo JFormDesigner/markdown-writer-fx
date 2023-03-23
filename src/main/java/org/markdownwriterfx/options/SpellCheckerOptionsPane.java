@@ -217,6 +217,7 @@ class SpellCheckerOptionsPane
 		//---- languageLabel ----
 		languageLabel.setText(Messages.get("SpellCheckerOptionsPane.languageLabel.text"));
 		languageLabel.setMnemonicParsing(true);
+		languageLabel.setLabelFor(languageField);
 		add(languageLabel, "cell 1 3");
 
 		//---- languageField ----
@@ -226,6 +227,7 @@ class SpellCheckerOptionsPane
 		//---- userDictionaryLabel ----
 		userDictionaryLabel.setText(Messages.get("SpellCheckerOptionsPane.userDictionaryLabel.text"));
 		userDictionaryLabel.setMnemonicParsing(true);
+		userDictionaryLabel.setLabelFor(userDictionaryField);
 		add(userDictionaryLabel, "cell 1 4");
 		add(userDictionaryField, "cell 2 4");
 
@@ -248,6 +250,8 @@ class SpellCheckerOptionsPane
 
 		//---- disabledRulesLabel ----
 		disabledRulesLabel.setText(Messages.get("SpellCheckerOptionsPane.disabledRulesLabel.text"));
+		disabledRulesLabel.setLabelFor(disabledRulesField);
+		disabledRulesLabel.setMnemonicParsing(true);
 		add(disabledRulesLabel, "cell 1 8,aligny top,growy 0");
 		add(disabledRulesField, "cell 2 8");
 

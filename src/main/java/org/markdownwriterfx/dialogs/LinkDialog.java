@@ -128,6 +128,8 @@ public class LinkDialog
 
 			//---- urlLabel ----
 			urlLabel.setText(Messages.get("LinkDialog.urlLabel.text"));
+			urlLabel.setLabelFor(urlField);
+			urlLabel.setMnemonicParsing(true);
 			pane.add(urlLabel, "cell 0 0");
 
 			//---- urlField ----
@@ -146,6 +148,8 @@ public class LinkDialog
 
 			//---- textLabel ----
 			textLabel.setText(Messages.get("LinkDialog.textLabel.text"));
+			textLabel.setLabelFor(textField);
+			textLabel.setMnemonicParsing(true);
 			pane.add(textLabel, "cell 0 1");
 
 			//---- textField ----
@@ -154,6 +158,8 @@ public class LinkDialog
 
 			//---- titleLabel ----
 			titleLabel.setText(Messages.get("LinkDialog.titleLabel.text"));
+			titleLabel.setLabelFor(titleField);
+			titleLabel.setMnemonicParsing(true);
 			pane.add(titleLabel, "cell 0 2");
 			pane.add(titleField, "cell 1 2");
 

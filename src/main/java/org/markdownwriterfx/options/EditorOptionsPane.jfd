@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "999.9.9.9.9999" Java: "1.8.0_181" encoding: "UTF-8"
+JFDML JFormDesigner: "9.0.0.0.258" Java: "19.0.2" encoding: "UTF-8"
 
 new FormModel {
 	"i18n.autoExternalize": true
@@ -23,6 +23,7 @@ new FormModel {
 				name: "strongEmphasisMarkerLabel"
 				"text": new FormMessage( null, "EditorOptionsPane.strongEmphasisMarkerLabel.text" )
 				"mnemonicParsing": true
+				"labelFor": new FormReference( "strongEmphasisMarkerField" )
 				auxiliary() {
 					"JavaCodeGenerator.variableLocal": true
 				}
@@ -41,6 +42,7 @@ new FormModel {
 				name: "emphasisMarkerLabel"
 				"text": new FormMessage( null, "EditorOptionsPane.emphasisMarkerLabel.text" )
 				"mnemonicParsing": true
+				"labelFor": new FormReference( "emphasisMarkerField" )
 				auxiliary() {
 					"JavaCodeGenerator.variableLocal": true
 				}
@@ -59,6 +61,7 @@ new FormModel {
 				name: "bulletListMarkerLabel"
 				"text": new FormMessage( null, "EditorOptionsPane.bulletListMarkerLabel.text" )
 				"mnemonicParsing": true
+				"labelFor": new FormReference( "bulletListMarkerField" )
 				auxiliary() {
 					"JavaCodeGenerator.variableLocal": true
 				}
@@ -83,6 +86,7 @@ new FormModel {
 				name: "wrapLineLengthLabel"
 				"text": new FormMessage( null, "EditorOptionsPane.wrapLineLengthLabel.text" )
 				"mnemonicParsing": true
+				"labelFor": new FormReference( "wrapLineLengthField" )
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 1 5"
 			} )

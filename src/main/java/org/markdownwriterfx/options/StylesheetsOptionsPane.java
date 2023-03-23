@@ -68,6 +68,8 @@ class StylesheetsOptionsPane
 
 		//---- additionalCSSLabel ----
 		additionalCSSLabel.setText(Messages.get("StylesheetsOptionsPane.additionalCSSLabel.text"));
+		additionalCSSLabel.setLabelFor(additionalCSSField);
+		additionalCSSLabel.setMnemonicParsing(true);
 		add(additionalCSSLabel, "cell 0 0");
 		add(additionalCSSField, "cell 0 1");
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents

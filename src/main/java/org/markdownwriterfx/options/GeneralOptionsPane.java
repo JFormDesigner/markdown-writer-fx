@@ -221,6 +221,7 @@ class GeneralOptionsPane
 		//---- fontFamilyLabel ----
 		fontFamilyLabel.setText(Messages.get("GeneralOptionsPane.fontFamilyLabel.text"));
 		fontFamilyLabel.setMnemonicParsing(true);
+		fontFamilyLabel.setLabelFor(fontFamilyField);
 		add(fontFamilyLabel, "cell 1 1");
 
 		//---- fontFamilyField ----
@@ -230,6 +231,7 @@ class GeneralOptionsPane
 		//---- fontSizeLabel ----
 		fontSizeLabel.setText(Messages.get("GeneralOptionsPane.fontSizeLabel.text"));
 		fontSizeLabel.setMnemonicParsing(true);
+		fontSizeLabel.setLabelFor(fontSizeField);
 		add(fontSizeLabel, "cell 1 2");
 		add(fontSizeField, "cell 2 2,alignx left,growx 0");
 
@@ -252,6 +254,7 @@ class GeneralOptionsPane
 		//---- lineSeparatorLabel ----
 		lineSeparatorLabel.setText(Messages.get("GeneralOptionsPane.lineSeparatorLabel.text"));
 		lineSeparatorLabel.setMnemonicParsing(true);
+		lineSeparatorLabel.setLabelFor(lineSeparatorField);
 		add(lineSeparatorLabel, "cell 1 7");
 		add(lineSeparatorField, "cell 2 7");
 
@@ -262,6 +265,7 @@ class GeneralOptionsPane
 		//---- encodingLabel ----
 		encodingLabel.setText(Messages.get("GeneralOptionsPane.encodingLabel.text"));
 		encodingLabel.setMnemonicParsing(true);
+		encodingLabel.setLabelFor(encodingField);
 		add(encodingLabel, "cell 1 8");
 
 		//---- encodingField ----
@@ -271,6 +275,7 @@ class GeneralOptionsPane
 		//---- markdownFileExtensionsLabel ----
 		markdownFileExtensionsLabel.setText(Messages.get("GeneralOptionsPane.markdownFileExtensionsLabel.text"));
 		markdownFileExtensionsLabel.setMnemonicParsing(true);
+		markdownFileExtensionsLabel.setLabelFor(markdownFileExtensionsField);
 		add(markdownFileExtensionsLabel, "cell 1 9");
 		add(markdownFileExtensionsField, "cell 2 9 2 1");
 
@@ -280,6 +285,8 @@ class GeneralOptionsPane
 
 		//---- addonsPathLabel ----
 		addonsPathLabel.setText(Messages.get("GeneralOptionsPane.addonsPathLabel.text"));
+		addonsPathLabel.setLabelFor(addonsPathField);
+		addonsPathLabel.setMnemonicParsing(true);
 		add(addonsPathLabel, "cell 1 11");
 		add(addonsPathField, "cell 2 11 2 1");
 

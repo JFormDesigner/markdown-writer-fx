@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "9.0.0.0.253" Java: "19.0.2" encoding: "UTF-8"
+JFDML JFormDesigner: "9.0.0.0.258" Java: "19.0.2" encoding: "UTF-8"
 
 new FormModel {
 	"i18n.bundlePackage": "org.markdownwriterfx"
@@ -23,6 +23,7 @@ new FormModel {
 				name: "fontFamilyLabel"
 				"text": new FormMessage( null, "GeneralOptionsPane.fontFamilyLabel.text" )
 				"mnemonicParsing": true
+				"labelFor": new FormReference( "fontFamilyField" )
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 1 1"
 			} )
@@ -39,6 +40,7 @@ new FormModel {
 				name: "fontSizeLabel"
 				"text": new FormMessage( null, "GeneralOptionsPane.fontSizeLabel.text" )
 				"mnemonicParsing": true
+				"labelFor": new FormReference( "fontSizeField" )
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 1 2"
 			} )
@@ -78,6 +80,7 @@ new FormModel {
 				name: "lineSeparatorLabel"
 				"text": new FormMessage( null, "GeneralOptionsPane.lineSeparatorLabel.text" )
 				"mnemonicParsing": true
+				"labelFor": new FormReference( "lineSeparatorField" )
 				auxiliary() {
 					"JavaCodeGenerator.variableLocal": true
 				}
@@ -105,6 +108,7 @@ new FormModel {
 				name: "encodingLabel"
 				"text": new FormMessage( null, "GeneralOptionsPane.encodingLabel.text" )
 				"mnemonicParsing": true
+				"labelFor": new FormReference( "encodingField" )
 				auxiliary() {
 					"JavaCodeGenerator.variableLocal": true
 				}
@@ -124,6 +128,7 @@ new FormModel {
 				name: "markdownFileExtensionsLabel"
 				"text": new FormMessage( null, "GeneralOptionsPane.markdownFileExtensionsLabel.text" )
 				"mnemonicParsing": true
+				"labelFor": new FormReference( "markdownFileExtensionsField" )
 				auxiliary() {
 					"JavaCodeGenerator.variableLocal": true
 				}
@@ -144,6 +149,8 @@ new FormModel {
 			add( new FormComponent( "javafx.scene.control.Label" ) {
 				name: "addonsPathLabel"
 				"text": new FormMessage( null, "GeneralOptionsPane.addonsPathLabel.text" )
+				"labelFor": new FormReference( "addonsPathField" )
+				"mnemonicParsing": true
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 1 11"
 			} )

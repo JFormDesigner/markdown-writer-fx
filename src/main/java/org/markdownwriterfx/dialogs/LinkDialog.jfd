@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "9.9.9.9.9999" Java: "1.8.0_112" encoding: "UTF-8"
+JFDML JFormDesigner: "9.0.0.0.258" Java: "19.0.2" encoding: "UTF-8"
 
 new FormModel {
 	"i18n.bundlePackage": "org.markdownwriterfx"
@@ -16,6 +16,8 @@ new FormModel {
 			add( new FormComponent( "javafx.scene.control.Label" ) {
 				name: "urlLabel"
 				"text": new FormMessage( null, "LinkDialog.urlLabel.text" )
+				"labelFor": new FormReference( "urlField" )
+				"mnemonicParsing": true
 				auxiliary() {
 					"JavaCodeGenerator.variableLocal": true
 				}
@@ -45,6 +47,8 @@ new FormModel {
 			add( new FormComponent( "javafx.scene.control.Label" ) {
 				name: "textLabel"
 				"text": new FormMessage( null, "LinkDialog.textLabel.text" )
+				"labelFor": new FormReference( "textField" )
+				"mnemonicParsing": true
 				auxiliary() {
 					"JavaCodeGenerator.variableLocal": true
 				}
@@ -60,6 +64,8 @@ new FormModel {
 			add( new FormComponent( "javafx.scene.control.Label" ) {
 				name: "titleLabel"
 				"text": new FormMessage( null, "LinkDialog.titleLabel.text" )
+				"labelFor": new FormReference( "titleField" )
+				"mnemonicParsing": true
 				auxiliary() {
 					"JavaCodeGenerator.variableLocal": true
 				}

@@ -81,6 +81,8 @@ class MarkdownOptionsPane
 
 		//---- markdownRendererLabel ----
 		markdownRendererLabel.setText(Messages.get("MarkdownOptionsPane.markdownRendererLabel.text"));
+		markdownRendererLabel.setLabelFor(markdownRendererChoiceBox);
+		markdownRendererLabel.setMnemonicParsing(true);
 		add(markdownRendererLabel, "cell 0 0");
 		add(markdownRendererChoiceBox, "cell 1 0,alignx left,growx 0");
 

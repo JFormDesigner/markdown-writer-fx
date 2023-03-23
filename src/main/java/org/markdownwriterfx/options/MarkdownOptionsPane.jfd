@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "9.9.9.9.9999" Java: "1.8.0_74" encoding: "UTF-8"
+JFDML JFormDesigner: "9.0.0.0.258" Java: "19.0.2" encoding: "UTF-8"
 
 new FormModel {
 	"i18n.bundlePackage": "org.markdownwriterfx"
@@ -16,6 +16,8 @@ new FormModel {
 			add( new FormComponent( "javafx.scene.control.Label" ) {
 				name: "markdownRendererLabel"
 				"text": new FormMessage( null, "MarkdownOptionsPane.markdownRendererLabel.text" )
+				"labelFor": new FormReference( "markdownRendererChoiceBox" )
+				"mnemonicParsing": true
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 0 0"
 			} )

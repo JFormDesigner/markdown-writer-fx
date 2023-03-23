@@ -124,6 +124,8 @@ public class ImageDialog
 
 			//---- urlLabel ----
 			urlLabel.setText(Messages.get("ImageDialog.urlLabel.text"));
+			urlLabel.setLabelFor(urlField);
+			urlLabel.setMnemonicParsing(true);
 			pane.add(urlLabel, "cell 0 0");
 
 			//---- urlField ----
@@ -138,6 +140,8 @@ public class ImageDialog
 
 			//---- textLabel ----
 			textLabel.setText(Messages.get("ImageDialog.textLabel.text"));
+			textLabel.setLabelFor(textField);
+			textLabel.setMnemonicParsing(true);
 			pane.add(textLabel, "cell 0 1");
 
 			//---- textField ----
@@ -146,6 +150,8 @@ public class ImageDialog
 
 			//---- titleLabel ----
 			titleLabel.setText(Messages.get("ImageDialog.titleLabel.text"));
+			titleLabel.setLabelFor(titleField);
+			titleLabel.setMnemonicParsing(true);
 			pane.add(titleLabel, "cell 0 2");
 			pane.add(titleField, "cell 1 2");
 

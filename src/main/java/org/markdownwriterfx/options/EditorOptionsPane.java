@@ -123,18 +123,21 @@ class EditorOptionsPane
 		//---- strongEmphasisMarkerLabel ----
 		strongEmphasisMarkerLabel.setText(Messages.get("EditorOptionsPane.strongEmphasisMarkerLabel.text"));
 		strongEmphasisMarkerLabel.setMnemonicParsing(true);
+		strongEmphasisMarkerLabel.setLabelFor(strongEmphasisMarkerField);
 		add(strongEmphasisMarkerLabel, "cell 1 1");
 		add(strongEmphasisMarkerField, "cell 2 1");
 
 		//---- emphasisMarkerLabel ----
 		emphasisMarkerLabel.setText(Messages.get("EditorOptionsPane.emphasisMarkerLabel.text"));
 		emphasisMarkerLabel.setMnemonicParsing(true);
+		emphasisMarkerLabel.setLabelFor(emphasisMarkerField);
 		add(emphasisMarkerLabel, "cell 1 2");
 		add(emphasisMarkerField, "cell 2 2");
 
 		//---- bulletListMarkerLabel ----
 		bulletListMarkerLabel.setText(Messages.get("EditorOptionsPane.bulletListMarkerLabel.text"));
 		bulletListMarkerLabel.setMnemonicParsing(true);
+		bulletListMarkerLabel.setLabelFor(bulletListMarkerField);
 		add(bulletListMarkerLabel, "cell 1 3");
 		add(bulletListMarkerField, "cell 2 3");
 
@@ -145,6 +148,7 @@ class EditorOptionsPane
 		//---- wrapLineLengthLabel ----
 		wrapLineLengthLabel.setText(Messages.get("EditorOptionsPane.wrapLineLengthLabel.text"));
 		wrapLineLengthLabel.setMnemonicParsing(true);
+		wrapLineLengthLabel.setLabelFor(wrapLineLengthField);
 		add(wrapLineLengthLabel, "cell 1 5");
 		add(wrapLineLengthField, "cell 2 5");
 
@@ -160,12 +164,6 @@ class EditorOptionsPane
 		formatOnlyModifiedParagraphsCheckBox.setText(Messages.get("EditorOptionsPane.formatOnlyModifiedParagraphsCheckBox.text"));
 		add(formatOnlyModifiedParagraphsCheckBox, "cell 1 7 2 1,alignx left,growx 0");
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
-
-		// TODO set this in JFormDesigner as soon as it supports labelFor
-		strongEmphasisMarkerLabel.setLabelFor(strongEmphasisMarkerField);
-		emphasisMarkerLabel.setLabelFor(emphasisMarkerField);
-		bulletListMarkerLabel.setLabelFor(bulletListMarkerField);
-		wrapLineLengthLabel.setLabelFor(wrapLineLengthField);
 	}
 
 	// JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
