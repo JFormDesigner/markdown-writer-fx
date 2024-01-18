@@ -80,6 +80,7 @@ import org.markdownwriterfx.util.Action;
 import org.markdownwriterfx.util.ActionUtils;
 import org.markdownwriterfx.util.Utils;
 import static de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon.*;
+import java.io.File;
 
 /**
  * Main window containing a tab pane in the center for file editors.
@@ -620,4 +621,14 @@ class MainWindow
 
 		alert.showAndWait();
 	}
+
+	/**
+	 * Opens the given file in the editor.
+	 * @param file
+	 */
+	public void openEditor(File file) {
+		fileEditorManager.openEditor(file);
+	}
+
 }
+

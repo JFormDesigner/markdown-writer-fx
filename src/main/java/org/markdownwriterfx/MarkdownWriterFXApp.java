@@ -38,6 +38,8 @@ import fr.brouillard.oss.cssfx.CSSFX;
 import fr.brouillard.oss.cssfx.api.URIToPathConverter;
 import org.markdownwriterfx.options.Options;
 import org.markdownwriterfx.util.StageState;
+import java.util.List;
+import java.io.File;
 
 /**
  * Markdown Writer FX application.
@@ -89,6 +91,17 @@ public class MarkdownWriterFXApp
 		primaryStage.setTitle("Markdown Writer FX");
 		primaryStage.setScene(mainWindow.getScene());
 		primaryStage.show();
+		//open file at command line
+		Parameters params = getParameters();
+		List<String> list = params.getRaw();
+
+// Check If File is passed from commandline
+		if (list.size() == 1) {
+			File file = new File(list.get(0));
+			if(file.exists()) {
+				mainWindow.openEditor(file);
+			}
+		}
 	}
 
 	public static void showDocument(String uri) {
